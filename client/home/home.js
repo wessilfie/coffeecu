@@ -71,7 +71,7 @@ Template.people.rendered = function () {
 
 Template.intro.helpers({
   'welcome': function () {
-    return "Meet amazing students in our community";
+    return "## The Columbia community is full of brilliant people. Start meeting them.\n\nCoffee@CU connects students, faculty, and alumni for one-on-one coffee chats. Browse profiles below, or [sign up](/login) to send your first request.";
   }
 });
 
@@ -96,7 +96,7 @@ Template.search.helpers({
   },
   'inputAttributes': function () {
     return {
-      placeholder: 'Search by name, school, UNI, major, about, contact for, availability and likes'
+      placeholder: 'Search by name, major, school, or interests'
     };
   },
 });

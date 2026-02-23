@@ -74,7 +74,7 @@ AccountsTemplates.configure({
   // Texts
   texts: {
     button: {
-      signUp: "Sign up"
+      signUp: "Create my account"
     },
     socialSignUp: "Register",
     socialIcons: {
@@ -82,8 +82,8 @@ AccountsTemplates.configure({
     },
     title: {
       forgotPwd: "Recover your password",
-      signIn: "Sign in with your @columbia.edu address",
-      signUp: "Sign up with your @columbia.edu address"  
+      signIn: "Welcome back. Sign in with your @columbia.edu address",
+      signUp: "Join Coffee@CU with your @columbia.edu address"
     },
   },
 });

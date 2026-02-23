@@ -7,6 +7,7 @@
 <template name="profileupdate">
   <form class="ui form profileupdate">
     <h1 class="ui header">Your Profile</h1>
+    <p class="subtitle">This is how the Coffee@CU community finds you and decides to reach out. A complete profile gets more requests.</p>
 
     <h4 class="ui dividing header">First, the basics</h4>
 
@@ -15,6 +16,7 @@
       <div class="ten wide field center aligned">
         <div class="photo field">
           <label>Upload Photo</label>
+          <p class="helptext">A photo makes your profile stand out and helps people recognize you.</p>
           {{#if user.image}}
           <img src="{{user.image}}" name="image" id="profile-image">
           {{else}}
@@ -187,6 +189,7 @@
     </div>
 
     <h4 class="ui dividing header">More about you</h4>
+    <p class="helptext">These fields help people find you and give them something to say in a request. The more you share, the more conversations you start.</p>
 
     <div class="field">
       <label for="about">About you (400 chars)</label>
@@ -260,7 +263,7 @@
     </div>
 
     <div class="fields">
-      <button type="submit" class="waves-effect waves-light btn">Update Profile</button>
+      <button type="submit" class="waves-effect waves-light btn">Save and publish my profile</button>
       <div class="gutter"></div>
       <button id="deleteprofile" class="waves-effect waves-light red darken-1 btn">Delete Profile</button>
     </div>
