@@ -3,6 +3,8 @@ Coffee@CU
 
 [Coffee@CU][coffeecu] brings Columbia students, faculty, and alumni closer together--one coffee chat at a time. Maintained by ADI Labs.
 
+Returning 2026, by Will.
+
 Setup
 -----
 
