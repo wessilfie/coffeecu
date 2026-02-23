@@ -4,9 +4,9 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { Search, ChevronDown } from 'lucide-react';
 import ProfileCard from '@/components/ProfileCard';
 import ProfileDrawer from '@/components/ProfileDrawer';
-import CoffeeRequestModal from '@/components/CoffeeRequestModal';
 import { getSupabaseClient } from '@/lib/supabase/client';
-import { PARALLAX_IMAGES, SCHOOLS, YEARS } from '@/lib/constants';
+import { DEV_BYPASS, DEV_MOCK_PROFILES } from '@/lib/dev-bypass';
+import { PARALLAX_IMAGES, SCHOOL_GROUPS, YEARS } from '@/lib/constants';
 import type { Profile, ProfileFilters } from '@/types';
 
 const PAGE_SIZE = 12;
@@ -227,13 +227,13 @@ function LoginGate({ meetingCount, heroImage }: { meetingCount: number; heroImag
             style={{
               fontFamily: 'var(--font-cormorant), serif',
               fontSize: 'clamp(2rem, 4vw, 3rem)',
-              fontWeight: 400,
+              fontWeight: 600,
               color: 'var(--color-ink)',
               marginBottom: '1.25rem',
               lineHeight: 1.15,
             }}
           >
-            A community board. Not a dating app.
+            Real conversations, real connections.
           </h2>
           <p
             style={{
@@ -245,9 +245,9 @@ function LoginGate({ meetingCount, heroImage }: { meetingCount: number; heroImag
               lineHeight: 1.7,
             }}
           >
-            Coffee@CU exists to help the Columbia community connect around ideas, research, career paths,
-            and shared interests — not to swipe right. Every reach-out requires a real message explaining
-            what you want to talk about.
+            Coffee@CU helps the Columbia community connect around ideas, research, career paths,
+            and shared interests. Every reach-out requires a real message explaining
+            what you&apos;d like to talk about.
           </p>
         </div>
       </section>
@@ -271,7 +271,7 @@ function LoginGate({ meetingCount, heroImage }: { meetingCount: number; heroImag
               style={{
                 fontFamily: 'var(--font-cormorant), serif',
                 fontSize: 'clamp(1.875rem, 3.5vw, 2.75rem)',
-                fontWeight: 400,
+                fontWeight: 600,
                 color: 'var(--color-ink)',
                 lineHeight: 1.2,
               }}
@@ -356,7 +356,7 @@ function LoginGate({ meetingCount, heroImage }: { meetingCount: number; heroImag
             style={{
               fontFamily: 'var(--font-cormorant), serif',
               fontSize: 'clamp(1.875rem, 3.5vw, 2.75rem)',
-              fontWeight: 400,
+              fontWeight: 600,
               color: 'var(--color-ink)',
               marginBottom: '1rem',
               lineHeight: 1.2,
@@ -465,7 +465,7 @@ function LoginGate({ meetingCount, heroImage }: { meetingCount: number; heroImag
               fontFamily: 'var(--font-cormorant), serif',
               fontStyle: 'italic',
               fontSize: 'clamp(2rem, 5vw, 3.25rem)',
-              fontWeight: 300,
+              fontWeight: 500,
               color: 'rgba(255,255,255,0.97)',
               marginBottom: '1.5rem',
               lineHeight: 1.15,
@@ -523,7 +523,6 @@ function AuthenticatedHome({ initialProfiles, meetingCount, userId }: { initialP
 
   const [filters, setFilters] = useState<ProfileFilters>({ query: '', year: '', school: '', major: '' });
   const [selectedProfile, setSelectedProfile] = useState<Profile | null>(null);
-  const [showCoffeeModal, setShowCoffeeModal] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
 
   const supabase = getSupabaseClient();
@@ -536,6 +535,25 @@ function AuthenticatedHome({ initialProfiles, meetingCount, userId }: { initialP
 
   // ——— Search/filter logic ———
   const fetchProfiles = useCallback(async (f: ProfileFilters, pageNum: number, append = false) => {
+    if (DEV_BYPASS) {
+      // Client-side filtering of mock data
+      let filtered = DEV_MOCK_PROFILES.filter(p => {
+        if (f.year && p.year !== f.year) return false;
+        if (f.school && p.school !== f.school) return false;
+        if (f.query.trim()) {
+          const q = f.query.toLowerCase();
+          const searchable = [p.name, p.about, p.likes, p.contact_for, ...(p.major || [])].filter(Boolean).join(' ').toLowerCase();
+          if (!searchable.includes(q)) return false;
+        }
+        return true;
+      });
+      setProfiles(filtered);
+      setTotalCount(filtered.length);
+      setHasMore(false);
+      setPage(0);
+      return;
+    }
+
     if (!append) setLoading(true);
     else setLoadingMore(true);
 
@@ -591,8 +609,8 @@ function AuthenticatedHome({ initialProfiles, meetingCount, userId }: { initialP
     fetchProfiles(filters, page + 1, true);
   };
 
-  const handleCoffeeSuccess = () => {
-    setSuccessMessage(`Your request was sent to ${selectedProfile?.name.split(' ')[0]}!`);
+  const handleCoffeeSuccess = (firstName: string) => {
+    setSuccessMessage(`Your request was sent to ${firstName}!`);
     setTimeout(() => setSuccessMessage(''), 5000);
     setSelectedProfile(null);
   };
@@ -760,8 +778,12 @@ function AuthenticatedHome({ initialProfiles, meetingCount, userId }: { initialP
               style={{ fontSize: '0.8125rem', appearance: 'none', paddingRight: '2rem', cursor: 'pointer' }}
             >
               <option value="">All schools</option>
-              {SCHOOLS.map(s => (
-                <option key={s.value} value={s.value}>{s.label}</option>
+              {SCHOOL_GROUPS.map(group => (
+                <optgroup key={group.label} label={group.label}>
+                  {group.schools.map(s => (
+                    <option key={s.value} value={s.value}>{s.label}</option>
+                  ))}
+                </optgroup>
               ))}
             </select>
             <ChevronDown size={13} style={{ position: 'absolute', right: '0.6rem', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', color: 'var(--color-text-muted)' }} />
@@ -837,12 +859,11 @@ function AuthenticatedHome({ initialProfiles, meetingCount, userId }: { initialP
                 gap: '1.25rem',
               }}
             >
-              {profiles.map((profile, i) => (
+              {profiles.map((profile) => (
                 <ProfileCard
                   key={profile.id}
                   profile={profile}
                   onClick={() => setSelectedProfile(profile)}
-                  animationDelay={Math.min(i * 40, 320)}
                 />
               ))}
             </div>
@@ -864,23 +885,14 @@ function AuthenticatedHome({ initialProfiles, meetingCount, userId }: { initialP
         )}
       </div>
 
-      {/* Profile drawer */}
+      {/* Profile drawer (coffee request form lives inline) */}
       <ProfileDrawer
         profile={selectedProfile}
         onClose={() => setSelectedProfile(null)}
-        onRequestCoffee={() => setShowCoffeeModal(true)}
+        onCoffeeSuccess={handleCoffeeSuccess}
         isLoggedIn={true}
+        userId={userId}
       />
-
-      {/* Coffee request modal */}
-      {showCoffeeModal && selectedProfile && userId && (
-        <CoffeeRequestModal
-          receiver={selectedProfile}
-          senderId={userId}
-          onClose={() => setShowCoffeeModal(false)}
-          onSuccess={handleCoffeeSuccess}
-        />
-      )}
     </main>
   );
 }

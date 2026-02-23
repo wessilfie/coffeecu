@@ -1,6 +1,8 @@
 import { Suspense } from 'react';
 import { redirect } from 'next/navigation';
+import Link from 'next/link';
 import { createSupabaseServerClient } from '@/lib/supabase/server';
+import { DEV_BYPASS } from '@/lib/dev-bypass';
 import LoginForm from './LoginForm';
 
 export const metadata = {
@@ -9,14 +11,16 @@ export const metadata = {
 };
 
 export default async function LoginPage() {
-  // Redirect already-authenticated users
-  const supabase = await createSupabaseServerClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  if (!DEV_BYPASS) {
+    // Redirect already-authenticated users
+    const supabase = await createSupabaseServerClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
 
-  if (user) {
-    redirect('/profile');
+    if (user) {
+      redirect('/profile');
+    }
   }
 
   return (
@@ -31,6 +35,27 @@ export default async function LoginPage() {
       }}
     >
       <div style={{ width: '100%', maxWidth: '440px' }}>
+        {/* Back link */}
+        <div style={{ marginBottom: '1.5rem' }}>
+          <Link
+            href="/"
+            style={{
+              fontFamily: 'var(--font-courier), monospace',
+              fontSize: '0.7rem',
+              letterSpacing: '0.1em',
+              textTransform: 'uppercase',
+              color: 'var(--color-text-muted)',
+              textDecoration: 'none',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.375rem',
+              transition: 'color 150ms ease',
+            }}
+          >
+            <span aria-hidden="true">&larr;</span> Back to home
+          </Link>
+        </div>
+
         {/* Header */}
         <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
           <p
@@ -43,7 +68,7 @@ export default async function LoginPage() {
             style={{
               fontFamily: 'var(--font-cormorant), serif',
               fontSize: 'clamp(2rem, 5vw, 2.75rem)',
-              fontWeight: 400,
+              fontWeight: 600,
               color: 'var(--color-ink)',
               margin: 0,
               lineHeight: 1.1,
@@ -74,9 +99,34 @@ export default async function LoginPage() {
             boxShadow: '0 4px 24px rgba(26,20,16,0.08)',
           }}
         >
-          <Suspense fallback={null}>
-            <LoginForm />
-          </Suspense>
+          {DEV_BYPASS ? (
+            <div style={{ textAlign: 'center', padding: '1rem 0' }}>
+              <p
+                className="label-mono"
+                style={{ color: 'var(--color-text-muted)', marginBottom: '1.25rem', fontSize: '0.65rem' }}
+              >
+                Dev mode — no real auth required
+              </p>
+              <a
+                href="/"
+                className="btn-primary"
+                style={{ width: '100%', display: 'block', textAlign: 'center' }}
+              >
+                Enter as Dev User
+              </a>
+              <a
+                href="/profile"
+                className="btn-ghost"
+                style={{ width: '100%', display: 'block', textAlign: 'center', marginTop: '0.75rem' }}
+              >
+                Go to Profile
+              </a>
+            </div>
+          ) : (
+            <Suspense fallback={null}>
+              <LoginForm />
+            </Suspense>
+          )}
         </div>
 
         {/* Footer note */}

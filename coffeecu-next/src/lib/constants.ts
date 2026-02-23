@@ -8,13 +8,41 @@ export const DAILY_REQUEST_LIMIT = parseInt(
   10
 );
 
-export const SCHOOLS = [
-  { value: 'CC',   label: "Columbia College" },
-  { value: 'SEAS', label: "Engineering (SEAS)" },
-  { value: 'GS',   label: "General Studies" },
-  { value: 'BC',   label: "Barnard College" },
-  { value: 'GR',   label: "Graduate School" },
+// Grouped by undergrad vs. graduate/professional + affiliates
+export const SCHOOL_GROUPS = [
+  {
+    label: 'Undergraduate',
+    schools: [
+      { value: 'CC',   label: 'Columbia College' },
+      { value: 'SEAS', label: 'Engineering (SEAS)' },
+      { value: 'GS',   label: 'General Studies' },
+      { value: 'BC',   label: 'Barnard College' },
+    ],
+  },
+  {
+    label: 'Graduate & Professional',
+    schools: [
+      { value: 'GSAS',  label: 'Graduate School of Arts & Sciences' },
+      { value: 'BUS',   label: 'Columbia Business School' },
+      { value: 'LAW',   label: 'Columbia Law School' },
+      { value: 'VPS',   label: 'Vagelos College of Physicians & Surgeons' },
+      { value: 'JRN',   label: 'Journalism School' },
+      { value: 'SIPA',  label: 'School of International & Public Affairs' },
+      { value: 'GSAPP', label: 'Architecture, Planning & Preservation' },
+      { value: 'SOA',   label: 'School of the Arts' },
+      { value: 'SW',    label: 'School of Social Work' },
+      { value: 'PH',    label: 'Mailman School of Public Health' },
+      { value: 'NRS',   label: 'School of Nursing' },
+      { value: 'DM',    label: 'College of Dental Medicine' },
+      { value: 'SPS',   label: 'School of Professional Studies' },
+      { value: 'CS',    label: 'Columbia Climate School' },
+      { value: 'TC',    label: 'Teachers College' },
+    ],
+  },
 ] as const;
+
+// Flat list for backward compatibility (filters, badges, etc.)
+export const SCHOOLS = SCHOOL_GROUPS.flatMap(g => g.schools);
 
 export const YEARS = [
   "First Year",

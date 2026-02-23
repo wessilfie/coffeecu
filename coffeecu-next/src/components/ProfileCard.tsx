@@ -1,41 +1,36 @@
 'use client';
 
 import Image from 'next/image';
+import { SCHOOLS } from '@/lib/constants';
 import type { Profile, School } from '@/types';
 
-// School badge colors
-const BADGE_STYLES: Record<School, { bg: string; color: string }> = {
+// School badge colors — custom colors for common schools, default for the rest
+const BADGE_STYLES: Partial<Record<School, { bg: string; color: string }>> = {
   CC:   { bg: '#C8DCF0', color: '#003F8A' },
   SEAS: { bg: '#D4E8D4', color: '#1C5C3A' },
   GS:   { bg: '#EAD8C8', color: '#7A4A1E' },
   BC:   { bg: '#E8D4E8', color: '#5C1C6E' },
-  GR:   { bg: '#E0DAD0', color: '#1A1410' },
+  BUS:  { bg: '#D4DDE8', color: '#1A3A5C' },
+  LAW:  { bg: '#D4DDE8', color: '#1A3A5C' },
+  SIPA: { bg: '#D4DDE8', color: '#1A3A5C' },
 };
 
-const SCHOOL_LABELS: Record<School, string> = {
-  CC:   'Columbia College',
-  SEAS: 'Engineering',
-  GS:   'General Studies',
-  BC:   'Barnard',
-  GR:   'Graduate',
-};
+const DEFAULT_BADGE = { bg: '#E0DAD0', color: '#1A1410' };
 
 interface Props {
   profile: Profile;
   onClick: () => void;
-  animationDelay?: number;
 }
 
-export default function ProfileCard({ profile, onClick, animationDelay = 0 }: Props) {
-  const badge = profile.school ? BADGE_STYLES[profile.school as School] : null;
-  const schoolLabel = profile.school ? SCHOOL_LABELS[profile.school as School] : null;
+export default function ProfileCard({ profile, onClick }: Props) {
+  const badge = profile.school ? (BADGE_STYLES[profile.school as School] ?? DEFAULT_BADGE) : null;
+  const schoolEntry = profile.school ? SCHOOLS.find(s => s.value === profile.school) : null;
+  const schoolLabel = schoolEntry?.label ?? null;
 
   return (
     <button
       onClick={onClick}
-      className="animate-fade-in-up"
       style={{
-        animationDelay: `${animationDelay}ms`,
         display: 'block',
         width: '100%',
         textAlign: 'left',

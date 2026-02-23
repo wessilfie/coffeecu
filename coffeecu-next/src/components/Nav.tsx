@@ -4,6 +4,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
 import { getSupabaseClient } from '@/lib/supabase/client';
+import { DEV_BYPASS } from '@/lib/dev-bypass';
 import type { User, AuthChangeEvent, Session } from '@supabase/supabase-js';
 
 // ============================================================
@@ -12,11 +13,12 @@ import type { User, AuthChangeEvent, Session } from '@supabase/supabase-js';
 // ============================================================
 
 export default function Nav() {
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState<User | null>(DEV_BYPASS ? ({ id: 'dev' } as User) : null);
+  const [loading, setLoading] = useState(!DEV_BYPASS);
   const supabase = getSupabaseClient();
 
   useEffect(() => {
+    if (DEV_BYPASS) return;
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event: AuthChangeEvent, session: Session | null) => {
       setUser(session?.user ?? null);
       setLoading(false);
@@ -29,6 +31,7 @@ export default function Nav() {
   }, [supabase]);
 
   const handleSignOut = async () => {
+    if (DEV_BYPASS) { window.location.href = '/'; return; }
     await supabase.auth.signOut();
     window.location.href = '/';
   };

@@ -3,25 +3,40 @@ import { createSupabaseServerClient, createSupabaseServiceClient } from '@/lib/s
 import ProfileForm from './ProfileForm';
 import Nav from '@/components/Nav';
 import Footer from '@/components/Footer';
+import { DEV_BYPASS, DEV_USER, DEV_MOCK_FULL_PROFILE, DEV_MOCK_DRAFT } from '@/lib/dev-bypass';
 import type { FullProfile, DraftProfile } from '@/types';
 
 // Server component — loads existing profile/draft data
 export default async function ProfilePage() {
-  const supabase = await createSupabaseServerClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  let userId: string;
+  let userEmail: string;
+  let draft: DraftProfile | null;
+  let profile: FullProfile | null;
 
-  if (!user) redirect('/login?redirect=/profile');
+  if (DEV_BYPASS) {
+    userId = DEV_USER.id;
+    userEmail = DEV_USER.email;
+    profile = DEV_MOCK_FULL_PROFILE;
+    draft = DEV_MOCK_DRAFT;
+  } else {
+    const supabase = await createSupabaseServerClient();
+    const { data: { user } } = await supabase.auth.getUser();
 
-  const serviceClient = createSupabaseServiceClient();
+    if (!user) redirect('/login?redirect=/profile');
 
-  // Load draft first, then published profile (draft = most recent edits)
-  const [draftRes, profileRes] = await Promise.all([
-    serviceClient.from('draft_profiles').select('*').eq('user_id', user.id).single(),
-    serviceClient.from('profiles').select('*').eq('user_id', user.id).single(),
-  ]);
+    userId = user.id;
+    userEmail = user.email ?? '';
 
-  const draft = draftRes.data as DraftProfile | null;
-  const profile = profileRes.data as FullProfile | null;
+    const serviceClient = createSupabaseServiceClient();
+
+    const [draftRes, profileRes] = await Promise.all([
+      serviceClient.from('draft_profiles').select('*').eq('user_id', user.id).single(),
+      serviceClient.from('profiles').select('*').eq('user_id', user.id).single(),
+    ]);
+
+    draft = draftRes.data as DraftProfile | null;
+    profile = profileRes.data as FullProfile | null;
+  }
 
   // Determine profile status
   const status = profile ? 'published'
@@ -78,8 +93,8 @@ export default async function ProfilePage() {
         )}
 
         <ProfileForm
-          userId={user.id}
-          userEmail={user.email ?? ''}
+          userId={userId}
+          userEmail={userEmail}
           existingProfile={profile}
           existingDraft={draft}
         />

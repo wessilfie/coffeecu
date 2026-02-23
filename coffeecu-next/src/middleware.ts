@@ -19,6 +19,11 @@ export async function middleware(request: NextRequest) {
     request: { headers: request.headers },
   });
 
+  // Dev bypass — skip all auth checks
+  if (process.env.NEXT_PUBLIC_DEV_BYPASS === 'true') {
+    return response;
+  }
+
   // Build Supabase client (edge-compatible, reads cookies)
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,

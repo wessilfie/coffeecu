@@ -1,45 +1,118 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, ExternalLink, Twitter, Linkedin, Facebook, Globe } from 'lucide-react';
+import { X, ExternalLink, Twitter, Linkedin, Facebook, Globe, Coffee, Send } from 'lucide-react';
+import { SCHOOLS } from '@/lib/constants';
 import type { Profile, School } from '@/types';
 
-const SCHOOL_LABELS: Record<School, string> = {
-  CC:   'Columbia College',
-  SEAS: 'School of Engineering & Applied Science',
-  GS:   'School of General Studies',
-  BC:   'Barnard College',
-  GR:   'Graduate School',
-};
+// Conversation starters — designed to surface personality, not LinkedIn bullets
+const CONVERSATION_PROMPTS = [
+  "What's your favorite underrated spot on campus?",
+  "What was the last thing (book, show, podcast) that completely captivated you?",
+  "What's something you're curious about that's totally outside your field?",
+  "What's a question you've been thinking about lately?",
+  "What's a class you took that changed how you see things?",
+];
 
 interface Props {
   profile: Profile | null;
   onClose: () => void;
-  onRequestCoffee: () => void;
+  onCoffeeSuccess: (name: string) => void;
   isLoggedIn: boolean;
+  userId: string | null;
 }
 
-export default function ProfileDrawer({ profile, onClose, onRequestCoffee, isLoggedIn }: Props) {
+export default function ProfileDrawer({ profile, onClose, onCoffeeSuccess, isLoggedIn, userId }: Props) {
   const closeRef = useRef<HTMLButtonElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const [showCoffeeForm, setShowCoffeeForm] = useState(false);
+  const [message, setMessage] = useState('');
+  const [promptIndex, setPromptIndex] = useState(0);
+  const [status, setStatus] = useState<'idle' | 'sending' | 'error'>('idle');
+  const [errorMsg, setErrorMsg] = useState('');
+  const MAX_LENGTH = 500;
 
-  // Trap focus and handle Escape
+  // Reset form state when profile changes
+  useEffect(() => {
+    setShowCoffeeForm(false);
+    setMessage('');
+    setStatus('idle');
+    setErrorMsg('');
+    setPromptIndex(Math.floor(Math.random() * CONVERSATION_PROMPTS.length));
+  }, [profile?.id]);
+
+  // Focus management and Escape key
   useEffect(() => {
     if (!profile) return;
     closeRef.current?.focus();
 
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
+      if (e.key === 'Escape') {
+        if (showCoffeeForm) {
+          setShowCoffeeForm(false);
+        } else {
+          onClose();
+        }
+      }
     };
     document.addEventListener('keydown', handleKeyDown);
-    // Prevent background scroll
     document.body.style.overflow = 'hidden';
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
       document.body.style.overflow = '';
     };
-  }, [profile, onClose]);
+  }, [profile, onClose, showCoffeeForm]);
+
+  // Auto-focus textarea when coffee form opens
+  useEffect(() => {
+    if (showCoffeeForm) {
+      setTimeout(() => textareaRef.current?.focus(), 300);
+    }
+  }, [showCoffeeForm]);
+
+  const handleOpenCoffeeForm = useCallback(() => {
+    setShowCoffeeForm(true);
+  }, []);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!profile || !message.trim()) return;
+
+    setStatus('sending');
+    setErrorMsg('');
+
+    try {
+      const res = await fetch('/api/coffee-request', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          receiverId: profile.user_id,
+          message: message.trim(),
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setErrorMsg(data.error ?? 'Something went wrong. Please try again.');
+        setStatus('error');
+        return;
+      }
+
+      onCoffeeSuccess(profile.name.split(' ')[0]);
+      onClose();
+    } catch {
+      setErrorMsg('Could not send your request. Please check your connection.');
+      setStatus('error');
+    }
+  };
+
+  const currentPrompt = CONVERSATION_PROMPTS[promptIndex];
+  const nextPrompt = () => {
+    setPromptIndex((i) => (i + 1) % CONVERSATION_PROMPTS.length);
+  };
 
   return (
     <AnimatePresence>
@@ -133,7 +206,7 @@ export default function ProfileDrawer({ profile, onClose, onRequestCoffee, isLog
                 style={{
                   fontFamily: 'var(--font-cormorant), serif',
                   fontSize: '2rem',
-                  fontWeight: 400,
+                  fontWeight: 600,
                   color: 'var(--color-ink)',
                   letterSpacing: '-0.01em',
                   lineHeight: 1.1,
@@ -147,7 +220,7 @@ export default function ProfileDrawer({ profile, onClose, onRequestCoffee, isLog
               <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginBottom: '0.25rem' }}>
                 {profile.school && (
                   <span className={`badge badge-${profile.school}`}>
-                    {SCHOOL_LABELS[profile.school as School]}
+                    {SCHOOLS.find(s => s.value === profile.school)?.label ?? profile.school}
                   </span>
                 )}
                 {profile.year && (
@@ -210,7 +283,7 @@ export default function ProfileDrawer({ profile, onClose, onRequestCoffee, isLog
                 </Section>
               )}
 
-              {/* What to contact about — THE key community signal */}
+              {/* What to contact about */}
               {profile.contact_for && (
                 <Section label="Would love to discuss">
                   <p
@@ -257,16 +330,172 @@ export default function ProfileDrawer({ profile, onClose, onRequestCoffee, isLog
                 </Section>
               )}
 
-              {/* CTA — community language, not dating */}
+              {/* CTA + inline coffee form */}
               <div style={{ marginTop: '2rem', paddingTop: '1.5rem', borderTop: '1px solid var(--color-mist)' }}>
                 {isLoggedIn ? (
-                  <button
-                    onClick={onRequestCoffee}
-                    className="btn-primary"
-                    style={{ width: '100%', justifyContent: 'center', padding: '0.875rem', fontSize: '0.75rem' }}
-                  >
-                    Request a Coffee Chat
-                  </button>
+                  <>
+                    {/* The "Request" button — hidden when form is open */}
+                    <AnimatePresence>
+                      {!showCoffeeForm && (
+                        <motion.div
+                          initial={{ opacity: 1, height: 'auto' }}
+                          exit={{ opacity: 0, height: 0, marginBottom: 0 }}
+                          transition={{ duration: 0.2 }}
+                        >
+                          <button
+                            onClick={handleOpenCoffeeForm}
+                            className="btn-primary"
+                            style={{ width: '100%', justifyContent: 'center', padding: '0.875rem', fontSize: '0.75rem', gap: '0.5rem' }}
+                          >
+                            <Coffee size={15} />
+                            Request a Coffee Chat
+                          </button>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+
+                    {/* Inline coffee request form — unfurls in place */}
+                    <AnimatePresence>
+                      {showCoffeeForm && (
+                        <motion.div
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: 'auto' }}
+                          exit={{ opacity: 0, height: 0 }}
+                          transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+                          style={{ overflow: 'hidden' }}
+                        >
+                          <form onSubmit={handleSubmit}>
+                            {/* Header */}
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem' }}>
+                              <Coffee size={16} color="var(--color-copper)" />
+                              <p className="label-mono" style={{ color: 'var(--color-copper)', margin: 0 }}>
+                                Coffee Chat with {profile.name.split(' ')[0]}
+                              </p>
+                            </div>
+
+                            <p
+                              style={{
+                                fontFamily: 'var(--font-body), serif',
+                                fontSize: '0.8125rem',
+                                color: 'var(--color-text-muted)',
+                                lineHeight: 1.55,
+                                marginBottom: '1rem',
+                              }}
+                            >
+                              Your message goes straight to {profile.name.split(' ')[0]}&rsquo;s email
+                              with your contact info so you can find a time.
+                            </p>
+
+                            {/* Conversation starter prompt */}
+                            <div
+                              style={{
+                                background: 'var(--color-limestone-dk)',
+                                border: '1px solid var(--color-mist)',
+                                borderRadius: '4px',
+                                padding: '0.75rem 1rem',
+                                marginBottom: '0.75rem',
+                                display: 'flex',
+                                alignItems: 'flex-start',
+                                gap: '0.75rem',
+                              }}
+                            >
+                              <p
+                                style={{
+                                  fontFamily: 'var(--font-body), serif',
+                                  fontSize: '0.8125rem',
+                                  fontStyle: 'italic',
+                                  color: 'var(--color-ink-soft)',
+                                  lineHeight: 1.5,
+                                  margin: 0,
+                                  flex: 1,
+                                }}
+                              >
+                                Try answering: {currentPrompt}
+                              </p>
+                              <button
+                                type="button"
+                                onClick={nextPrompt}
+                                style={{
+                                  background: 'none',
+                                  border: 'none',
+                                  cursor: 'pointer',
+                                  fontFamily: 'var(--font-courier), monospace',
+                                  fontSize: '0.6rem',
+                                  letterSpacing: '0.1em',
+                                  textTransform: 'uppercase',
+                                  color: 'var(--color-columbia)',
+                                  padding: '0.125rem 0',
+                                  whiteSpace: 'nowrap',
+                                  flexShrink: 0,
+                                }}
+                              >
+                                Another
+                              </button>
+                            </div>
+
+                            <div style={{ marginBottom: '1rem' }}>
+                              <textarea
+                                ref={textareaRef}
+                                className="form-input"
+                                placeholder="Write something real — what caught your eye about their profile, or just answer the prompt above..."
+                                value={message}
+                                onChange={e => setMessage(e.target.value.slice(0, MAX_LENGTH))}
+                                required
+                                rows={4}
+                                style={{ resize: 'vertical', minHeight: '100px', fontSize: '0.875rem' }}
+                              />
+                              <div
+                                className={`char-count ${message.length >= MAX_LENGTH ? 'at-limit' : message.length >= MAX_LENGTH * 0.85 ? 'near-limit' : ''}`}
+                              >
+                                {message.length}/{MAX_LENGTH}
+                              </div>
+                            </div>
+
+                            {status === 'error' && (
+                              <p
+                                style={{
+                                  fontFamily: 'var(--font-courier), monospace',
+                                  fontSize: '0.7rem',
+                                  color: 'var(--color-error)',
+                                  marginBottom: '0.75rem',
+                                  padding: '0.5rem 0.75rem',
+                                  background: 'rgba(155,28,28,0.06)',
+                                  borderRadius: '4px',
+                                  border: '1px solid rgba(155,28,28,0.2)',
+                                }}
+                              >
+                                {errorMsg}
+                              </p>
+                            )}
+
+                            <div style={{ display: 'flex', gap: '0.75rem' }}>
+                              <button
+                                type="button"
+                                onClick={() => setShowCoffeeForm(false)}
+                                className="btn-ghost"
+                                style={{ flex: 1 }}
+                              >
+                                Cancel
+                              </button>
+                              <button
+                                type="submit"
+                                className="btn-primary"
+                                disabled={!message.trim() || status === 'sending'}
+                                style={{
+                                  flex: 1,
+                                  opacity: (!message.trim() || status === 'sending') ? 0.6 : 1,
+                                  gap: '0.375rem',
+                                }}
+                              >
+                                <Send size={13} />
+                                {status === 'sending' ? 'Sending...' : 'Send'}
+                              </button>
+                            </div>
+                          </form>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </>
                 ) : (
                   <p
                     style={{
@@ -306,7 +535,6 @@ function Section({ label, children }: { label: string; children: React.ReactNode
 }
 
 function SocialLink({ href, icon, label }: { href: string; icon: React.ReactNode; label: string }) {
-  // Validate href starts with https:// (extra safety for XSS)
   if (!href.startsWith('https://')) return null;
   return (
     <a

@@ -2,10 +2,26 @@ import { createSupabaseServerClient } from '@/lib/supabase/server';
 import HomeClient from './HomeClient';
 import Nav from '@/components/Nav';
 import Footer from '@/components/Footer';
+import { DEV_BYPASS, DEV_USER, DEV_MOCK_PROFILES } from '@/lib/dev-bypass';
 import type { Profile } from '@/types';
 
 // Server component — fetches initial data, then hands off to client
 export default async function HomePage() {
+  if (DEV_BYPASS) {
+    return (
+      <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+        <Nav />
+        <HomeClient
+          initialProfiles={DEV_MOCK_PROFILES}
+          meetingCount={247}
+          isLoggedIn={true}
+          userId={DEV_USER.id}
+        />
+        <Footer />
+      </div>
+    );
+  }
+
   const supabase = await createSupabaseServerClient();
 
   // Initial profiles (server-rendered for fast FCP + SEO)

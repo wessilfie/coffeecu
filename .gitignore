@@ -1,14 +1,16 @@
 # Node
-node_modules/*
-package.json
+node_modules/
 
-# Meteor Up
-.uploads/*
-.deploy/*
+# Environment
+.env
+.env.local
+.env*.local
+
+# Next.js
+.next/
+out/
 
 # Misc
 .DS_Store
 *.swp
-upload/*
-logs/
-.idea/*
+.idea/

@@ -3,7 +3,7 @@
 // Mirrors the Supabase schema exactly
 // ============================================================
 
-export type School = 'CC' | 'SEAS' | 'GS' | 'BC' | 'GR';
+export type School = 'CC' | 'SEAS' | 'GS' | 'BC' | 'GSAS' | 'BUS' | 'LAW' | 'VPS' | 'JRN' | 'SIPA' | 'GSAPP' | 'SOA' | 'SW' | 'PH' | 'NRS' | 'DM' | 'SPS' | 'CS' | 'TC';
 export type UserRole = 'moderator' | 'admin' | 'super_admin';
 export type SuspensionType = 'temporary' | 'indefinite';
 

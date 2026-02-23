@@ -7,7 +7,7 @@ import { z } from 'zod';
 import Image from 'next/image';
 import { Upload, Camera } from 'lucide-react';
 import { getSupabaseClient } from '@/lib/supabase/client';
-import { SCHOOLS, YEARS, MAJORS } from '@/lib/constants';
+import { SCHOOL_GROUPS, YEARS, MAJORS } from '@/lib/constants';
 import type { ProfileFormData, FullProfile, DraftProfile, School } from '@/types';
 
 // ============================================================
@@ -22,7 +22,7 @@ const urlSchema = z.string().refine(
 
 const schema = z.object({
   name: z.string().min(1, 'Name required').max(40, 'Max 40 characters'),
-  school: z.union([z.enum(['CC', 'SEAS', 'GS', 'BC', 'GR'] as const), z.literal('')]),
+  school: z.union([z.enum(['CC', 'SEAS', 'GS', 'BC', 'GSAS', 'BUS', 'LAW', 'VPS', 'JRN', 'SIPA', 'GSAPP', 'SOA', 'SW', 'PH', 'NRS', 'DM', 'SPS', 'CS', 'TC'] as const), z.literal('')]),
   year: z.string(),
   major: z.array(z.string()).max(3, 'Select up to 3 majors'),
   pronouns: z.string().max(50, 'Max 50 characters'),
@@ -225,8 +225,12 @@ export default function ProfileForm({ userId, userEmail, existingProfile, existi
             <label className="form-label" htmlFor="school">School</label>
             <select id="school" className="form-input" {...register('school')} style={{ cursor: 'pointer' }}>
               <option value="">Select school</option>
-              {SCHOOLS.map(s => (
-                <option key={s.value} value={s.value}>{s.label}</option>
+              {SCHOOL_GROUPS.map(group => (
+                <optgroup key={group.label} label={group.label}>
+                  {group.schools.map(s => (
+                    <option key={s.value} value={s.value}>{s.label}</option>
+                  ))}
+                </optgroup>
               ))}
             </select>
           </div>
@@ -284,16 +288,18 @@ export default function ProfileForm({ userId, userEmail, existingProfile, existi
 
       <Divider />
 
-      {/* ——— ABOUT & INTERESTS ——— */}
-      <Section title="About & Interests">
-        <div style={{ display: 'grid', gap: '1rem' }}>
+      {/* ——— THE INTERESTING STUFF ——— */}
+      <Section title="The Interesting Stuff">
+        <div style={{ display: 'grid', gap: '1.25rem' }}>
           <div>
-            <label className="form-label" htmlFor="about">About you</label>
+            <label className="form-label" htmlFor="about">
+              What are you working on or thinking about these days?
+            </label>
             <textarea
               id="about"
               className="form-input"
               {...register('about')}
-              placeholder="A few sentences about who you are, what you're working on, what excites you…"
+              placeholder="Could be a thesis, a side project, a question you can't stop turning over, or just a new obsession…"
               rows={4}
               style={{ resize: 'vertical' }}
             />
@@ -302,12 +308,14 @@ export default function ProfileForm({ userId, userEmail, existingProfile, existi
           </div>
 
           <div>
-            <label className="form-label" htmlFor="likes">Interests & hobbies</label>
+            <label className="form-label" htmlFor="likes">
+              What do you do when you&apos;re not studying?
+            </label>
             <input
               id="likes"
               className="form-input"
               {...register('likes')}
-              placeholder="e.g. urban planning, jazz, Byzantine history, rock climbing…"
+              placeholder="e.g. running the Riverside loop, reading sci-fi on the Steps, making pasta from scratch…"
             />
             {errors.likes && <p className="form-error">{errors.likes.message}</p>}
             <CharCount value={watchedValues[3]} max={150} />
@@ -315,7 +323,7 @@ export default function ProfileForm({ userId, userEmail, existingProfile, existi
 
           <div>
             <label className="form-label" htmlFor="contact_for">
-              I&apos;d love to discuss… *
+              What conversations energize you?
             </label>
             <p
               style={{
@@ -326,13 +334,13 @@ export default function ProfileForm({ userId, userEmail, existingProfile, existi
                 marginBottom: '0.375rem',
               }}
             >
-              This is what others see on your card — be specific. What conversations energize you?
+              This is what people see on your card. Be specific — skip the LinkedIn summary.
             </p>
             <textarea
               id="contact_for"
               className="form-input"
               {...register('contact_for')}
-              placeholder="e.g. careers in public health, research on machine learning ethics, the experience of being a first-gen student…"
+              placeholder="e.g. why urban parks matter more than people think, what it's actually like to switch from pre-med to CS, the future of journalism…"
               rows={3}
             />
             {errors.contact_for && <p className="form-error">{errors.contact_for.message}</p>}
@@ -340,12 +348,14 @@ export default function ProfileForm({ userId, userEmail, existingProfile, existi
           </div>
 
           <div>
-            <label className="form-label" htmlFor="availability">Availability</label>
+            <label className="form-label" htmlFor="availability">
+              Best way to grab coffee with you?
+            </label>
             <input
               id="availability"
               className="form-input"
               {...register('availability')}
-              placeholder="e.g. Weekday mornings, most Fridays, happy to meet at Butler…"
+              placeholder="e.g. Tuesday afternoons at Joe Coffee, weekends near campus, happy to walk and talk…"
             />
             {errors.availability && <p className="form-error">{errors.availability.message}</p>}
             <CharCount value={watchedValues[5]} max={150} />

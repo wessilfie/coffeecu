@@ -17,25 +17,16 @@ export default function Footer() {
           color: 'var(--color-text-muted)',
         }}
       >
-        Made for the Columbia community by{' '}
+        Made with love for the Columbia community. Maintained by{' '}
         <a
-          href="https://adicu.com"
+          href="https://essilfie.com"
           target="_blank"
           rel="noopener noreferrer"
           style={{ color: 'var(--color-columbia)', textDecoration: 'none' }}
         >
-          ADI
-        </a>{' '}
-        &amp;{' '}
-        <a
-          href="https://www.columbiaspectator.com"
-          target="_blank"
-          rel="noopener noreferrer"
-          style={{ color: 'var(--color-columbia)', textDecoration: 'none' }}
-        >
-          The Lion
+          Will Essilfie
         </a>
-        {' '}— © {new Date().getFullYear()}
+        {' '}© 2026
       </p>
     </footer>
   );
