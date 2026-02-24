@@ -8,7 +8,7 @@ import type { NextRequest } from 'next/server';
 // ============================================================
 
 // Routes that require authentication
-const PROTECTED_ROUTES = ['/profile', '/admin'];
+const PROTECTED_ROUTES = ['/profile', '/admin', '/onboarding', '/columbia'];
 
 // Routes that require moderator role or higher
 const MOD_ROUTES = ['/admin'];

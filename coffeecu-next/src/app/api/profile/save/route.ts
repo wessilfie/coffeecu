@@ -20,22 +20,32 @@ const urlSchema = z.string().refine(
 ).optional().transform(v => v || null);
 
 const schema = z.object({
-  name: z.string().min(1).max(40),
+  name: z.string().max(40).optional().transform(v => {
+    const trimmed = v?.trim();
+    return trimmed ? trimmed : null;
+  }),
   school: z.string().optional().transform(v => v || null),
   year: z.string().optional().transform(v => v || null),
+  degree: z.string().optional().transform(v => v || null),
   major: z.array(z.string()).max(3).default([]),
   pronouns: z.string().max(50).optional().transform(v => v || null),
-  about: z.string().max(400).optional().transform(v => v || null),
-  likes: z.string().max(150).optional().transform(v => v || null),
-  contact_for: z.string().max(250).optional().transform(v => v || null),
-  availability: z.string().max(150).optional().transform(v => v || null),
+  responses: z.array(
+    z.object({
+      question: z.string().min(1).max(300),
+      answer: z.string().min(1).max(500),
+    })
+  ).max(5).default([]),
   twitter: urlSchema,
   facebook: urlSchema,
   linkedin: urlSchema,
+  instagram: urlSchema,
+  youtube: urlSchema,
+  tiktok: urlSchema,
   website: urlSchema,
   phone: z.string().max(20).optional().transform(v => v || null),
   is_public: z.boolean().default(true),
   image_url: z.string().nullable().optional(),
+  draft_only: z.boolean().default(false),
 });
 
 export async function POST(req: NextRequest) {
@@ -43,20 +53,26 @@ export async function POST(req: NextRequest) {
     // 1. Auth
     const supabase = await createSupabaseServerClient();
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    if (!user) return NextResponse.json({ error: 'You need to be signed in to save your profile. Please sign in and try again.' }, { status: 401 });
 
     // 2. Columbia domain
     const email = user.email ?? '';
     const domain = email.split('@')[1]?.toLowerCase();
     if (!['columbia.edu', 'barnard.edu'].includes(domain)) {
-      return NextResponse.json({ error: 'Not a Columbia email' }, { status: 403 });
+      return NextResponse.json({ error: 'Coffee@CU is only open to @columbia.edu and @barnard.edu addresses.' }, { status: 403 });
     }
 
     // 3. Parse + validate
     const body = await req.json().catch(() => null);
     const parsed = schema.safeParse(body);
     if (!parsed.success) {
-      return NextResponse.json({ error: parsed.error.issues[0]?.message }, { status: 400 });
+      // Log full details so the field path is visible in the dev server console
+      console.error('[profile/save] Validation failed:', JSON.stringify(parsed.error.issues, null, 2));
+      const first = parsed.error.issues[0];
+      return NextResponse.json(
+        { error: first?.message ?? 'Invalid request', field: first?.path?.join('.') },
+        { status: 400 }
+      );
     }
     const data = parsed.data;
 
@@ -68,7 +84,15 @@ export async function POST(req: NextRequest) {
     const imageUrl = data.image_url ?? null;
     const hasPhoto = !!imageUrl;
 
-    if (hasPhoto && data.name) {
+    if (!data.draft_only && hasPhoto && !data.name) {
+      return NextResponse.json({ error: 'Name is required to publish your profile.' }, { status: 400 });
+    }
+
+    const canPublish = hasPhoto && !!data.name && !data.draft_only;
+
+    if (canPublish) {
+      const publishName = data.name as string;
+
       // Check if this is a first-time publish (for welcome email)
       const { data: existing } = await serviceClient
         .from('profiles')
@@ -84,18 +108,19 @@ export async function POST(req: NextRequest) {
         email,
         uni,
         university,
-        name: data.name,
+        name: publishName,
         school: data.school,
         year: data.year,
+        degree: data.degree,
         major: data.major,
         pronouns: data.pronouns,
-        about: data.about,
-        likes: data.likes,
-        contact_for: data.contact_for,
-        availability: data.availability,
+        responses: data.responses,
         twitter: data.twitter,
         facebook: data.facebook,
         linkedin: data.linkedin,
+        instagram: data.instagram,
+        youtube: data.youtube,
+        tiktok: data.tiktok,
         website: data.website,
         phone: data.phone,
         image_url: imageUrl,
@@ -110,7 +135,7 @@ export async function POST(req: NextRequest) {
 
       // Send welcome email on first publish
       if (isFirstPublish) {
-        await sendWelcomeEmail({ name: data.name, email }).catch(console.error);
+        await sendWelcomeEmail({ name: publishName, email }).catch(console.error);
       }
 
       return NextResponse.json({ ok: true, status: 'published' });
@@ -124,15 +149,16 @@ export async function POST(req: NextRequest) {
         name: data.name,
         school: data.school,
         year: data.year,
+        degree: data.degree,
         major: data.major,
         pronouns: data.pronouns,
-        about: data.about,
-        likes: data.likes,
-        contact_for: data.contact_for,
-        availability: data.availability,
+        responses: data.responses,
         twitter: data.twitter,
         facebook: data.facebook,
         linkedin: data.linkedin,
+        instagram: data.instagram,
+        youtube: data.youtube,
+        tiktok: data.tiktok,
         website: data.website,
         phone: data.phone,
         image_url: imageUrl,

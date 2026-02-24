@@ -203,7 +203,7 @@ export default function AdminClient({ currentUserId, profiles: initialProfiles, 
 
                 {/* Info */}
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <p style={{ fontFamily: 'var(--font-cormorant), serif', fontSize: '1.125rem', fontWeight: 500, color: 'var(--color-ink)', margin: 0 }}>
+                  <p style={{ fontFamily: 'var(--font-display), serif', fontSize: '1.125rem', fontWeight: 500, color: 'var(--color-ink)', margin: 0 }}>
                     {profile.name}
                     {!profile.is_visible && (
                       <span className="label-mono" style={{ marginLeft: '0.5rem', color: 'var(--color-text-muted)' }}>HIDDEN</span>
@@ -307,7 +307,7 @@ export default function AdminClient({ currentUserId, profiles: initialProfiles, 
                       <Image src={lookupResult.profile.image_url} alt={lookupResult.profile.name} fill style={{ objectFit: 'cover' }} />
                     </div>
                     <div>
-                      <h3 style={{ fontFamily: 'var(--font-cormorant), serif', fontSize: '1.375rem', margin: '0 0 0.25rem' }}>
+                      <h3 style={{ fontFamily: 'var(--font-display), serif', fontSize: '1.375rem', margin: '0 0 0.25rem' }}>
                         {lookupResult.profile.name}
                       </h3>
                       <p className="label-mono" style={{ color: 'var(--color-text-muted)', margin: 0 }}>
@@ -378,7 +378,7 @@ export default function AdminClient({ currentUserId, profiles: initialProfiles, 
 function StatBox({ label, value, color }: { label: string; value: string | number; color?: string }) {
   return (
     <div style={{ background: 'var(--color-limestone)', border: '1px solid var(--color-mist)', borderRadius: '4px', padding: '0.75rem', textAlign: 'center' }}>
-      <p style={{ fontFamily: 'var(--font-courier), monospace', fontSize: '1.5rem', fontWeight: 700, color: color ?? 'var(--color-ink)', margin: 0 }}>{value}</p>
+      <p style={{ fontFamily: 'var(--font-mono), monospace', fontSize: '1.5rem', fontWeight: 700, color: color ?? 'var(--color-ink)', margin: 0 }}>{value}</p>
       <p className="label-mono" style={{ color: 'var(--color-text-muted)', margin: 0 }}>{label}</p>
     </div>
   );

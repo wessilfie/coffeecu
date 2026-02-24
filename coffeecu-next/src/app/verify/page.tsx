@@ -49,7 +49,7 @@ export default function VerifyPage() {
         </p>
         <h1
           style={{
-            fontFamily: 'var(--font-cormorant), serif',
+            fontFamily: 'var(--font-display), serif',
             fontSize: 'clamp(1.75rem, 5vw, 2.5rem)',
             fontWeight: 400,
             color: 'var(--color-ink)',

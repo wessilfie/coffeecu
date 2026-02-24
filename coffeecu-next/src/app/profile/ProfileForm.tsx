@@ -1,14 +1,14 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import Image from 'next/image';
-import { Upload, Camera } from 'lucide-react';
-import { getSupabaseClient } from '@/lib/supabase/client';
-import { SCHOOL_GROUPS, YEARS, MAJORS } from '@/lib/constants';
-import type { ProfileFormData, FullProfile, DraftProfile, School } from '@/types';
+import Link from 'next/link';
+import { Upload, Plus, Trash2, ChevronDown } from 'lucide-react';
+import { SCHOOL_GROUPS, UNDERGRAD_SCHOOL_CODES, UNDERGRAD_YEARS, GRAD_YEARS, YEARS, DEGREE_GROUPS, MAJORS, PROFILE_QUESTIONS, COFFEE_QUESTION } from '@/lib/constants';
+import type { ProfileFormData, FullProfile, DraftProfile, School, ProfileResponse } from '@/types';
 
 // ============================================================
 // Validation schema — mirrors DB constraints
@@ -24,19 +24,37 @@ const schema = z.object({
   name: z.string().min(1, 'Name required').max(40, 'Max 40 characters'),
   school: z.union([z.enum(['CC', 'SEAS', 'GS', 'BC', 'GSAS', 'BUS', 'LAW', 'VPS', 'JRN', 'SIPA', 'GSAPP', 'SOA', 'SW', 'PH', 'NRS', 'DM', 'SPS', 'CS', 'TC'] as const), z.literal('')]),
   year: z.string(),
+  degree: z.string(),
   major: z.array(z.string()).max(3, 'Select up to 3 majors'),
   pronouns: z.string().max(50, 'Max 50 characters'),
-  about: z.string().max(400, 'Max 400 characters'),
-  likes: z.string().max(150, 'Max 150 characters'),
-  contact_for: z.string().max(250, 'Max 250 characters'),
-  availability: z.string().max(150, 'Max 150 characters'),
+  responses: z.array(z.object({ question: z.string(), answer: z.string() })),
   twitter: urlSchema,
   facebook: urlSchema,
   linkedin: urlSchema,
+  instagram: urlSchema,
+  youtube: urlSchema,
+  tiktok: urlSchema,
   website: urlSchema,
   phone: z.string().max(20, 'Max 20 characters'),
   is_public: z.boolean(),
 });
+
+const ANSWER_PLACEHOLDERS: Record<string, string> = {
+  "What's something you've recently changed your mind about?":
+    "e.g. I used to think productivity meant doing more. Now I think it means doing less — but actually finishing it.",
+  "Where on campus do you go to think clearly?":
+    "e.g. The steps behind Low before anyone shows up, or Riverside Park when I need to actually move.",
+  "What's a topic you could talk about for 20 minutes with zero prep?":
+    "e.g. Why cities that feel chaotic often work better than ones designed for order. Or the psychology of procrastination.",
+  "What's a problem people tend to come to you for?":
+    "e.g. Untangling messy arguments, figuring out what question someone is actually trying to answer.",
+  "What's a small obsession you have right now?":
+    "e.g. Vertical-axis wind turbines. Convinced they're underrated for cities. I've been reading too much about this.",
+  "When do you feel most like yourself?":
+    "e.g. In a museum on a Tuesday when it's nearly empty. Or when I'm in the middle of building something.",
+  "What are you quietly trying to get better at this semester?":
+    "e.g. Actually asking for help instead of spending three days figuring it out alone.",
+};
 
 interface Props {
   userId: string;
@@ -47,29 +65,53 @@ interface Props {
 
 export default function ProfileForm({ userId, userEmail, existingProfile, existingDraft }: Props) {
   const source = existingDraft ?? existingProfile;
+
+  // Separate coffee answer from optional responses on load
+  const existingResponses: ProfileResponse[] = source?.responses ?? [];
+  const existingCoffeeEntry = existingResponses.find(r => r.question === COFFEE_QUESTION);
+  const existingOptional = existingResponses.filter(r => r.question !== COFFEE_QUESTION);
+
   const [imageUrl, setImageUrl] = useState(source?.image_url ?? '');
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const [photoError, setPhotoError] = useState('');
   const [saving, setSaving] = useState(false);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saved' | 'error'>('idle');
   const [saveMsg, setSaveMsg] = useState('');
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const supabase = getSupabaseClient();
+  const [savedAsPublished, setSavedAsPublished] = useState(false);
+  const [responsesError, setResponsesError] = useState('');
+  const [autoSaveStatus, setAutoSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
+  const [autoSaveMsg, setAutoSaveMsg] = useState('');
+  const autoSaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const didMountRef = useRef(false);
+  const autoSaveInFlightRef = useRef(false);
+  const pendingAutoSaveRef = useRef(false);
+  const lastSavedDraftPayloadRef = useRef('');
+  const draftDirtyRef = useRef(false);
 
-  const { register, control, handleSubmit, watch, formState: { errors } } = useForm<ProfileFormData>({
+  // Q&A state — managed outside react-hook-form
+  const [optionalResponses, setOptionalResponses] = useState<Array<{ question: string; answer: string }>>(
+    existingOptional.length > 0 ? existingOptional : [{ question: '', answer: '' }]
+  );
+  const [coffeeAnswer, setCoffeeAnswer] = useState(existingCoffeeEntry?.answer ?? '');
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const { register, control, handleSubmit, watch, getValues, formState: { errors } } = useForm<ProfileFormData>({
     resolver: zodResolver(schema),
     defaultValues: {
       name: source?.name ?? '',
       school: (source?.school ?? '') as School | '',
       year: source?.year ?? '',
+      degree: source?.degree ?? '',
       major: source?.major ?? [],
       pronouns: source?.pronouns ?? '',
-      about: source?.about ?? '',
-      likes: source?.likes ?? '',
-      contact_for: source?.contact_for ?? '',
-      availability: source?.availability ?? '',
+      responses: [],
       twitter: source?.twitter ?? '',
       facebook: source?.facebook ?? '',
       linkedin: source?.linkedin ?? '',
+      instagram: source?.instagram ?? '',
+      youtube: source?.youtube ?? '',
+      tiktok: source?.tiktok ?? '',
       website: source?.website ?? '',
       phone: (source as FullProfile)?.phone ?? '',
       is_public: source?.is_public ?? true,
@@ -77,36 +119,145 @@ export default function ProfileForm({ userId, userEmail, existingProfile, existi
   });
 
   // Character counters
-  const watchedValues = watch(['name', 'pronouns', 'about', 'likes', 'contact_for', 'availability']);
+  const watchedValues = watch(['name', 'pronouns']);
+  const selectedSchool = watch('school');
+  const isUndergrad = UNDERGRAD_SCHOOL_CODES.has(selectedSchool);
+  const yearOptions = isUndergrad ? UNDERGRAD_YEARS
+    : selectedSchool ? GRAD_YEARS
+    : YEARS;
 
-  // ——— Photo upload ———
-  const handlePhotoUpload = async (file: File) => {
-    if (!file.type.startsWith('image/')) {
-      alert('Please upload an image file (JPEG, PNG, WebP).');
+  // ——— Auto-save (debounced, draft only) ———
+  const allFormValues = watch();
+
+  const buildDraftPayload = useCallback(() => {
+    const values = getValues();
+    const responses: ProfileResponse[] = [
+      ...optionalResponses.filter(r => r.question && r.answer.trim()),
+      ...(coffeeAnswer.trim() ? [{ question: COFFEE_QUESTION, answer: coffeeAnswer.trim() }] : []),
+    ];
+    return { ...values, responses, image_url: imageUrl || null, draft_only: true };
+  }, [getValues, optionalResponses, coffeeAnswer, imageUrl]);
+
+  const runAutoSave = useCallback(async (keepalive = false) => {
+    const payload = buildDraftPayload();
+    const payloadString = JSON.stringify(payload);
+
+    if (payloadString === lastSavedDraftPayloadRef.current) return;
+    if (autoSaveInFlightRef.current) {
+      pendingAutoSaveRef.current = true;
       return;
     }
-    if (file.size > 5 * 1024 * 1024) {
-      alert('Photo must be under 5MB.');
+
+    autoSaveInFlightRef.current = true;
+    setAutoSaveStatus('saving');
+    setAutoSaveMsg('');
+
+    try {
+      const res = await fetch('/api/profile/save', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: payloadString,
+        keepalive,
+      });
+      const json = await res.json().catch(() => null);
+      if (!res.ok) throw new Error(json?.error ?? 'Autosave failed');
+
+      lastSavedDraftPayloadRef.current = payloadString;
+      draftDirtyRef.current = false;
+      setAutoSaveStatus('saved');
+      setAutoSaveMsg(`Saved at ${new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}`);
+    } catch (err) {
+      setAutoSaveStatus('error');
+      setAutoSaveMsg(err instanceof Error ? err.message : 'Autosave failed. Please try again.');
+    } finally {
+      autoSaveInFlightRef.current = false;
+      if (pendingAutoSaveRef.current) {
+        pendingAutoSaveRef.current = false;
+        void runAutoSave();
+      }
+    }
+  }, [buildDraftPayload]);
+
+  useEffect(() => {
+    if (!didMountRef.current) {
+      didMountRef.current = true;
+      return;
+    }
+    draftDirtyRef.current = true;
+    if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current);
+    autoSaveTimer.current = setTimeout(runAutoSave, 2000);
+    return () => { if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current); };
+  }, [allFormValues, optionalResponses, coffeeAnswer, imageUrl, runAutoSave]);
+
+  useEffect(() => {
+    const flushDraftSave = () => {
+      if (!draftDirtyRef.current) return;
+      const payload = buildDraftPayload();
+      const payloadString = JSON.stringify(payload);
+      if (payloadString === lastSavedDraftPayloadRef.current) return;
+
+      if (typeof navigator !== 'undefined' && typeof navigator.sendBeacon === 'function') {
+        const blob = new Blob([payloadString], { type: 'application/json' });
+        navigator.sendBeacon('/api/profile/save', blob);
+        return;
+      }
+
+      void fetch('/api/profile/save', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: payloadString,
+        keepalive: true,
+      }).catch(() => {});
+    };
+
+    const onBeforeUnload = () => flushDraftSave();
+    const onVisibilityChange = () => {
+      if (document.visibilityState === 'hidden') flushDraftSave();
+    };
+
+    window.addEventListener('beforeunload', onBeforeUnload);
+    document.addEventListener('visibilitychange', onVisibilityChange);
+    return () => {
+      window.removeEventListener('beforeunload', onBeforeUnload);
+      document.removeEventListener('visibilitychange', onVisibilityChange);
+    };
+  }, [buildDraftPayload]);
+
+  // ——— Photo upload ———
+  // Requires Supabase setup:
+  //   1. Storage bucket named "profile-photos" (public)
+  //   2. Bucket policy: authenticated users can INSERT/UPDATE objects under "profiles/{userId}/*"
+  //   3. Public read policy on the bucket
+  const handlePhotoUpload = async (file: File) => {
+    setPhotoError('');
+    if (!file.type.startsWith('image/')) {
+      setPhotoError('Please upload an image file (JPEG, PNG, WebP).');
+      return;
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      setPhotoError('Photo must be under 10MB.');
       return;
     }
 
     setUploadingPhoto(true);
     try {
-      const ext = file.name.split('.').pop()?.toLowerCase() ?? 'jpg';
-      const path = `profiles/${userId}/avatar.${ext}`;
+      const body = new FormData();
+      body.append('file', file);
 
-      const { error: uploadError } = await supabase.storage
-        .from('profile-photos')
-        .upload(path, file, { upsert: true, contentType: file.type });
+      const res = await fetch('/api/profile/upload-photo', { method: 'POST', body });
+      const json = await res.json();
 
-      if (uploadError) throw uploadError;
+      if (!res.ok) {
+        setPhotoError(json.error ?? 'Photo upload failed. Please try again.');
+        return;
+      }
 
-      const { data } = supabase.storage.from('profile-photos').getPublicUrl(path);
-      // Add cache-busting timestamp
-      setImageUrl(`${data.publicUrl}?t=${Date.now()}`);
+      const urlWithBust = `${json.url}?t=${Date.now()}`;
+      setImageUrl(urlWithBust);
+      window.dispatchEvent(new CustomEvent('profile-photo-updated', { detail: { url: urlWithBust } }));
     } catch (err) {
       console.error('Photo upload failed:', err);
-      alert('Photo upload failed. Please try again.');
+      setPhotoError('Photo upload failed. Please try again.');
     } finally {
       setUploadingPhoto(false);
     }
@@ -114,12 +265,31 @@ export default function ProfileForm({ userId, userEmail, existingProfile, existi
 
   // ——— Form submit ———
   const onSubmit = async (data: ProfileFormData) => {
+    setResponsesError('');
+
+    // Validate Q&A
+    const validOptional = optionalResponses.filter(r => r.question && r.answer.trim().length >= 50);
+    if (validOptional.length === 0) {
+      setResponsesError('Answer at least one prompt with 50 or more characters.');
+      return;
+    }
+    if (coffeeAnswer.trim().length < 50) {
+      setResponsesError('The coffee question answer must be at least 50 characters.');
+      return;
+    }
+
+    const responses: ProfileResponse[] = [
+      ...validOptional,
+      { question: COFFEE_QUESTION, answer: coffeeAnswer.trim() },
+    ];
+
     setSaving(true);
     setSaveStatus('idle');
 
     try {
       const payload = {
         ...data,
+        responses,
         image_url: imageUrl || null,
         // uni and email are set server-side from verified email
       };
@@ -133,7 +303,12 @@ export default function ProfileForm({ userId, userEmail, existingProfile, existi
       const result = await res.json();
       if (!res.ok) throw new Error(result.error ?? 'Save failed');
 
+      lastSavedDraftPayloadRef.current = JSON.stringify({ ...payload, draft_only: true });
+      draftDirtyRef.current = false;
+      setAutoSaveStatus('saved');
+      setAutoSaveMsg(`Saved at ${new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}`);
       setSaveStatus('saved');
+      setSavedAsPublished(result.status === 'published');
       setSaveMsg(imageUrl ? 'Profile published! You&rsquo;re now on the community board.' : 'Draft saved. Add a photo to publish your profile.');
     } catch (err) {
       setSaveStatus('error');
@@ -177,11 +352,16 @@ export default function ProfileForm({ userId, userEmail, existingProfile, existi
               justifyContent: 'center',
             }}
           >
-            {imageUrl ? (
-              <Image src={imageUrl} alt="Your photo" fill style={{ objectFit: 'cover' }} />
-            ) : (
-              <Camera size={32} color="var(--color-mist)" />
-            )}
+            <Image
+              src={imageUrl || '/img/LionMascotblack.png'}
+              alt={imageUrl ? 'Your photo' : 'Default profile photo'}
+              fill
+              sizes="120px"
+              style={{
+                objectFit: imageUrl ? 'cover' : 'contain',
+                padding: imageUrl ? 0 : '8px',
+              }}
+            />
           </div>
 
           <div>
@@ -203,8 +383,13 @@ export default function ProfileForm({ userId, userEmail, existingProfile, existi
               {uploadingPhoto ? 'Uploading…' : imageUrl ? 'Change photo' : 'Upload photo'}
             </button>
             <p className="label-mono" style={{ color: 'var(--color-text-muted)', marginTop: '0.5rem' }}>
-              JPEG, PNG, WebP — max 5MB
+              JPEG, PNG, WebP — max 10MB
             </p>
+            {photoError && (
+              <p className="label-mono" style={{ color: 'var(--color-error)', marginTop: '0.5rem' }}>
+                {photoError}
+              </p>
+            )}
           </div>
         </div>
       </Section>
@@ -214,6 +399,21 @@ export default function ProfileForm({ userId, userEmail, existingProfile, existi
       {/* ——— BASIC INFO ——— */}
       <Section title="Basic Information" required>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+          <div style={{ gridColumn: '1 / -1' }}>
+            <label className="form-label" htmlFor="account_email">Account Email</label>
+            <input
+              id="account_email"
+              className="form-input"
+              value={userEmail}
+              readOnly
+              disabled
+              style={{ background: 'var(--color-limestone-dk)', color: 'var(--color-text-muted)', cursor: 'not-allowed' }}
+            />
+            <p className="label-mono" style={{ color: 'var(--color-text-muted)', marginTop: '0.25rem' }}>
+              Your account email cannot be changed
+            </p>
+          </div>
+
           <div style={{ gridColumn: '1 / -1' }}>
             <label className="form-label" htmlFor="name">Full Name *</label>
             <input id="name" className="form-input" {...register('name')} placeholder="Your name" />
@@ -236,11 +436,25 @@ export default function ProfileForm({ userId, userEmail, existingProfile, existi
           </div>
 
           <div>
-            <label className="form-label" htmlFor="year">Year</label>
+            <label className="form-label" htmlFor="year">Year / Stage</label>
             <select id="year" className="form-input" {...register('year')} style={{ cursor: 'pointer' }}>
               <option value="">Select year</option>
-              {YEARS.map(y => (
+              {yearOptions.map(y => (
                 <option key={y} value={y}>{y}</option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="form-label" htmlFor="degree">Degree Program</label>
+            <select id="degree" className="form-input" {...register('degree')} style={{ cursor: 'pointer' }}>
+              <option value="">Select degree</option>
+              {DEGREE_GROUPS.map(group => (
+                <optgroup key={group.label} label={group.label}>
+                  {group.degrees.map(d => (
+                    <option key={d.value} value={d.value}>{d.label}</option>
+                  ))}
+                </optgroup>
               ))}
             </select>
           </div>
@@ -252,8 +466,8 @@ export default function ProfileForm({ userId, userEmail, existingProfile, existi
           </div>
         </div>
 
-        {/* Majors */}
-        <div style={{ marginTop: '1rem' }}>
+        {/* Majors — undergrad only */}
+        {isUndergrad && <div style={{ marginTop: '1rem' }}>
           <label className="form-label">Major(s) — select up to 3</label>
           <Controller
             name="major"
@@ -283,82 +497,242 @@ export default function ProfileForm({ userId, userEmail, existingProfile, existi
               </div>
             )}
           />
-        </div>
+        </div>}
       </Section>
 
       <Divider />
 
       {/* ——— THE INTERESTING STUFF ——— */}
-      <Section title="The Interesting Stuff">
-        <div style={{ display: 'grid', gap: '1.25rem' }}>
-          <div>
-            <label className="form-label" htmlFor="about">
-              What are you working on or thinking about these days?
-            </label>
-            <textarea
-              id="about"
-              className="form-input"
-              {...register('about')}
-              placeholder="Could be a thesis, a side project, a question you can't stop turning over, or just a new obsession…"
-              rows={4}
-              style={{ resize: 'vertical' }}
-            />
-            {errors.about && <p className="form-error">{errors.about.message}</p>}
-            <CharCount value={watchedValues[2]} max={400} />
-          </div>
+      <Section title="Tell people a bit about you">
+        <p
+          style={{
+            fontFamily: 'var(--font-body), serif',
+            fontSize: '0.875rem',
+            fontStyle: 'italic',
+            color: 'var(--color-text-muted)',
+            marginBottom: '1.5rem',
+            lineHeight: 1.55,
+          }}
+        >
+          Answer at least one prompt below (50 characters minimum). The last question is required.
+        </p>
 
-          <div>
-            <label className="form-label" htmlFor="likes">
-              What do you do when you&apos;re not studying?
-            </label>
-            <input
-              id="likes"
-              className="form-input"
-              {...register('likes')}
-              placeholder="e.g. running the Riverside loop, reading sci-fi on the Steps, making pasta from scratch…"
-            />
-            {errors.likes && <p className="form-error">{errors.likes.message}</p>}
-            <CharCount value={watchedValues[3]} max={150} />
-          </div>
+        {responsesError && (
+          <p className="form-error" style={{ marginBottom: '1rem' }}>{responsesError}</p>
+        )}
 
-          <div>
-            <label className="form-label" htmlFor="contact_for">
-              What conversations energize you?
-            </label>
-            <p
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.875rem' }}>
+          {/* Optional response cards */}
+          {optionalResponses.map((slot, i) => {
+            const usedQuestions = optionalResponses
+              .map((r, j) => j !== i ? r.question : null)
+              .filter(Boolean) as string[];
+            const placeholder = ANSWER_PLACEHOLDERS[slot.question] ?? 'Write something specific — the more real, the better.';
+
+            return (
+              <div
+                key={i}
+                style={{
+                  background: '#fdfaf5',
+                  border: '1px solid #e5ddd0',
+                  borderRadius: '12px',
+                  overflow: 'hidden',
+                }}
+              >
+                {/* Question selector row */}
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    borderBottom: '1px solid #e5ddd0',
+                    padding: '0 1rem 0 1.25rem',
+                    gap: '0.25rem',
+                  }}
+                >
+                  <div style={{ flex: 1, position: 'relative' }}>
+                    <select
+                      value={slot.question}
+                      onChange={e => setOptionalResponses(prev => prev.map((r, j) => j === i ? { ...r, question: e.target.value } : r))}
+                      style={{
+                        width: '100%',
+                        appearance: 'none',
+                        WebkitAppearance: 'none',
+                        background: 'none',
+                        border: 'none',
+                        padding: '0.875rem 1.5rem 0.875rem 0',
+                        fontFamily: 'var(--font-body), Georgia, serif',
+                        fontStyle: 'italic',
+                        fontSize: '0.9375rem',
+                        color: 'var(--color-ink)',
+                        cursor: 'pointer',
+                        outline: 'none',
+                      }}
+                    >
+                      <option value="">Choose a prompt…</option>
+                      {PROFILE_QUESTIONS.filter(q => !usedQuestions.includes(q)).map(q => (
+                        <option key={q} value={q}>{q}</option>
+                      ))}
+                      {slot.question && !PROFILE_QUESTIONS.includes(slot.question as typeof PROFILE_QUESTIONS[number]) && (
+                        <option value={slot.question}>{slot.question}</option>
+                      )}
+                    </select>
+                    <ChevronDown
+                      size={13}
+                      style={{
+                        position: 'absolute',
+                        right: 0,
+                        top: '50%',
+                        transform: 'translateY(-50%)',
+                        pointerEvents: 'none',
+                        color: 'var(--color-text-muted)',
+                      }}
+                    />
+                  </div>
+                  {optionalResponses.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={() => setOptionalResponses(prev => prev.filter((_, j) => j !== i))}
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        cursor: 'pointer',
+                        color: 'var(--color-text-muted)',
+                        padding: '0.25rem',
+                        display: 'flex',
+                        alignItems: 'center',
+                        flexShrink: 0,
+                        opacity: 0.6,
+                      }}
+                      aria-label="Remove prompt"
+                    >
+                      <Trash2 size={13} />
+                    </button>
+                  )}
+                </div>
+
+                {/* Answer textarea */}
+                <textarea
+                  value={slot.answer}
+                  onChange={e => setOptionalResponses(prev => prev.map((r, j) => j === i ? { ...r, answer: e.target.value.slice(0, 400) } : r))}
+                  placeholder={placeholder}
+                  rows={3}
+                  style={{
+                    width: '100%',
+                    border: 'none',
+                    background: 'transparent',
+                    resize: 'vertical',
+                    padding: '0.875rem 1.25rem',
+                    fontFamily: 'var(--font-body), Georgia, serif',
+                    fontSize: '0.9375rem',
+                    color: 'var(--color-ink)',
+                    lineHeight: 1.6,
+                    outline: 'none',
+                    display: 'block',
+                    boxSizing: 'border-box',
+                  }}
+                />
+
+                {/* Char count footer */}
+                <div style={{ padding: '0 1.25rem 0.625rem', display: 'flex', justifyContent: 'flex-end' }}>
+                  <span
+                    className={`char-count ${slot.answer.length >= 400 ? 'at-limit' : slot.answer.length >= 340 ? 'near-limit' : ''}`}
+                    style={{ marginTop: 0 }}
+                  >
+                    {slot.answer.length}/400
+                  </span>
+                </div>
+              </div>
+            );
+          })}
+
+          {/* Add prompt button — dashed card */}
+          {optionalResponses.length < 3 && (
+            <button
+              type="button"
+              onClick={() => setOptionalResponses(prev => [...prev, { question: '', answer: '' }])}
               style={{
-                fontFamily: 'var(--font-body), serif',
-                fontSize: '0.8125rem',
-                fontStyle: 'italic',
+                width: '100%',
+                padding: '0.875rem',
+                background: 'none',
+                border: '1.5px dashed #ddd4c8',
+                borderRadius: '12px',
+                cursor: 'pointer',
                 color: 'var(--color-text-muted)',
-                marginBottom: '0.375rem',
+                fontFamily: 'var(--font-mono), monospace',
+                fontSize: '0.6875rem',
+                letterSpacing: '0.1em',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '0.5rem',
+                transition: 'border-color 150ms, color 150ms',
               }}
             >
-              This is what people see on your card. Be specific — skip the LinkedIn summary.
-            </p>
-            <textarea
-              id="contact_for"
-              className="form-input"
-              {...register('contact_for')}
-              placeholder="e.g. why urban parks matter more than people think, what it's actually like to switch from pre-med to CS, the future of journalism…"
-              rows={3}
-            />
-            {errors.contact_for && <p className="form-error">{errors.contact_for.message}</p>}
-            <CharCount value={watchedValues[4]} max={250} />
+              <Plus size={12} />
+              ADD ANOTHER PROMPT
+            </button>
+          )}
+
+          {/* Availability divider */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', margin: '0.375rem 0 0' }}>
+            <div style={{ flex: 1, height: '1px', background: '#e0d8ce' }} />
+            <span className="label-mono" style={{ color: 'var(--color-text-muted)', fontSize: '0.6rem', letterSpacing: '0.14em' }}>
+              AVAILABILITY
+            </span>
+            <div style={{ flex: 1, height: '1px', background: '#e0d8ce' }} />
           </div>
 
-          <div>
-            <label className="form-label" htmlFor="availability">
-              Best way to grab coffee with you?
-            </label>
-            <input
-              id="availability"
-              className="form-input"
-              {...register('availability')}
-              placeholder="e.g. Tuesday afternoons at Joe Coffee, weekends near campus, happy to walk and talk…"
+          {/* Fixed coffee question card */}
+          <div
+            style={{
+              background: '#fdfaf5',
+              border: '1px solid #e5ddd0',
+              borderRadius: '12px',
+              overflow: 'hidden',
+            }}
+          >
+            <div style={{ padding: '0.875rem 1.25rem', borderBottom: '1px solid #e5ddd0' }}>
+              <span
+                style={{
+                  fontFamily: 'var(--font-body), Georgia, serif',
+                  fontStyle: 'italic',
+                  fontSize: '0.9375rem',
+                  color: 'var(--color-ink)',
+                }}
+              >
+                {COFFEE_QUESTION}
+              </span>
+              <span style={{ color: '#c0a882', marginLeft: '0.25rem', fontSize: '0.8rem' }}>*</span>
+            </div>
+            <textarea
+              id="coffee_answer"
+              value={coffeeAnswer}
+              onChange={e => setCoffeeAnswer(e.target.value.slice(0, 250))}
+              placeholder="e.g. Tuesday afternoons at Joe Coffee in Geffen Hall, weekends near campus, happy to walk through Morningside Park…"
+              rows={3}
+              style={{
+                width: '100%',
+                border: 'none',
+                background: 'transparent',
+                resize: 'vertical',
+                padding: '0.875rem 1.25rem',
+                fontFamily: 'var(--font-body), Georgia, serif',
+                fontSize: '0.9375rem',
+                color: 'var(--color-ink)',
+                lineHeight: 1.6,
+                outline: 'none',
+                display: 'block',
+                boxSizing: 'border-box',
+              }}
             />
-            {errors.availability && <p className="form-error">{errors.availability.message}</p>}
-            <CharCount value={watchedValues[5]} max={150} />
+            <div style={{ padding: '0 1.25rem 0.625rem', display: 'flex', justifyContent: 'flex-end' }}>
+              <span
+                className={`char-count ${coffeeAnswer.length >= 250 ? 'at-limit' : coffeeAnswer.length >= 212 ? 'near-limit' : ''}`}
+                style={{ marginTop: 0 }}
+              >
+                {coffeeAnswer.length}/250
+              </span>
+            </div>
           </div>
         </div>
       </Section>
@@ -379,7 +753,7 @@ export default function ProfileForm({ userId, userEmail, existingProfile, existi
           All links must start with https://
         </p>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-          {(['linkedin', 'twitter', 'facebook', 'website'] as const).map(field => (
+          {(['linkedin', 'instagram', 'twitter', 'youtube', 'tiktok', 'facebook', 'website'] as const).map(field => (
             <div key={field}>
               <label className="form-label" htmlFor={field}>
                 {field.charAt(0).toUpperCase() + field.slice(1)}
@@ -456,7 +830,7 @@ export default function ProfileForm({ userId, userEmail, existingProfile, existi
         </div>
       )}
 
-      <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+      <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', flexWrap: 'wrap' }}>
         <button type="submit" className="btn-primary" disabled={saving} style={{ opacity: saving ? 0.7 : 1 }}>
           {saving ? 'Saving…' : imageUrl ? 'Publish Profile' : 'Save Draft'}
         </button>
@@ -465,7 +839,49 @@ export default function ProfileForm({ userId, userEmail, existingProfile, existi
             Add a photo to publish
           </p>
         )}
+        {autoSaveStatus === 'saving' && (
+          <p className="label-mono" style={{ color: 'var(--color-text-muted)', marginLeft: 'auto' }}>
+            Saving draft…
+          </p>
+        )}
+        {autoSaveStatus === 'saved' && (
+          <p className="label-mono" style={{ color: 'var(--color-text-muted)', marginLeft: 'auto' }}>
+            ✓ {autoSaveMsg || 'Draft saved'}
+          </p>
+        )}
+        {autoSaveStatus === 'error' && (
+          <p className="label-mono" style={{ color: 'var(--color-error)', marginLeft: 'auto' }}>
+            {autoSaveMsg || 'Could not autosave'}
+          </p>
+        )}
       </div>
+
+      {saveStatus === 'saved' && (
+        <div style={{ marginTop: '1.5rem', paddingTop: '1.5rem', borderTop: '1px solid var(--color-mist)' }}>
+          <p style={{ fontFamily: 'var(--font-body), serif', fontSize: '0.9375rem', color: 'var(--color-ink-soft)', marginBottom: '0.75rem' }}>
+            {savedAsPublished
+              ? 'Your profile is live. Go see who else is here.'
+              : "Want to see who's already here while you finish your profile?"}
+          </p>
+          <Link
+            href="/"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.375rem',
+              fontFamily: 'var(--font-mono), monospace',
+              fontSize: '0.75rem',
+              letterSpacing: '0.08em',
+              textTransform: 'uppercase',
+              color: 'var(--color-columbia)',
+              textDecoration: 'none',
+              fontWeight: 600,
+            }}
+          >
+            Browse the community →
+          </Link>
+        </div>
+      )}
     </form>
   );
 }
@@ -481,7 +897,7 @@ function Section({ title, children, required }: { title: string; children: React
       >
         {title}
         {required && (
-          <span style={{ color: 'var(--color-text-muted)', fontSize: '0.75rem', fontWeight: 400, marginLeft: '0.5rem', fontFamily: 'var(--font-courier), monospace', letterSpacing: '0.05em' }}>
+          <span style={{ color: 'var(--color-text-muted)', fontSize: '0.75rem', fontWeight: 400, marginLeft: '0.5rem', fontFamily: 'var(--font-mono), monospace', letterSpacing: '0.05em' }}>
             required
           </span>
         )}

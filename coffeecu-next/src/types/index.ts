@@ -4,6 +4,11 @@
 // ============================================================
 
 export type School = 'CC' | 'SEAS' | 'GS' | 'BC' | 'GSAS' | 'BUS' | 'LAW' | 'VPS' | 'JRN' | 'SIPA' | 'GSAPP' | 'SOA' | 'SW' | 'PH' | 'NRS' | 'DM' | 'SPS' | 'CS' | 'TC';
+
+export interface ProfileResponse {
+  question: string;
+  answer: string;
+}
 export type UserRole = 'moderator' | 'admin' | 'super_admin';
 export type SuspensionType = 'temporary' | 'indefinite';
 
@@ -16,15 +21,16 @@ export interface Profile {
   university: string;
   school: School | null;
   year: string | null;
+  degree: string | null;
   major: string[];
   pronouns: string | null;
-  about: string | null;
-  likes: string | null;
-  contact_for: string | null;
-  availability: string | null;
+  responses: ProfileResponse[];
   twitter: string | null;
   facebook: string | null;
   linkedin: string | null;
+  instagram: string | null;
+  youtube: string | null;
+  tiktok: string | null;
   website: string | null;
   image_url: string;
   is_public: boolean;
@@ -51,15 +57,16 @@ export interface DraftProfile {
   phone: string | null;
   school: School | null;
   year: string | null;
+  degree: string | null;
   major: string[];
   pronouns: string | null;
-  about: string | null;
-  likes: string | null;
-  contact_for: string | null;
-  availability: string | null;
+  responses: ProfileResponse[];
   twitter: string | null;
   facebook: string | null;
   linkedin: string | null;
+  instagram: string | null;
+  youtube: string | null;
+  tiktok: string | null;
   website: string | null;
   image_url: string | null;
   is_public: boolean;
@@ -110,15 +117,16 @@ export interface ProfileFormData {
   name: string;
   school: School | '';
   year: string;
+  degree: string;
   major: string[];
   pronouns: string;
-  about: string;
-  likes: string;
-  contact_for: string;
-  availability: string;
+  responses: ProfileResponse[];
   twitter: string;
   facebook: string;
   linkedin: string;
+  instagram: string;
+  youtube: string;
+  tiktok: string;
   website: string;
   phone: string;
   is_public: boolean;

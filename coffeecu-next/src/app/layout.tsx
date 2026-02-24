@@ -1,19 +1,20 @@
 import type { Metadata } from "next";
-import { Cormorant_Garamond, Lora, Courier_Prime } from "next/font/google";
+import { DM_Serif_Display, Lora, DM_Sans } from "next/font/google";
 import "./globals.css";
 
 // ============================================================
 // TYPOGRAPHY — Limestone & Blue Design System
-// Cormorant Garamond: university press, law review gravitas
+// DM Serif Display: high-contrast editorial serif for headings
 // Lora: warm, readable serif for body copy
-// Courier Prime: typewritten campus memo for labels & meta
+// DM Sans: clean geometric sans for UI labels, buttons, meta
+//          (designed as the companion to DM Serif Display)
 // ============================================================
 
-const cormorant = Cormorant_Garamond({
+const dmSerifDisplay = DM_Serif_Display({
   subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700"],
+  weight: ["400"],
   style: ["normal", "italic"],
-  variable: "--font-cormorant",
+  variable: "--font-dm-serif",
   display: "swap",
 });
 
@@ -25,10 +26,10 @@ const lora = Lora({
   display: "swap",
 });
 
-const courierPrime = Courier_Prime({
+const dmSans = DM_Sans({
   subsets: ["latin"],
-  weight: ["400", "700"],
-  variable: "--font-courier",
+  weight: ["400", "500", "600"],
+  variable: "--font-dm-sans",
   display: "swap",
 });
 
@@ -53,7 +54,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${cormorant.variable} ${lora.variable} ${courierPrime.variable}`}
+      className={`${dmSerifDisplay.variable} ${lora.variable} ${dmSans.variable}`}
     >
       <body className="min-h-screen flex flex-col">
         {children}

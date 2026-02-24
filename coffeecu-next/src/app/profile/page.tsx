@@ -43,6 +43,9 @@ export default async function ProfilePage() {
     : draft ? 'draft'
     : 'new';
 
+  // First-time users who navigate directly to /profile should go through onboarding
+  if (status === 'new') redirect('/onboarding');
+
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       <Nav />
@@ -64,7 +67,7 @@ export default async function ProfilePage() {
             className="heading-display"
             style={{ fontSize: '2.5rem', color: 'var(--color-ink)', margin: 0 }}
           >
-            {status === 'new' ? 'Build your profile' : 'Edit your profile'}
+            Edit your profile
           </h1>
         </div>
 
@@ -79,18 +82,15 @@ export default async function ProfilePage() {
           <div className="status-banner status-draft" style={{ marginBottom: '2rem' }}>
             <span>○</span>
             <span>
-              Your profile is saved as a draft. Upload a photo to publish it to the community.
+              {draft?.image_url && draft?.name
+                ? "Your profile is ready to publish. Click 'Publish Profile' below to go live."
+                : draft?.image_url
+                ? "You have a photo. Fill in your name below, then click 'Publish Profile'."
+                : 'Your profile is saved as a draft. Add a photo below to publish it to the community.'}
             </span>
           </div>
         )}
-        {status === 'new' && (
-          <div className="status-banner status-draft" style={{ marginBottom: '2rem' }}>
-            <span>→</span>
-            <span>
-              Fill out your profile and upload a photo to join the Coffee@CU community.
-            </span>
-          </div>
-        )}
+
 
         <ProfileForm
           userId={userId}

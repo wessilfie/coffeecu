@@ -26,7 +26,7 @@ export default function NotFound() {
 
         <h1
           style={{
-            fontFamily: 'var(--font-cormorant), serif',
+            fontFamily: 'var(--font-display), serif',
             fontSize: 'clamp(2.5rem, 8vw, 4rem)',
             fontWeight: 400,
             fontStyle: 'italic',

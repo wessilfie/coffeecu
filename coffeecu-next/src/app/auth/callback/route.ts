@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { isAllowedDomain } from '@/lib/constants';
+import { createSupabaseServiceClient } from '@/lib/supabase/server';
 
 export async function GET(req: NextRequest) {
   const { searchParams, origin } = new URL(req.url);
@@ -56,6 +57,23 @@ export async function GET(req: NextRequest) {
     );
   }
 
-  // Redirect to /profile (or the 'next' param) after successful auth
-  return NextResponse.redirect(`${origin}${next}`);
+  // Check if user is brand new (no draft, no published profile)
+  const serviceClient = createSupabaseServiceClient();
+  const [draftRes, profileRes] = await Promise.all([
+    serviceClient
+      .from('draft_profiles')
+      .select('user_id')
+      .eq('user_id', user.id)
+      .maybeSingle(),
+    serviceClient
+      .from('profiles')
+      .select('user_id')
+      .eq('user_id', user.id)
+      .maybeSingle(),
+  ]);
+
+  const isNewUser = !draftRes.data && !profileRes.data;
+  const destination = isNewUser ? '/onboarding' : next;
+
+  return NextResponse.redirect(`${origin}${destination}`);
 }

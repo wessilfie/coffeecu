@@ -16,24 +16,44 @@ export async function sendCoffeeRequestEmail(params: {
   receiverName: string;
   receiverEmail: string;
   message: string;
+  senderSchool?: string;
+  senderYear?: string;
+  senderDegree?: string;
+  senderFirstResponse?: { question: string; answer: string };
+  senderProfileUrl?: string;
 }) {
-  const { senderName, senderEmail, receiverName, receiverEmail, message } = params;
+  const {
+    senderName, senderEmail, receiverName, receiverEmail, message,
+    senderSchool, senderYear, senderDegree, senderFirstResponse, senderProfileUrl,
+  } = params;
 
   // Escape user content — plain-text email, no HTML injection risk
   const safeMessage = message.trim().slice(0, 1000);
   const safeSenderName = senderName.slice(0, 40);
   const safeReceiverName = receiverName.slice(0, 40);
 
+  // Build "About [Sender]" section
+  const metaParts = [senderSchool, senderYear, senderDegree].filter(Boolean);
+  const metaLine = metaParts.length > 0 ? metaParts.join(' · ') : null;
+  const safeAnswer = senderFirstResponse?.answer?.trim().slice(0, 200);
+  let aboutSection = '';
+  if (metaLine || safeAnswer || senderProfileUrl) {
+    aboutSection += `\nAbout ${safeSenderName}:\n`;
+    if (metaLine) aboutSection += `${metaLine}\n`;
+    if (safeAnswer) aboutSection += `"${safeAnswer}"\n`;
+    if (senderProfileUrl) aboutSection += `\nView their profile: ${senderProfileUrl}\n`;
+  }
+
   const body = `Hi ${safeReceiverName},
 
 ${safeSenderName} would like to chat with you over coffee!
-
+${aboutSection}
 Their message:
 "${safeMessage}"
 
 Reply directly to this email to reach ${safeSenderName} at ${senderEmail}.
 
-Some great places to meet at Columbia: Joe Coffee in NoCo or the Journalism building, Peet's in the Milstein Center, Carleton Lounge in Mudd, Café East in Lerner, Hungarian Pastry Shop on Amsterdam, Liz's Place in the Diana Center, or Brownie's Café in Avery.
+Some ideas for where to meet: Joe Coffee in Geffen Hall on the Manhattanville campus, Peet's in the Milstein Center, Brownie's Café in Avery, Carleton Lounge in Mudd, Café East in Lerner, Liz's Place in the Diana Center, the Hungarian Pastry Shop on Amsterdam, or a walk through Morningside Park.
 
 Have a great conversation!
 

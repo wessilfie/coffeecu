@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createSupabaseServerClient, createSupabaseServiceClient } from '@/lib/supabase/server';
 import { sendCoffeeRequestEmail } from '@/lib/email';
 import { DAILY_REQUEST_LIMIT } from '@/lib/constants';
+
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'https://coffeecu.com';
 import { z } from 'zod';
 
 // ============================================================
@@ -94,7 +96,7 @@ export async function POST(req: NextRequest) {
 
     // 5. Fetch sender + receiver profiles for email (server-side — no client exposure)
     const [senderRes, receiverRes] = await Promise.all([
-      serviceClient.from('profiles').select('name, email').eq('user_id', user.id).single(),
+      serviceClient.from('profiles').select('name, email, school, year, degree, responses').eq('user_id', user.id).single(),
       serviceClient.from('profiles').select('name, email').eq('user_id', receiverId).single(),
     ]);
 
@@ -104,6 +106,11 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: true, warning: 'Request sent but email delivery failed.' });
     }
 
+    // Extract first Q&A response for email context
+    const responsesRaw = senderRes.data.responses;
+    const responses = Array.isArray(responsesRaw) ? responsesRaw as Array<{ question: string; answer: string }> : [];
+    const firstResponse = responses.length > 0 ? responses[0] : undefined;
+
     // 6. Send email via Resend
     await sendCoffeeRequestEmail({
       senderName: senderRes.data.name,
@@ -111,6 +118,11 @@ export async function POST(req: NextRequest) {
       receiverName: receiverRes.data.name,
       receiverEmail: receiverRes.data.email ?? '',
       message: message.trim(),
+      senderSchool: senderRes.data.school ?? undefined,
+      senderYear: senderRes.data.year ?? undefined,
+      senderDegree: senderRes.data.degree ?? undefined,
+      senderFirstResponse: firstResponse,
+      senderProfileUrl: `${APP_URL}/columbia/${user.id}`,
     });
 
     return NextResponse.json({ ok: true });

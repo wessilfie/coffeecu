@@ -15,13 +15,25 @@ const DOMAIN_ERRORS: Record<string, string> = {
   no_email: 'Could not read your email address. Please try again.',
 };
 
-export default function LoginForm() {
+export default function LoginForm({
+  initialEmail,
+  initialMode,
+}: {
+  initialEmail?: string;
+  initialMode?: 'sign_in' | 'sign_up';
+}) {
   const searchParams = useSearchParams();
   const errorParam = searchParams.get('error');
-  const errorEmail = searchParams.get('email');
+  const errorEmail = searchParams.get('email'); // used only in OAuth error banner
 
-  const [mode, setMode] = useState<AuthMode>('sign_in');
-  const [email, setEmail] = useState('');
+  // Read email + mode directly from URL — more reliable than Suspense-wrapped prop
+  const urlEmail = searchParams.get('email');
+  const urlMode = searchParams.get('mode');
+
+  const [mode, setMode] = useState<AuthMode>(
+    initialMode ?? (urlMode === 'signup' ? 'sign_up' : 'sign_in')
+  );
+  const [email, setEmail] = useState(initialEmail ?? urlEmail ?? '');
   const [password, setPassword] = useState('');
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [message, setMessage] = useState('');
@@ -118,7 +130,7 @@ export default function LoginForm() {
         </div>
         <h2
           style={{
-            fontFamily: 'var(--font-cormorant), serif',
+            fontFamily: 'var(--font-display), serif',
             fontSize: '1.625rem',
             fontWeight: 400,
             color: 'var(--color-ink)',
@@ -138,13 +150,38 @@ export default function LoginForm() {
           }}
         >
           We sent a confirmation link to <strong>{email}</strong>.
-          Click it to verify your account and set up your profile.
+          Click it and you&rsquo;ll be signed in automatically.
         </p>
         <p
           className="label-mono"
-          style={{ color: 'var(--color-text-muted)', fontSize: '0.65rem' }}
+          style={{ color: 'var(--color-text-muted)', fontSize: '0.65rem', marginBottom: '1.5rem' }}
         >
           Check your spam folder if it doesn&rsquo;t arrive within a minute.
+        </p>
+        <p
+          style={{
+            fontFamily: 'var(--font-body), serif',
+            fontSize: '0.875rem',
+            color: 'var(--color-text-muted)',
+          }}
+        >
+          Already confirmed?{' '}
+          <button
+            type="button"
+            onClick={() => { setStatus('idle'); setMode('sign_in'); setMessage(''); }}
+            style={{
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+              color: 'var(--color-columbia)',
+              fontFamily: 'inherit',
+              fontSize: 'inherit',
+              textDecoration: 'underline',
+              padding: 0,
+            }}
+          >
+            Sign in
+          </button>
         </p>
       </div>
     );
@@ -208,7 +245,7 @@ export default function LoginForm() {
           textTransform: 'uppercase',
           color: 'var(--color-ink)',
           transition: 'border-color 180ms ease, background 180ms ease',
-          marginBottom: '1.5rem',
+          marginBottom: '1rem',
           opacity: status === 'loading' ? 0.7 : 1,
         }}
         onMouseOver={(e) => {
@@ -232,7 +269,7 @@ export default function LoginForm() {
           display: 'flex',
           alignItems: 'center',
           gap: '0.75rem',
-          marginBottom: '1.5rem',
+          marginBottom: '1rem',
         }}
       >
         <div style={{ flex: 1, height: '1px', background: 'var(--color-mist)' }} />
@@ -277,7 +314,7 @@ export default function LoginForm() {
           </div>
         </div>
 
-        <div style={{ marginBottom: '1.25rem' }}>
+        <div style={{ marginBottom: '1rem' }}>
           <label className="form-label" htmlFor="auth-password">
             Password *
           </label>
@@ -342,7 +379,7 @@ export default function LoginForm() {
       {/* Mode toggle */}
       <p
         style={{
-          marginTop: '1.25rem',
+          marginTop: '0.875rem',
           textAlign: 'center',
           fontFamily: 'var(--font-body), serif',
           fontSize: '0.875rem',

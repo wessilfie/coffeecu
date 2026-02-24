@@ -3,7 +3,8 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, ExternalLink, Twitter, Linkedin, Facebook, Globe, Coffee, Send } from 'lucide-react';
+import { X, Coffee, Send } from 'lucide-react';
+import { Twitter, Linkedin, Facebook, Instagram, Youtube, Tiktok, Globe } from 'iconoir-react';
 import { SCHOOLS } from '@/lib/constants';
 import type { Profile, School } from '@/types';
 
@@ -19,12 +20,13 @@ const CONVERSATION_PROMPTS = [
 interface Props {
   profile: Profile | null;
   onClose: () => void;
-  onCoffeeSuccess: (name: string) => void;
+  onCoffeeSuccess: (firstName: string, receiverId: string) => void;
   isLoggedIn: boolean;
   userId: string | null;
+  sentIds: Set<string>;
 }
 
-export default function ProfileDrawer({ profile, onClose, onCoffeeSuccess, isLoggedIn, userId }: Props) {
+export default function ProfileDrawer({ profile, onClose, onCoffeeSuccess, isLoggedIn, userId, sentIds }: Props) {
   const closeRef = useRef<HTMLButtonElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [showCoffeeForm, setShowCoffeeForm] = useState(false);
@@ -101,7 +103,7 @@ export default function ProfileDrawer({ profile, onClose, onCoffeeSuccess, isLog
         return;
       }
 
-      onCoffeeSuccess(profile.name.split(' ')[0]);
+      onCoffeeSuccess(profile.name.split(' ')[0], profile.user_id);
       onClose();
     } catch {
       setErrorMsg('Could not send your request. Please check your connection.');
@@ -110,9 +112,6 @@ export default function ProfileDrawer({ profile, onClose, onCoffeeSuccess, isLog
   };
 
   const currentPrompt = CONVERSATION_PROMPTS[promptIndex];
-  const nextPrompt = () => {
-    setPromptIndex((i) => (i + 1) % CONVERSATION_PROMPTS.length);
-  };
 
   return (
     <AnimatePresence>
@@ -204,7 +203,7 @@ export default function ProfileDrawer({ profile, onClose, onCoffeeSuccess, isLog
               {/* Name */}
               <h2
                 style={{
-                  fontFamily: 'var(--font-cormorant), serif',
+                  fontFamily: 'var(--font-display), serif',
                   fontSize: '2rem',
                   fontWeight: 600,
                   color: 'var(--color-ink)',
@@ -223,10 +222,29 @@ export default function ProfileDrawer({ profile, onClose, onCoffeeSuccess, isLog
                     {SCHOOLS.find(s => s.value === profile.school)?.label ?? profile.school}
                   </span>
                 )}
+                {profile.degree && (
+                  <span
+                    style={{
+                      fontFamily: 'var(--font-mono), monospace',
+                      fontSize: '0.65rem',
+                      letterSpacing: '0.08em',
+                      textTransform: 'uppercase',
+                      fontWeight: 700,
+                      padding: '0.2rem 0.55rem',
+                      borderRadius: '3px',
+                      background: '#E8EEF6',
+                      color: '#2A4A70',
+                      display: 'flex',
+                      alignItems: 'center',
+                    }}
+                  >
+                    {profile.degree}
+                  </span>
+                )}
                 {profile.year && (
                   <span
                     style={{
-                      fontFamily: 'var(--font-courier), monospace',
+                      fontFamily: 'var(--font-mono), monospace',
                       fontSize: '0.65rem',
                       letterSpacing: '0.08em',
                       color: 'var(--color-text-muted)',
@@ -243,7 +261,7 @@ export default function ProfileDrawer({ profile, onClose, onCoffeeSuccess, isLog
               {profile.pronouns && (
                 <p
                   style={{
-                    fontFamily: 'var(--font-courier), monospace',
+                    fontFamily: 'var(--font-mono), monospace',
                     fontSize: '0.7rem',
                     color: 'var(--color-text-muted)',
                     margin: '0 0 1.25rem',
@@ -265,66 +283,52 @@ export default function ProfileDrawer({ profile, onClose, onCoffeeSuccess, isLog
                 </Section>
               )}
 
-              {/* About */}
-              {profile.about && (
-                <Section label="About">
-                  <p style={{ fontFamily: 'var(--font-body), serif', fontSize: '0.9375rem', color: 'var(--color-ink-soft)', lineHeight: 1.65, margin: 0 }}>
-                    {profile.about}
-                  </p>
-                </Section>
-              )}
-
-              {/* Likes */}
-              {profile.likes && (
-                <Section label="Interests">
-                  <p style={{ fontFamily: 'var(--font-body), serif', fontSize: '0.9375rem', color: 'var(--color-ink-soft)', margin: 0 }}>
-                    {profile.likes}
-                  </p>
-                </Section>
-              )}
-
-              {/* What to contact about */}
-              {profile.contact_for && (
-                <Section label="Would love to discuss">
-                  <p
-                    style={{
-                      fontFamily: 'var(--font-body), serif',
-                      fontSize: '0.9375rem',
-                      fontStyle: 'italic',
-                      color: 'var(--color-ink)',
-                      lineHeight: 1.65,
-                      margin: 0,
-                    }}
-                  >
-                    &ldquo;{profile.contact_for}&rdquo;
-                  </p>
-                </Section>
-              )}
-
-              {/* Availability */}
-              {profile.availability && (
-                <Section label="Available">
-                  <p style={{ fontFamily: 'var(--font-body), serif', fontSize: '0.9375rem', color: 'var(--color-ink-soft)', margin: 0 }}>
-                    {profile.availability}
-                  </p>
-                </Section>
+              {/* Q&A Responses */}
+              {profile.responses && profile.responses.length > 0 && (
+                <>
+                  {profile.responses.map((r, i) => (
+                    <Section key={i} label={r.question}>
+                      <p style={{
+                        fontFamily: 'var(--font-body), serif',
+                        fontSize: '0.9375rem',
+                        fontStyle: i === profile.responses.length - 1 ? 'italic' : 'normal',
+                        color: 'var(--color-ink-soft)',
+                        lineHeight: 1.65,
+                        margin: 0,
+                      }}>
+                        {i === profile.responses.length - 1
+                          ? `\u201C${r.answer}\u201D`
+                          : r.answer}
+                      </p>
+                    </Section>
+                  ))}
+                </>
               )}
 
               {/* Social links */}
-              {(profile.twitter || profile.facebook || profile.linkedin || profile.website) && (
+              {(profile.twitter || profile.facebook || profile.linkedin || profile.instagram || profile.youtube || profile.tiktok || profile.website) && (
                 <Section label="Connect">
                   <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
                     {profile.linkedin && (
-                      <SocialLink href={profile.linkedin} icon={<Linkedin size={15} />} label="LinkedIn" />
+                      <SocialLink href={profile.linkedin} icon={<Linkedin width={16} height={16} />} label="LinkedIn" />
+                    )}
+                    {profile.instagram && (
+                      <SocialLink href={profile.instagram} icon={<Instagram width={16} height={16} />} label="Instagram" />
                     )}
                     {profile.twitter && (
-                      <SocialLink href={profile.twitter} icon={<Twitter size={15} />} label="Twitter" />
+                      <SocialLink href={profile.twitter} icon={<Twitter width={16} height={16} />} label="Twitter" />
+                    )}
+                    {profile.youtube && (
+                      <SocialLink href={profile.youtube} icon={<Youtube width={16} height={16} />} label="YouTube" />
+                    )}
+                    {profile.tiktok && (
+                      <SocialLink href={profile.tiktok} icon={<Tiktok width={16} height={16} />} label="TikTok" />
                     )}
                     {profile.facebook && (
-                      <SocialLink href={profile.facebook} icon={<Facebook size={15} />} label="Facebook" />
+                      <SocialLink href={profile.facebook} icon={<Facebook width={16} height={16} />} label="Facebook" />
                     )}
                     {profile.website && (
-                      <SocialLink href={profile.website} icon={<Globe size={15} />} label="Website" />
+                      <SocialLink href={profile.website} icon={<Globe width={16} height={16} />} label="Website" />
                     )}
                   </div>
                 </Section>
@@ -332,7 +336,22 @@ export default function ProfileDrawer({ profile, onClose, onCoffeeSuccess, isLog
 
               {/* CTA + inline coffee form */}
               <div style={{ marginTop: '2rem', paddingTop: '1.5rem', borderTop: '1px solid var(--color-mist)' }}>
-                {isLoggedIn ? (
+                {isLoggedIn && profile.user_id === userId ? null
+                  : isLoggedIn && sentIds.has(profile.user_id) ? (
+                    <p
+                      className="label-mono"
+                      style={{
+                        color: 'var(--color-columbia)',
+                        padding: '0.75rem 1rem',
+                        background: 'rgba(0,63,138,0.06)',
+                        border: '1px solid rgba(0,63,138,0.15)',
+                        borderRadius: '4px',
+                        textAlign: 'center',
+                      }}
+                    >
+                      Request sent to {profile.name.split(' ')[0]} ✓
+                    </p>
+                  ) : isLoggedIn ? (
                   <>
                     {/* The "Request" button — hidden when form is open */}
                     <AnimatePresence>
@@ -386,58 +405,11 @@ export default function ProfileDrawer({ profile, onClose, onCoffeeSuccess, isLog
                               with your contact info so you can find a time.
                             </p>
 
-                            {/* Conversation starter prompt */}
-                            <div
-                              style={{
-                                background: 'var(--color-limestone-dk)',
-                                border: '1px solid var(--color-mist)',
-                                borderRadius: '4px',
-                                padding: '0.75rem 1rem',
-                                marginBottom: '0.75rem',
-                                display: 'flex',
-                                alignItems: 'flex-start',
-                                gap: '0.75rem',
-                              }}
-                            >
-                              <p
-                                style={{
-                                  fontFamily: 'var(--font-body), serif',
-                                  fontSize: '0.8125rem',
-                                  fontStyle: 'italic',
-                                  color: 'var(--color-ink-soft)',
-                                  lineHeight: 1.5,
-                                  margin: 0,
-                                  flex: 1,
-                                }}
-                              >
-                                Try answering: {currentPrompt}
-                              </p>
-                              <button
-                                type="button"
-                                onClick={nextPrompt}
-                                style={{
-                                  background: 'none',
-                                  border: 'none',
-                                  cursor: 'pointer',
-                                  fontFamily: 'var(--font-courier), monospace',
-                                  fontSize: '0.6rem',
-                                  letterSpacing: '0.1em',
-                                  textTransform: 'uppercase',
-                                  color: 'var(--color-columbia)',
-                                  padding: '0.125rem 0',
-                                  whiteSpace: 'nowrap',
-                                  flexShrink: 0,
-                                }}
-                              >
-                                Another
-                              </button>
-                            </div>
-
                             <div style={{ marginBottom: '1rem' }}>
                               <textarea
                                 ref={textareaRef}
                                 className="form-input"
-                                placeholder="Write something real — what caught your eye about their profile, or just answer the prompt above..."
+                                placeholder={currentPrompt}
                                 value={message}
                                 onChange={e => setMessage(e.target.value.slice(0, MAX_LENGTH))}
                                 required
@@ -454,7 +426,7 @@ export default function ProfileDrawer({ profile, onClose, onCoffeeSuccess, isLog
                             {status === 'error' && (
                               <p
                                 style={{
-                                  fontFamily: 'var(--font-courier), monospace',
+                                  fontFamily: 'var(--font-mono), monospace',
                                   fontSize: '0.7rem',
                                   color: 'var(--color-error)',
                                   marginBottom: '0.75rem',
@@ -499,7 +471,7 @@ export default function ProfileDrawer({ profile, onClose, onCoffeeSuccess, isLog
                 ) : (
                   <p
                     style={{
-                      fontFamily: 'var(--font-courier), monospace',
+                      fontFamily: 'var(--font-mono), monospace',
                       fontSize: '0.7rem',
                       letterSpacing: '0.06em',
                       color: 'var(--color-text-muted)',
@@ -545,7 +517,7 @@ function SocialLink({ href, icon, label }: { href: string; icon: React.ReactNode
         display: 'inline-flex',
         alignItems: 'center',
         gap: '0.375rem',
-        fontFamily: 'var(--font-courier), monospace',
+        fontFamily: 'var(--font-mono), monospace',
         fontSize: '0.68rem',
         letterSpacing: '0.08em',
         textTransform: 'uppercase',
@@ -561,7 +533,6 @@ function SocialLink({ href, icon, label }: { href: string; icon: React.ReactNode
     >
       {icon}
       {label}
-      <ExternalLink size={10} />
     </a>
   );
 }

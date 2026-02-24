@@ -104,7 +104,7 @@ export default function CoffeeRequestModal({ receiver, senderId, onClose, onSucc
                 </div>
                 <h2
                   style={{
-                    fontFamily: 'var(--font-cormorant), serif',
+                    fontFamily: 'var(--font-display), serif',
                     fontSize: '1.625rem',
                     fontWeight: 400,
                     color: 'var(--color-ink)',
@@ -168,7 +168,7 @@ export default function CoffeeRequestModal({ receiver, senderId, onClose, onSucc
               {status === 'error' && (
                 <p
                   style={{
-                    fontFamily: 'var(--font-courier), monospace',
+                    fontFamily: 'var(--font-mono), monospace',
                     fontSize: '0.75rem',
                     color: 'var(--color-error)',
                     marginBottom: '1rem',
