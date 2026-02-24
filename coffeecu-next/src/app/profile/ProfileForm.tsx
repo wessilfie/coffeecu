@@ -268,13 +268,13 @@ export default function ProfileForm({ userId, userEmail, existingProfile, existi
     setResponsesError('');
 
     // Validate Q&A
-    const validOptional = optionalResponses.filter(r => r.question && r.answer.trim().length >= 50);
+    const validOptional = optionalResponses.filter(r => r.question && r.answer.trim().length >= 20);
     if (validOptional.length === 0) {
-      setResponsesError('Answer at least one prompt with 50 or more characters.');
+      setResponsesError('Answer at least one prompt (20 characters minimum).');
       return;
     }
-    if (coffeeAnswer.trim().length < 50) {
-      setResponsesError('The coffee question answer must be at least 50 characters.');
+    if (coffeeAnswer.trim().length < 20) {
+      setResponsesError('The availability question needs a brief answer (20 characters minimum).');
       return;
     }
 
@@ -817,6 +817,12 @@ export default function ProfileForm({ userId, userEmail, existingProfile, existi
       <Divider />
 
       {/* ——— SUBMIT ——— */}
+      {responsesError && (
+        <div className="status-banner status-removed" style={{ marginBottom: '1.25rem' }}>
+          <span>✕</span>
+          <span>{responsesError}</span>
+        </div>
+      )}
       {saveStatus === 'saved' && (
         <div className="status-banner status-published" style={{ marginBottom: '1.25rem' }}>
           <span>✓</span>
