@@ -79,6 +79,7 @@ export default function ProfileForm({ userId, userEmail, existingProfile, existi
   const [saveMsg, setSaveMsg] = useState('');
   const [savedAsPublished, setSavedAsPublished] = useState(false);
   const [responsesError, setResponsesError] = useState('');
+  const [submitAttempted, setSubmitAttempted] = useState(false);
   const [autoSaveStatus, setAutoSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
   const [autoSaveMsg, setAutoSaveMsg] = useState('');
   const autoSaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -266,6 +267,7 @@ export default function ProfileForm({ userId, userEmail, existingProfile, existi
   // ——— Form submit ———
   const onSubmit = async (data: ProfileFormData) => {
     setResponsesError('');
+    setSubmitAttempted(true);
 
     // Validate Q&A
     const validOptional = optionalResponses.filter(r => r.question && r.answer.trim().length >= 20);
@@ -633,7 +635,16 @@ export default function ProfileForm({ userId, userEmail, existingProfile, existi
                 />
 
                 {/* Char count footer */}
-                <div style={{ padding: '0 1.25rem 0.625rem', display: 'flex', justifyContent: 'flex-end' }}>
+                <div style={{ padding: '0 1.25rem 0.625rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  {submitAttempted && slot.question && slot.answer.trim().length > 0 && slot.answer.trim().length < 20 ? (
+                    <span style={{ fontFamily: 'var(--font-mono), monospace', fontSize: '0.65rem', color: 'var(--color-error)' }}>
+                      A bit short — add a little more
+                    </span>
+                  ) : submitAttempted && slot.question && slot.answer.trim().length === 0 ? (
+                    <span style={{ fontFamily: 'var(--font-mono), monospace', fontSize: '0.65rem', color: 'var(--color-error)' }}>
+                      Answer this prompt or remove it
+                    </span>
+                  ) : <span />}
                   <span
                     className={`char-count ${slot.answer.length >= 400 ? 'at-limit' : slot.answer.length >= 340 ? 'near-limit' : ''}`}
                     style={{ marginTop: 0 }}
@@ -725,7 +736,16 @@ export default function ProfileForm({ userId, userEmail, existingProfile, existi
                 boxSizing: 'border-box',
               }}
             />
-            <div style={{ padding: '0 1.25rem 0.625rem', display: 'flex', justifyContent: 'flex-end' }}>
+            <div style={{ padding: '0 1.25rem 0.625rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              {submitAttempted && coffeeAnswer.trim().length > 0 && coffeeAnswer.trim().length < 20 ? (
+                <span style={{ fontFamily: 'var(--font-mono), monospace', fontSize: '0.65rem', color: 'var(--color-error)' }}>
+                  A bit short — add a little more
+                </span>
+              ) : submitAttempted && coffeeAnswer.trim().length === 0 ? (
+                <span style={{ fontFamily: 'var(--font-mono), monospace', fontSize: '0.65rem', color: 'var(--color-error)' }}>
+                  Required — let people know when you're free
+                </span>
+              ) : <span />}
               <span
                 className={`char-count ${coffeeAnswer.length >= 250 ? 'at-limit' : coffeeAnswer.length >= 212 ? 'near-limit' : ''}`}
                 style={{ marginTop: 0 }}

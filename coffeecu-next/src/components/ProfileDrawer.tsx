@@ -153,11 +153,14 @@ export default function ProfileDrawer({ profile, onClose, onCoffeeSuccess, isLog
               borderLeft: '1px solid var(--color-mist)',
               boxShadow: '-8px 0 40px rgba(26,20,16,0.16)',
               zIndex: 101,
-              overflowY: 'auto',
+              overflow: 'hidden',
               display: 'flex',
               flexDirection: 'column',
             }}
           >
+            {/* ——— Scrollable body ——— */}
+            <div style={{ flex: 1, overflowY: 'auto' }}>
+
             {/* Close button */}
             <div style={{ display: 'flex', justifyContent: 'flex-end', padding: '1rem 1rem 0' }}>
               <button
@@ -383,7 +386,8 @@ export default function ProfileDrawer({ profile, onClose, onCoffeeSuccess, isLog
                           transition={{ type: 'spring', damping: 25, stiffness: 300 }}
                           style={{ overflow: 'hidden' }}
                         >
-                          <form onSubmit={handleSubmit}>
+                          {/* Form body — buttons live in the sticky footer below */}
+                          <form id="coffee-form" onSubmit={handleSubmit}>
                             {/* Header */}
                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem' }}>
                               <Coffee size={16} color="var(--color-copper)" />
@@ -405,7 +409,7 @@ export default function ProfileDrawer({ profile, onClose, onCoffeeSuccess, isLog
                               with your contact info so you can find a time.
                             </p>
 
-                            <div style={{ marginBottom: '1rem' }}>
+                            <div style={{ marginBottom: '0.5rem' }}>
                               <textarea
                                 ref={textareaRef}
                                 className="form-input"
@@ -421,47 +425,6 @@ export default function ProfileDrawer({ profile, onClose, onCoffeeSuccess, isLog
                               >
                                 {message.length}/{MAX_LENGTH}
                               </div>
-                            </div>
-
-                            {status === 'error' && (
-                              <p
-                                style={{
-                                  fontFamily: 'var(--font-mono), monospace',
-                                  fontSize: '0.7rem',
-                                  color: 'var(--color-error)',
-                                  marginBottom: '0.75rem',
-                                  padding: '0.5rem 0.75rem',
-                                  background: 'rgba(155,28,28,0.06)',
-                                  borderRadius: '4px',
-                                  border: '1px solid rgba(155,28,28,0.2)',
-                                }}
-                              >
-                                {errorMsg}
-                              </p>
-                            )}
-
-                            <div style={{ display: 'flex', gap: '0.75rem' }}>
-                              <button
-                                type="button"
-                                onClick={() => setShowCoffeeForm(false)}
-                                className="btn-ghost"
-                                style={{ flex: 1 }}
-                              >
-                                Cancel
-                              </button>
-                              <button
-                                type="submit"
-                                className="btn-primary"
-                                disabled={!message.trim() || status === 'sending'}
-                                style={{
-                                  flex: 1,
-                                  opacity: (!message.trim() || status === 'sending') ? 0.6 : 1,
-                                  gap: '0.375rem',
-                                }}
-                              >
-                                <Send size={13} />
-                                {status === 'sending' ? 'Sending...' : 'Send'}
-                              </button>
                             </div>
                           </form>
                         </motion.div>
@@ -486,6 +449,61 @@ export default function ProfileDrawer({ profile, onClose, onCoffeeSuccess, isLog
                 )}
               </div>
             </div>
+
+            </div>{/* end scrollable body */}
+
+            {/* ——— Sticky footer: Cancel + Send — always visible when form is open ——— */}
+            {showCoffeeForm && isLoggedIn && profile.user_id !== userId && !sentIds.has(profile.user_id) && (
+              <div
+                style={{
+                  flexShrink: 0,
+                  padding: '0.875rem 1.5rem',
+                  borderTop: '1px solid var(--color-mist)',
+                  background: 'var(--color-limestone)',
+                }}
+              >
+                {status === 'error' && (
+                  <p
+                    style={{
+                      fontFamily: 'var(--font-mono), monospace',
+                      fontSize: '0.7rem',
+                      color: 'var(--color-error)',
+                      marginBottom: '0.75rem',
+                      padding: '0.5rem 0.75rem',
+                      background: 'rgba(155,28,28,0.06)',
+                      borderRadius: '4px',
+                      border: '1px solid rgba(155,28,28,0.2)',
+                    }}
+                  >
+                    {errorMsg}
+                  </p>
+                )}
+                <div style={{ display: 'flex', gap: '0.75rem' }}>
+                  <button
+                    type="button"
+                    onClick={() => setShowCoffeeForm(false)}
+                    className="btn-ghost"
+                    style={{ flex: 1 }}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    form="coffee-form"
+                    className="btn-primary"
+                    disabled={!message.trim() || status === 'sending'}
+                    style={{
+                      flex: 1,
+                      opacity: (!message.trim() || status === 'sending') ? 0.6 : 1,
+                      gap: '0.375rem',
+                    }}
+                  >
+                    <Send size={13} />
+                    {status === 'sending' ? 'Sending...' : 'Send'}
+                  </button>
+                </div>
+              </div>
+            )}
           </motion.aside>
         </>
       )}

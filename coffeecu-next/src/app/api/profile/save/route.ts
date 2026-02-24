@@ -125,6 +125,7 @@ export async function POST(req: NextRequest) {
         phone: data.phone,
         image_url: imageUrl,
         is_public: data.is_public,
+        is_visible: true,
         updated_at: new Date().toISOString(),
       }, { onConflict: 'user_id' });
 
