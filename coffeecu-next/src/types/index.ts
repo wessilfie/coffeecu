@@ -34,6 +34,7 @@ export interface Profile {
   website: string | null;
   image_url: string;
   is_public: boolean;
+  visible_in: string[];
   random_sort: number;
   created_at: string;
   updated_at: string;
@@ -70,6 +71,7 @@ export interface DraftProfile {
   website: string | null;
   image_url: string | null;
   is_public: boolean;
+  visible_in: string[];
   updated_at: string;
 }
 
@@ -130,6 +132,7 @@ export interface ProfileFormData {
   website: string;
   phone: string;
   is_public: boolean;
+  visible_in: string[];
 }
 
 // Filter state for home page search

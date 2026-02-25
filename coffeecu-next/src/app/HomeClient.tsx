@@ -7,7 +7,7 @@ import ProfileCard from '@/components/ProfileCard';
 import ProfileDrawer from '@/components/ProfileDrawer';
 import { getSupabaseClient } from '@/lib/supabase/client';
 import { DEV_BYPASS, DEV_MOCK_PROFILES } from '@/lib/dev-bypass';
-import { PARALLAX_IMAGES, SCHOOL_GROUPS, YEARS } from '@/lib/constants';
+import { PARALLAX_IMAGES, SCHOOL_GROUPS, YEARS, COMMUNITY_CONFIG } from '@/lib/constants';
 import type { Profile, ProfileFilters } from '@/types';
 
 const PAGE_SIZE = 12;
@@ -19,9 +19,11 @@ interface Props {
   userId: string | null;
   sentRequestIds: string[];
   hasPublishedProfile: boolean;
+  activeCommunity: string;
+  viewerSchool: string | null;
 }
 
-export default function HomeClient({ initialProfiles, meetingCount, isLoggedIn, userId, sentRequestIds, hasPublishedProfile }: Props) {
+export default function HomeClient({ initialProfiles, meetingCount, isLoggedIn, userId, sentRequestIds, hasPublishedProfile, activeCommunity, viewerSchool: _viewerSchool }: Props) {
   // Anti-scraping: show a login gate instead of profiles for unauthenticated users
   // The hero and meeting count remain public (marketing), but profiles are gated.
   if (!isLoggedIn) {
@@ -33,7 +35,7 @@ export default function HomeClient({ initialProfiles, meetingCount, isLoggedIn, 
     return <ProfileGate />;
   }
 
-  return <AuthenticatedHome initialProfiles={initialProfiles} meetingCount={meetingCount} userId={userId} sentRequestIds={sentRequestIds} />;
+  return <AuthenticatedHome initialProfiles={initialProfiles} meetingCount={meetingCount} userId={userId} sentRequestIds={sentRequestIds} activeCommunity={activeCommunity} />;
 }
 
 // ——— Gate for logged-in users who haven't published yet ———
@@ -604,7 +606,7 @@ function LoginGate({ meetingCount, heroImage }: { meetingCount: number; heroImag
 }
 
 // ——— The actual home page for authenticated users ———
-function AuthenticatedHome({ initialProfiles, meetingCount, userId, sentRequestIds }: { initialProfiles: Profile[]; meetingCount: number; userId: string | null; sentRequestIds: string[] }) {
+function AuthenticatedHome({ initialProfiles, meetingCount, userId, sentRequestIds, activeCommunity }: { initialProfiles: Profile[]; meetingCount: number; userId: string | null; sentRequestIds: string[]; activeCommunity: string }) {
   const [profiles, setProfiles] = useState<Profile[]>(initialProfiles);
   const [totalCount, setTotalCount] = useState<number>(initialProfiles.length);
   const [loading, setLoading] = useState(false);
@@ -620,6 +622,9 @@ function AuthenticatedHome({ initialProfiles, meetingCount, userId, sentRequestI
   const supabase = getSupabaseClient();
   const searchTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  // Community label for the hero eyebrow
+  const communityLabel = COMMUNITY_CONFIG[activeCommunity]?.label ?? 'Columbia University';
+
   // Random parallax image (stable across renders)
   const heroImage = useRef(
     PARALLAX_IMAGES[Math.floor(Math.random() * PARALLAX_IMAGES.length)]
@@ -628,7 +633,7 @@ function AuthenticatedHome({ initialProfiles, meetingCount, userId, sentRequestI
   // ——— Search/filter logic ———
   const fetchProfiles = useCallback(async (f: ProfileFilters, pageNum: number, append = false) => {
     if (DEV_BYPASS) {
-      // Client-side filtering of mock data
+      // Client-side filtering of mock data (DEV: all mocks are columbia, community filter is no-op)
       let filtered = DEV_MOCK_PROFILES.filter(p => {
         if (f.year && p.year !== f.year) return false;
         if (f.school && p.school !== f.school) return false;
@@ -652,7 +657,10 @@ function AuthenticatedHome({ initialProfiles, meetingCount, userId, sentRequestI
 
     let query = supabase
       .from('public_profiles')
-      .select('id, user_id, name, uni, university, school, year, degree, major, pronouns, responses, twitter, facebook, linkedin, instagram, youtube, tiktok, website, image_url, is_public, random_sort, created_at, updated_at', { count: 'exact' });
+      .select('id, user_id, name, uni, university, school, year, degree, major, pronouns, responses, twitter, facebook, linkedin, instagram, youtube, tiktok, website, image_url, is_public, visible_in, random_sort, created_at, updated_at', { count: 'exact' });
+
+    // Community scope — always applied (orthogonal to year/school/FTS filters)
+    query = query.contains('visible_in', [activeCommunity]);
 
     // Full-text search
     if (f.query.trim()) {
@@ -680,7 +688,7 @@ function AuthenticatedHome({ initialProfiles, meetingCount, userId, sentRequestI
 
     setLoading(false);
     setLoadingMore(false);
-  }, [supabase]);
+  }, [supabase, activeCommunity]);
 
   // Debounce search input
   const handleSearchChange = (value: string) => {
@@ -766,7 +774,7 @@ function AuthenticatedHome({ initialProfiles, meetingCount, userId, sentRequestI
                 letterSpacing: '0.15em',
               }}
             >
-              Columbia University Community
+              {communityLabel}
             </p>
             <h1
               className="heading-display-italic"

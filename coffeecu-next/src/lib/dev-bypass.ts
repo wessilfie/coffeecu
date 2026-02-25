@@ -25,7 +25,7 @@ export const DEV_MOCK_PROFILES: Profile[] = [
     ],
     linkedin: 'https://linkedin.com/in/amaraokafor', instagram: 'https://instagram.com/ao.writes',
     twitter: null, facebook: null, youtube: null, tiktok: null, website: null,
-    image_url: '/img/parallax/A.jpg', is_public: true, random_sort: 0.1, created_at: now, updated_at: now,
+    image_url: '/img/parallax/A.jpg', is_public: true, visible_in: ['columbia'], random_sort: 0.1, created_at: now, updated_at: now,
   },
   {
     id: '2', user_id: 'u2', name: 'Marco Reyes', uni: 'mr5678', university: 'columbia',
@@ -37,7 +37,7 @@ export const DEV_MOCK_PROFILES: Profile[] = [
     ],
     linkedin: 'https://linkedin.com/in/marcoreyes-eng', website: 'https://marcoreyes.me',
     twitter: null, facebook: null, instagram: null, youtube: null, tiktok: null,
-    image_url: '/img/parallax/B.jpg', is_public: true, random_sort: 0.2, created_at: now, updated_at: now,
+    image_url: '/img/parallax/B.jpg', is_public: true, visible_in: ['columbia'], random_sort: 0.2, created_at: now, updated_at: now,
   },
   {
     id: '3', user_id: 'u3', name: 'Priya Shankar', uni: 'ps9012', university: 'columbia',
@@ -49,7 +49,7 @@ export const DEV_MOCK_PROFILES: Profile[] = [
     ],
     twitter: 'https://twitter.com/priya_econ', linkedin: 'https://linkedin.com/in/priyashankar',
     facebook: null, instagram: null, youtube: null, tiktok: null, website: null,
-    image_url: '/img/parallax/C.jpg', is_public: true, random_sort: 0.3, created_at: now, updated_at: now,
+    image_url: '/img/parallax/C.jpg', is_public: true, visible_in: ['columbia'], random_sort: 0.3, created_at: now, updated_at: now,
   },
   {
     id: '4', user_id: 'u4', name: 'Jake Thornton', uni: 'jt3456', university: 'columbia',
@@ -60,7 +60,7 @@ export const DEV_MOCK_PROFILES: Profile[] = [
       { question: "What's the best way to grab coffee (or tea) with you?", answer: 'Tuesday or Thursday mornings before 11am. Butler café or somewhere quiet nearby.' },
     ],
     twitter: null, facebook: null, linkedin: null, instagram: null, youtube: null, tiktok: null, website: null,
-    image_url: '/img/parallax/D.jpg', is_public: true, random_sort: 0.4, created_at: now, updated_at: now,
+    image_url: '/img/parallax/D.jpg', is_public: true, visible_in: ['columbia'], random_sort: 0.4, created_at: now, updated_at: now,
   },
   {
     id: '5', user_id: 'u5', name: 'Lena Dubois', uni: 'ld7890', university: 'columbia',
@@ -72,7 +72,7 @@ export const DEV_MOCK_PROFILES: Profile[] = [
     ],
     instagram: 'https://instagram.com/lenadubois.writes', tiktok: 'https://tiktok.com/@lenadubois',
     twitter: null, facebook: null, linkedin: null, youtube: null, website: null,
-    image_url: '/img/parallax/E.jpg', is_public: true, random_sort: 0.5, created_at: now, updated_at: now,
+    image_url: '/img/parallax/E.jpg', is_public: true, visible_in: ['columbia'], random_sort: 0.5, created_at: now, updated_at: now,
   },
   {
     id: '6', user_id: 'u6', name: 'David Kim', uni: 'dk2345', university: 'columbia',
@@ -83,7 +83,7 @@ export const DEV_MOCK_PROFILES: Profile[] = [
       { question: "What's the best way to grab coffee (or tea) with you?", answer: 'Evenings after 6pm work best. I\'m usually in the dorm area — anywhere nearby is easy.' },
     ],
     twitter: null, facebook: null, linkedin: null, instagram: null, youtube: null, tiktok: null, website: null,
-    image_url: '/img/parallax/F.jpg', is_public: true, random_sort: 0.6, created_at: now, updated_at: now,
+    image_url: '/img/parallax/F.jpg', is_public: true, visible_in: ['columbia'], random_sort: 0.6, created_at: now, updated_at: now,
   },
   {
     id: '7', user_id: 'u7', name: 'Sofia Alvarez', uni: 'sa6789', university: 'columbia',
@@ -96,7 +96,7 @@ export const DEV_MOCK_PROFILES: Profile[] = [
     instagram: 'https://instagram.com/sofiaalvarez.art', website: 'https://sofiaalvarez.com',
     linkedin: 'https://linkedin.com/in/sofiaalvarez',
     twitter: null, facebook: null, youtube: null, tiktok: null,
-    image_url: '/img/parallax/G.jpg', is_public: true, random_sort: 0.7, created_at: now, updated_at: now,
+    image_url: '/img/parallax/G.jpg', is_public: true, visible_in: ['columbia'], random_sort: 0.7, created_at: now, updated_at: now,
   },
   {
     id: '8', user_id: 'u8', name: 'Prof. James Wright', uni: 'jw0001', university: 'columbia',
@@ -109,7 +109,7 @@ export const DEV_MOCK_PROFILES: Profile[] = [
     linkedin: 'https://linkedin.com/in/jameswrightphysics',
     website: 'https://columbia.edu/~jwright',
     twitter: null, facebook: null, instagram: null, youtube: null, tiktok: null,
-    image_url: '/img/parallax/H.jpg', is_public: true, random_sort: 0.8, created_at: now, updated_at: now,
+    image_url: '/img/parallax/H.jpg', is_public: true, visible_in: ['columbia'], random_sort: 0.8, created_at: now, updated_at: now,
   },
 ];
 
@@ -137,6 +137,7 @@ export const DEV_MOCK_FULL_PROFILE: FullProfile = {
   website: null,
   image_url: '/img/parallax/A.jpg',
   is_public: true,
+  visible_in: ['columbia'],
   random_sort: 0,
   created_at: now,
   updated_at: now,
@@ -171,5 +172,6 @@ export const DEV_MOCK_DRAFT: DraftProfile = {
   website: null,
   image_url: null,
   is_public: false,
+  visible_in: ['columbia'],
   updated_at: now,
 };

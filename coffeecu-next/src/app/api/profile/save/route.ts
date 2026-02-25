@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createSupabaseServerClient, createSupabaseServiceClient } from '@/lib/supabase/server';
 import { sendWelcomeEmail } from '@/lib/email';
-import { getUniFromEmail } from '@/lib/constants';
+import { getUniFromEmail, SCHOOL_TO_COMMUNITY } from '@/lib/constants';
 import { z } from 'zod';
 
 // ============================================================
@@ -11,6 +11,7 @@ import { z } from 'zod';
 // - Columbia domain enforced
 // - uni derived server-side (never trust client)
 // - URL fields validated server-side
+// - visible_in entitlement: school-specific slugs must match user's school
 // - Atomically publishes or saves as draft
 // ============================================================
 
@@ -46,6 +47,8 @@ const schema = z.object({
   is_public: z.boolean().default(true),
   image_url: z.string().nullable().optional(),
   draft_only: z.boolean().default(false),
+  // Community visibility — must be non-empty; school slugs validated against user's actual school
+  visible_in: z.array(z.string()).min(1, 'At least one community is required').default(['columbia']),
 });
 
 export async function POST(req: NextRequest) {
@@ -76,7 +79,20 @@ export async function POST(req: NextRequest) {
     }
     const data = parsed.data;
 
-    // 4. Derive server-controlled fields (never from client)
+    // 4. Server-side entitlement check for visible_in
+    // Any school-specific slug must match the user's own school.
+    // This prevents users from crafting requests to appear in communities they don't belong to.
+    const schoolSlug = data.school ? SCHOOL_TO_COMMUNITY[data.school] : null;
+    for (const slug of data.visible_in) {
+      if (slug === 'columbia') continue; // university-wide is always allowed
+      if (schoolSlug && slug === schoolSlug) continue; // own school is allowed
+      return NextResponse.json(
+        { error: `You are not a member of community "${slug}".` },
+        { status: 400 }
+      );
+    }
+
+    // 5. Derive server-controlled fields (never from client)
     const uni = getUniFromEmail(email);
     const university = domain === 'barnard.edu' ? 'columbia' : 'columbia'; // both Columbia
 
@@ -125,6 +141,7 @@ export async function POST(req: NextRequest) {
         phone: data.phone,
         image_url: imageUrl,
         is_public: data.is_public,
+        visible_in: data.visible_in,
         is_visible: true,
         updated_at: new Date().toISOString(),
       }, { onConflict: 'user_id' });
@@ -164,6 +181,7 @@ export async function POST(req: NextRequest) {
         phone: data.phone,
         image_url: imageUrl,
         is_public: data.is_public,
+        visible_in: data.visible_in,
         updated_at: new Date().toISOString(),
       }, { onConflict: 'user_id' });
 
