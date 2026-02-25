@@ -119,6 +119,95 @@ export const DEGREE_GROUPS = [
 
 export const DEGREES = DEGREE_GROUPS.flatMap(g => g.degrees);
 
+// ============================================================
+// Community slugs, display labels, and entitlement helpers
+// Mirror the communities table seeded in migration 008.
+// COMMUNITY_CONFIG avoids a DB round-trip in Nav/HomeClient.
+// ============================================================
+
+export const COMMUNITY_SLUGS = {
+  UNIVERSITY: 'columbia',
+  CC:    'columbia-cc',
+  SEAS:  'columbia-seas',
+  GS:    'columbia-gs',
+  BC:    'columbia-bc',
+  GSAS:  'columbia-gsas',
+  BUS:   'columbia-bus',
+  LAW:   'columbia-law',
+  VPS:   'columbia-vps',
+  JRN:   'columbia-jrn',
+  SIPA:  'columbia-sipa',
+  GSAPP: 'columbia-gsapp',
+  SOA:   'columbia-soa',
+  SW:    'columbia-sw',
+  PH:    'columbia-ph',
+  NRS:   'columbia-nrs',
+  DM:    'columbia-dm',
+  SPS:   'columbia-sps',
+  CS:    'columbia-cs',
+  TC:    'columbia-tc',
+} as const;
+
+// school code → community slug
+export const SCHOOL_TO_COMMUNITY: Record<string, string> = {
+  CC:    'columbia-cc',
+  SEAS:  'columbia-seas',
+  GS:    'columbia-gs',
+  BC:    'columbia-bc',
+  GSAS:  'columbia-gsas',
+  BUS:   'columbia-bus',
+  LAW:   'columbia-law',
+  VPS:   'columbia-vps',
+  JRN:   'columbia-jrn',
+  SIPA:  'columbia-sipa',
+  GSAPP: 'columbia-gsapp',
+  SOA:   'columbia-soa',
+  SW:    'columbia-sw',
+  PH:    'columbia-ph',
+  NRS:   'columbia-nrs',
+  DM:    'columbia-dm',
+  SPS:   'columbia-sps',
+  CS:    'columbia-cs',
+  TC:    'columbia-tc',
+};
+
+// slug → display info (avoids a round-trip to the communities table in the UI)
+export const COMMUNITY_CONFIG: Record<string, { label: string; schoolCode: string | null }> = {
+  'columbia':       { label: 'Columbia University',                                              schoolCode: null    },
+  'columbia-cc':    { label: 'Columbia College',                                                 schoolCode: 'CC'    },
+  'columbia-seas':  { label: 'Fu Foundation School of Engineering & Applied Science',            schoolCode: 'SEAS'  },
+  'columbia-gs':    { label: 'School of General Studies',                                        schoolCode: 'GS'    },
+  'columbia-bc':    { label: 'Barnard College',                                                  schoolCode: 'BC'    },
+  'columbia-gsas':  { label: 'Graduate School of Arts & Sciences',                               schoolCode: 'GSAS'  },
+  'columbia-bus':   { label: 'Columbia Business School',                                         schoolCode: 'BUS'   },
+  'columbia-law':   { label: 'Columbia Law School',                                              schoolCode: 'LAW'   },
+  'columbia-vps':   { label: 'Vagelos College of Physicians & Surgeons',                         schoolCode: 'VPS'   },
+  'columbia-jrn':   { label: 'Columbia Journalism School',                                       schoolCode: 'JRN'   },
+  'columbia-sipa':  { label: 'School of International & Public Affairs',                         schoolCode: 'SIPA'  },
+  'columbia-gsapp': { label: 'Graduate School of Architecture, Planning & Preservation',         schoolCode: 'GSAPP' },
+  'columbia-soa':   { label: 'School of the Arts',                                               schoolCode: 'SOA'   },
+  'columbia-sw':    { label: 'School of Social Work',                                            schoolCode: 'SW'    },
+  'columbia-ph':    { label: 'Mailman School of Public Health',                                  schoolCode: 'PH'    },
+  'columbia-nrs':   { label: 'School of Nursing',                                                schoolCode: 'NRS'   },
+  'columbia-dm':    { label: 'College of Dental Medicine',                                       schoolCode: 'DM'    },
+  'columbia-sps':   { label: 'School of Professional Studies',                                   schoolCode: 'SPS'   },
+  'columbia-cs':    { label: 'Columbia Climate School',                                          schoolCode: 'CS'    },
+  'columbia-tc':    { label: 'Teachers College',                                                 schoolCode: 'TC'    },
+};
+
+/**
+ * Returns the community slugs this viewer may browse.
+ * Always includes 'columbia' (university-wide).
+ * If the viewer belongs to a school with a dedicated community, that slug is appended.
+ */
+export function getViewerCommunities(school: string | null): string[] {
+  const slugs = ['columbia'];
+  if (school && SCHOOL_TO_COMMUNITY[school]) {
+    slugs.push(SCHOOL_TO_COMMUNITY[school]);
+  }
+  return slugs;
+}
+
 // University domain configuration
 // Mirrors the university_domains table in Supabase
 // Also used for client-side UX feedback before API call

@@ -8,6 +8,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { Upload, Plus, Trash2, ChevronDown } from 'lucide-react';
 import { SCHOOL_GROUPS, UNDERGRAD_SCHOOL_CODES, UNDERGRAD_YEARS, GRAD_YEARS, YEARS, DEGREE_GROUPS, MAJORS, PROFILE_QUESTIONS, COFFEE_QUESTION } from '@/lib/constants';
+import VisibilityPicker from '@/components/VisibilityPicker';
 import type { ProfileFormData, FullProfile, DraftProfile, School, ProfileResponse } from '@/types';
 
 // ============================================================
@@ -95,6 +96,9 @@ export default function ProfileForm({ userId, userEmail, existingProfile, existi
   );
   const [coffeeAnswer, setCoffeeAnswer] = useState(existingCoffeeEntry?.answer ?? '');
 
+  // Community visibility — managed outside react-hook-form (array toggle)
+  const [visibleIn, setVisibleIn] = useState<string[]>(source?.visible_in ?? ['columbia']);
+
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const { register, control, handleSubmit, watch, getValues, formState: { errors } } = useForm<ProfileFormData>({
@@ -136,8 +140,8 @@ export default function ProfileForm({ userId, userEmail, existingProfile, existi
       ...optionalResponses.filter(r => r.question && r.answer.trim()),
       ...(coffeeAnswer.trim() ? [{ question: COFFEE_QUESTION, answer: coffeeAnswer.trim() }] : []),
     ];
-    return { ...values, responses, image_url: imageUrl || null, draft_only: true };
-  }, [getValues, optionalResponses, coffeeAnswer, imageUrl]);
+    return { ...values, responses, image_url: imageUrl || null, visible_in: visibleIn, draft_only: true };
+  }, [getValues, optionalResponses, coffeeAnswer, imageUrl, visibleIn]);
 
   const runAutoSave = useCallback(async (keepalive = false) => {
     const payload = buildDraftPayload();
@@ -188,7 +192,7 @@ export default function ProfileForm({ userId, userEmail, existingProfile, existi
     if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current);
     autoSaveTimer.current = setTimeout(runAutoSave, 2000);
     return () => { if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current); };
-  }, [allFormValues, optionalResponses, coffeeAnswer, imageUrl, runAutoSave]);
+  }, [allFormValues, optionalResponses, coffeeAnswer, imageUrl, visibleIn, runAutoSave]);
 
   useEffect(() => {
     const flushDraftSave = () => {
@@ -293,6 +297,7 @@ export default function ProfileForm({ userId, userEmail, existingProfile, existi
         ...data,
         responses,
         image_url: imageUrl || null,
+        visible_in: visibleIn,
         // uni and email are set server-side from verified email
       };
 
@@ -830,6 +835,18 @@ export default function ProfileForm({ userId, userEmail, existingProfile, existi
                 Show my profile on the community board
               </span>
             </label>
+          </div>
+
+          {/* Community visibility */}
+          <div style={{ marginTop: '0.5rem' }}>
+            <label className="form-label" style={{ marginBottom: '0.5rem', display: 'block' }}>
+              Community visibility
+            </label>
+            <VisibilityPicker
+              viewerSchool={watch('school') || null}
+              value={visibleIn}
+              onChange={setVisibleIn}
+            />
           </div>
         </div>
       </Section>

@@ -14,6 +14,7 @@ import {
   PROFILE_QUESTIONS,
   COFFEE_QUESTION,
 } from '@/lib/constants';
+import VisibilityPicker from '@/components/VisibilityPicker';
 import type { School, DraftProfile } from '@/types';
 
 interface Props {
@@ -99,12 +100,13 @@ export default function OnboardingClient({ userId: _userId, userEmail: _userEmai
   const [profileResponses, setProfileResponses] = useState(initialProfileResponses);
   const [responsesError, setResponsesError] = useState('');
 
-  // Step 4 — Socials
+  // Step 4 — Socials + visibility
   const [igHandle, setIgHandle] = useState(extractHandle(draft?.instagram, 'https://instagram.com/'));
   const [liHandle, setLiHandle] = useState(extractHandle(draft?.linkedin, 'https://linkedin.com/in/'));
   const [twitterHandle, setTwitterHandle] = useState(extractHandle(draft?.twitter, 'https://twitter.com/'));
   const [tiktokHandle, setTiktokHandle] = useState(extractHandle(draft?.tiktok, 'https://tiktok.com/@'));
   const [websiteUrl, setWebsiteUrl] = useState(draft?.website ?? '');
+  const [visibleIn, setVisibleIn] = useState<string[]>(draft?.visible_in ?? ['columbia']);
 
   // Save state
   const [saving, setSaving] = useState(false);
@@ -169,6 +171,7 @@ export default function OnboardingClient({ userId: _userId, userEmail: _userEmai
       responses,
       image_url: effectivePhotoUrl || null,
       is_public: true,
+      visible_in: visibleIn,
       twitter: toUrl('https://twitter.com/', twitterHandle),
       facebook: '',
       linkedin: toUrl('https://linkedin.com/in/', liHandle),
@@ -1305,6 +1308,21 @@ export default function OnboardingClient({ userId: _userId, userEmail: _userEmai
                     type="url"
                   />
                 </div>
+              </div>
+
+              {/* Visibility */}
+              <div style={{ marginTop: '2rem', paddingTop: '1.5rem', borderTop: '1px solid var(--color-mist)' }}>
+                <h2
+                  className="heading-section"
+                  style={{ fontSize: '1.125rem', color: 'var(--color-ink)', marginBottom: '1rem' }}
+                >
+                  Who can see your profile?
+                </h2>
+                <VisibilityPicker
+                  viewerSchool={school || null}
+                  value={visibleIn}
+                  onChange={setVisibleIn}
+                />
               </div>
             </>
           )}
