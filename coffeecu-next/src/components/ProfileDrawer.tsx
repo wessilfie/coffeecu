@@ -222,7 +222,7 @@ export default function ProfileDrawer({ profile, onClose, onCoffeeSuccess, isLog
               <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginBottom: '0.25rem' }}>
                 {profile.school && (
                   <span className={`badge badge-${profile.school}`}>
-                    {SCHOOLS.find(s => s.value === profile.school)?.label ?? profile.school}
+                    {(SCHOOLS as { value: string; label: string }[]).find(s => s.value === profile.school)?.label ?? profile.school}
                   </span>
                 )}
                 {profile.degree && (

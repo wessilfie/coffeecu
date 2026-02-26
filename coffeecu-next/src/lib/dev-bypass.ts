@@ -1,11 +1,20 @@
 // ============================================================
 // Dev bypass — fake auth + mock data for local testing
-// Activated by NEXT_PUBLIC_DEV_BYPASS=true in .env.local
+// Activated by DEV_BYPASS=true in local .env
 // ============================================================
 
 import type { Profile, FullProfile, DraftProfile } from '@/types';
 
-export const DEV_BYPASS = process.env.NEXT_PUBLIC_DEV_BYPASS === 'true';
+const nodeEnv = process.env.NODE_ENV ?? 'development';
+const serverBypass = process.env.DEV_BYPASS === 'true';
+const legacyClientBypass = process.env.NEXT_PUBLIC_DEV_BYPASS === 'true';
+
+if (nodeEnv === 'production' && (serverBypass || legacyClientBypass)) {
+  throw new Error('DEV_BYPASS and NEXT_PUBLIC_DEV_BYPASS must be false in production.');
+}
+
+// Keep temporary backward compatibility with NEXT_PUBLIC_DEV_BYPASS in non-production.
+export const DEV_BYPASS = serverBypass || (nodeEnv !== 'production' && legacyClientBypass);
 
 export const DEV_USER = {
   id: 'dev-user-000',

@@ -3,8 +3,8 @@ import 'server-only';
 import { Resend } from 'resend';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
-const FROM = process.env.RESEND_FROM_EMAIL ?? 'do-not-reply@coffeecu.com';
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'https://coffeecu.com';
+const FROM = process.env.RESEND_FROM_EMAIL ?? 'do-not-reply@coffeeatcu.com';
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'https://coffeeatcu.com';
 
 // ============================================================
 // Email helpers — all plain-text to avoid HTML injection

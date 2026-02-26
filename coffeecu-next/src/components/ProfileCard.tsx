@@ -38,7 +38,7 @@ interface Props {
 
 export default function ProfileCard({ profile, onClick, isOwn = false }: Props) {
   const badge = profile.school ? (BADGE_STYLES[profile.school as School] ?? DEFAULT_BADGE) : null;
-  const schoolEntry = profile.school ? SCHOOLS.find(s => s.value === profile.school) : null;
+  const schoolEntry = profile.school ? (SCHOOLS as { value: string; label: string }[]).find(s => s.value === profile.school) : null;
   const schoolLabel = schoolEntry?.label ?? null;
 
   return (
@@ -130,6 +130,10 @@ export default function ProfileCard({ profile, onClick, isOwn = false }: Props) 
                 letterSpacing: '0.01em',
                 lineHeight: 1.2,
                 margin: 0,
+                display: '-webkit-box',
+                WebkitLineClamp: 2,
+                WebkitBoxOrient: 'vertical',
+                overflow: 'hidden',
               }}
             >
               {profile.name}
@@ -137,8 +141,8 @@ export default function ProfileCard({ profile, onClick, isOwn = false }: Props) 
           </div>
         </div>
 
-        <div style={{ padding: '0.78rem 0.85rem 0.9rem' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', flexWrap: 'wrap', marginBottom: '0.55rem' }}>
+        <div style={{ padding: '0.78rem 0.85rem 0.9rem', minHeight: '6.4rem', display: 'flex', flexDirection: 'column' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', flexWrap: 'wrap', minHeight: '1.5rem', marginBottom: '0.45rem' }}>
             {badge && schoolLabel && (
               <span
                 style={{
@@ -186,23 +190,22 @@ export default function ProfileCard({ profile, onClick, isOwn = false }: Props) 
             )}
           </div>
 
-          {profile.responses?.[0] && (
-            <p
-              style={{
-                fontFamily: 'var(--font-body), serif',
-                fontSize: '0.82rem',
-                color: '#2f2a24',
-                lineHeight: 1.42,
-                margin: 0,
-                display: '-webkit-box',
-                WebkitLineClamp: 2,
-                WebkitBoxOrient: 'vertical',
-                overflow: 'hidden',
-              }}
-            >
-              {profile.responses[0].answer}
-            </p>
-          )}
+          <p
+            style={{
+              fontFamily: 'var(--font-body), serif',
+              fontSize: '0.82rem',
+              color: '#2f2a24',
+              lineHeight: 1.42,
+              margin: 0,
+              flex: 1,
+              display: '-webkit-box',
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: 'vertical',
+              overflow: 'hidden',
+            }}
+          >
+            {profile.responses?.[0]?.answer ?? ''}
+          </p>
         </div>
       </article>
     </button>

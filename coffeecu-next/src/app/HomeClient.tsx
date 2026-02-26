@@ -620,10 +620,11 @@ function AuthenticatedHome({ initialProfiles, meetingCount, userId, sentRequestI
   const supabase = getSupabaseClient();
   const searchTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Random parallax image (stable across renders)
-  const heroImage = useRef(
-    PARALLAX_IMAGES[Math.floor(Math.random() * PARALLAX_IMAGES.length)]
-  );
+  // Random parallax image — fixed on server, randomized after hydration
+  const [heroImage, setHeroImage] = useState(PARALLAX_IMAGES[0]);
+  useEffect(() => {
+    setHeroImage(PARALLAX_IMAGES[Math.floor(Math.random() * PARALLAX_IMAGES.length)]);
+  }, []);
 
   // ——— Search/filter logic ———
   const fetchProfiles = useCallback(async (f: ProfileFilters, pageNum: number, append = false) => {
@@ -735,7 +736,7 @@ function AuthenticatedHome({ initialProfiles, meetingCount, userId, sentRequestI
           style={{
             position: 'absolute',
             inset: 0,
-            backgroundImage: `url(/img/parallax/${heroImage.current}.jpg)`,
+            backgroundImage: `url(/img/parallax/${heroImage}.jpg)`,
             backgroundSize: 'cover',
             backgroundPosition: 'center',
             opacity: 0.26,

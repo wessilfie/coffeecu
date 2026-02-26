@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createSupabaseServerClient, createSupabaseServiceClient } from '@/lib/supabase/server';
 import { sendCoffeeRequestEmail } from '@/lib/email';
+import { sendCoffeeRequestSMS } from '@/lib/sms';
 import { DAILY_REQUEST_LIMIT } from '@/lib/constants';
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'https://coffeecu.com';
@@ -97,7 +98,7 @@ export async function POST(req: NextRequest) {
     // 5. Fetch sender + receiver profiles for email (server-side — no client exposure)
     const [senderRes, receiverRes] = await Promise.all([
       serviceClient.from('profiles').select('name, email, school, year, degree, responses').eq('user_id', user.id).single(),
-      serviceClient.from('profiles').select('name, email').eq('user_id', receiverId).single(),
+      serviceClient.from('profiles').select('name, email, phone').eq('user_id', receiverId).single(),
     ]);
 
     if (!senderRes.data || !receiverRes.data) {
@@ -124,6 +125,16 @@ export async function POST(req: NextRequest) {
       senderFirstResponse: firstResponse,
       senderProfileUrl: `${APP_URL}/columbia/${user.id}`,
     });
+
+    // SMS notification if receiver has opted in with a phone number
+    if (receiverRes.data.phone) {
+      await sendCoffeeRequestSMS({
+        toPhone: receiverRes.data.phone,
+        receiverName: receiverRes.data.name,
+        senderName: senderRes.data.name,
+        senderSchool: senderRes.data.school,
+      }).catch(console.error); // non-fatal
+    }
 
     return NextResponse.json({ ok: true });
 

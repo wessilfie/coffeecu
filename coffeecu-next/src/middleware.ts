@@ -19,8 +19,9 @@ export async function middleware(request: NextRequest) {
     request: { headers: request.headers },
   });
 
-  // Dev bypass — skip all auth checks
-  if (process.env.NEXT_PUBLIC_DEV_BYPASS === 'true') {
+  // Dev bypass — skip auth checks in local/dev only
+  const devBypass = process.env.DEV_BYPASS === 'true' && process.env.NODE_ENV !== 'production';
+  if (devBypass) {
     return response;
   }
 

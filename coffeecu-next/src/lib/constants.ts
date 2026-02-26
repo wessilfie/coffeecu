@@ -42,7 +42,7 @@ export const SCHOOL_GROUPS = [
 ] as const;
 
 // Flat list for filters, badges, etc.
-export const SCHOOLS = SCHOOL_GROUPS.flatMap(g => g.schools);
+export const SCHOOLS: { value: string; label: string }[] = SCHOOL_GROUPS.flatMap(g => g.schools as unknown as { value: string; label: string }[]);
 
 // Set of undergrad school codes — used to show context-aware year options
 export const UNDERGRAD_SCHOOL_CODES = new Set(['CC', 'SEAS', 'GS', 'BC']);
@@ -117,7 +117,7 @@ export const DEGREE_GROUPS = [
   },
 ] as const;
 
-export const DEGREES = DEGREE_GROUPS.flatMap(g => g.degrees);
+export const DEGREES: { value: string; label: string }[] = DEGREE_GROUPS.flatMap(g => g.degrees as unknown as { value: string; label: string }[]);
 
 // University domain configuration
 // Mirrors the university_domains table in Supabase

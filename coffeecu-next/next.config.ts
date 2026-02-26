@@ -2,6 +2,7 @@ import type { NextConfig } from "next";
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL ?? '';
 const supabaseHostname = SUPABASE_URL ? new URL(SUPABASE_URL).hostname : '';
+const isProd = process.env.NODE_ENV === 'production';
 
 const nextConfig: NextConfig = {
   images: {
@@ -22,7 +23,9 @@ const nextConfig: NextConfig = {
               "default-src 'self'",
               `connect-src 'self' ${SUPABASE_URL} https://api.resend.com`,
               `img-src 'self' data: blob: ${supabaseHostname ? `https://${supabaseHostname}` : ''}`,
-              "script-src 'self' 'unsafe-eval' 'unsafe-inline'", // Next.js requires unsafe-eval in dev
+              isProd
+                ? "script-src 'self' 'unsafe-inline'"
+                : "script-src 'self' 'unsafe-eval' 'unsafe-inline'", // relaxed only for local dev
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
               "font-src 'self' https://fonts.gstatic.com",
               "frame-src 'none'",
