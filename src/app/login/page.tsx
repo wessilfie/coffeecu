@@ -36,13 +36,24 @@ export default async function LoginPage({
     },
     {
       text: 'I\'m getting married to someone I met for tea once on here.',
-      attr: 'Columbia graduate',
+      attr: 'Columbia alum',
     },
     {
       text: 'Had one Zoom call with a professor I found on here. It completely changed the direction of my research.',
       attr: 'GSAS student',
     },
+    {
+      text: 'I\'ve wanted to find other folks looking to get into entrepreneurship. Coffee@CU is helping me meet others in that space I might not have met otherwise.',
+      attr: 'CBS \'26 MBA candidate',
+    },
+    {
+      text: 'I already go to Dear Mama midday; will be nice to have some others to meet over there.',
+      attr: 'CBS \'26 EMBA candidate',
+    },
   ];
+
+  // Rotate by hour so it changes throughout the day without hydration issues
+  const quote = quotes[new Date().getHours() % quotes.length];
 
   return (
     <main style={{ minHeight: '100vh', display: 'flex' }}>
@@ -205,11 +216,6 @@ export default async function LoginPage({
         />
 
         <div style={{ position: 'relative', zIndex: 2, maxWidth: '480px' }}>
-          <p className="label-mono" style={{ color: '#75aadb', marginBottom: '1.5rem', letterSpacing: '0.18em' }}>
-            From the community
-          </p>
-
-          {/* Primary quote */}
           <blockquote style={{ margin: 0 }}>
             <p
               style={{
@@ -222,7 +228,7 @@ export default async function LoginPage({
                 marginBottom: '1.25rem',
               }}
             >
-              &ldquo;{quotes[0].text}&rdquo;
+              &ldquo;{quote.text}&rdquo;
             </p>
             <footer
               style={{
@@ -231,44 +237,9 @@ export default async function LoginPage({
                 color: 'rgba(255,255,255,0.5)',
               }}
             >
-              {quotes[0].attr}
+              {quote.attr}
             </footer>
           </blockquote>
-
-          {/* Secondary quote — one only to keep above the fold */}
-          {quotes.slice(1, 2).map((q) => (
-            <blockquote
-              key={q.text}
-              style={{
-                margin: '1.5rem 0 0',
-                paddingTop: '1.5rem',
-                borderTop: '1px solid rgba(255,255,255,0.12)',
-              }}
-            >
-              <p
-                style={{
-                  fontFamily: 'var(--font-display), serif',
-                  fontStyle: 'italic',
-                  fontSize: 'clamp(1.125rem, 2vw, 1.4375rem)',
-                  fontWeight: 400,
-                  color: 'rgba(255,255,255,0.82)',
-                  lineHeight: 1.4,
-                  marginBottom: '0.875rem',
-                }}
-              >
-                &ldquo;{q.text}&rdquo;
-              </p>
-              <footer
-                style={{
-                  fontFamily: 'var(--font-body), serif',
-                  fontSize: '0.75rem',
-                  color: 'rgba(255,255,255,0.4)',
-                }}
-              >
-                {q.attr}
-              </footer>
-            </blockquote>
-          ))}
 
           {/* Bottom badge */}
           <div

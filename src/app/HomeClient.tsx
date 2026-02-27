@@ -104,7 +104,6 @@ function EmailSignupInput({ darkBackground = false }: { darkBackground?: boolean
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           placeholder="UNI@columbia.edu"
-          required
           style={{
             flex: '1',
             minWidth: '220px',
