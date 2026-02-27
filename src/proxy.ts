@@ -13,7 +13,7 @@ const PROTECTED_ROUTES = ['/profile', '/admin', '/onboarding', '/columbia'];
 // Routes that require moderator role or higher
 const MOD_ROUTES = ['/admin'];
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const response = NextResponse.next({
     request: { headers: request.headers },
