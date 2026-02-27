@@ -6,18 +6,22 @@ const QUOTES = [
   {
     text: "I met one of my closest friends on Coffee@CU. We're still close nearly a decade later.",
     attr: 'Columbia alum',
+    location: 'Hungarian Pastry Shop',
   },
   {
     text: "I'm getting married to someone I met for coffee once on here.",
     attr: 'Columbia alum',
+    location: 'Joe Coffee (Noco)',
   },
   {
     text: "I've wanted to find other folks looking to get into entrepreneurship. Coffee@CU is helping me meet others in that space I might not have met otherwise.",
     attr: "CBS '26 MBA candidate",
+    location: 'Kuro Kuma',
   },
   {
     text: 'I already go to Dear Mama midday; will be nice to have some others to meet over there.',
     attr: "CBS '26 EMBA candidate",
+    location: 'Pisticci',
   },
 ];
 
@@ -51,6 +55,9 @@ export default function LoginQuote() {
         }}
       >
         {quote.attr}
+        {quote.location && (
+          <span style={{ marginLeft: '0.5rem', opacity: 0.6 }}>· {quote.location}</span>
+        )}
       </footer>
     </blockquote>
   );
