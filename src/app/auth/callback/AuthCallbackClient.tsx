@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { createBrowserClient } from '@supabase/ssr';
+import { createSupabaseBrowserClient } from '@/lib/supabase/browser';
 import { isAllowedDomain } from '@/lib/constants';
 
 export default function AuthCallbackClient() {
@@ -10,55 +10,61 @@ export default function AuthCallbackClient() {
   const searchParams = useSearchParams();
 
   useEffect(() => {
-    const supabase = createBrowserClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    );
+    const supabase = createSupabaseBrowserClient();
 
     async function handleAuth() {
-      const code = searchParams.get('code');
-      const supabaseError = searchParams.get('error');
+      // Supabase may send errors in query params (some versions) or hash (others)
+      const queryError = searchParams.get('error');
+      const hash = window.location.hash.slice(1);
+      const hashParams = new URLSearchParams(hash);
+      const hashError = hashParams.get('error');
 
-      if (supabaseError) {
-        // Supabase sends ?error= when the link is expired or already used
-        console.error('[auth/callback] Supabase error:', supabaseError, searchParams.get('error_description'));
+      if (queryError || hashError) {
+        console.error('[auth/callback] error:', queryError ?? hashError);
         router.replace('/login?error=link_expired');
         return;
       }
 
-      if (code) {
-        // PKCE flow: server generated a code, exchange it for a session
-        const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
-        if (exchangeError) {
-          console.error('[auth/callback] exchangeCodeForSession:', exchangeError.message);
-          const isVerifierMissing = exchangeError.message?.toLowerCase().includes('verifier');
+      const code = searchParams.get('code');
+      const accessToken = hashParams.get('access_token');
+      const refreshToken = hashParams.get('refresh_token') ?? '';
+
+      if (accessToken) {
+        // Implicit flow — token arrived in the URL hash fragment
+        const { error } = await supabase.auth.setSession({
+          access_token: accessToken,
+          refresh_token: refreshToken,
+        });
+        if (error) {
+          console.error('[auth/callback] setSession error:', error.message);
+          router.replace('/login?error=auth_failed');
+          return;
+        }
+      } else if (code) {
+        // PKCE flow fallback — token arrived as ?code= query param
+        const { error } = await supabase.auth.exchangeCodeForSession(code);
+        if (error) {
+          console.error('[auth/callback] exchangeCodeForSession error:', error.message);
+          const isVerifierMissing = error.message?.toLowerCase().includes('verifier');
           router.replace(
             isVerifierMissing ? '/login?error=wrong_device' : '/login?error=auth_failed',
           );
           return;
         }
       } else {
-        // No ?code= in URL — the token may be in the URL hash (#access_token=...).
-        // supabase-js automatically processes hash fragments when getSession() is called.
-        const { data } = await supabase.auth.getSession();
-        if (!data.session) {
-          router.replace('/login?error=missing_code');
-          return;
-        }
+        router.replace('/login?error=missing_code');
+        return;
       }
 
       // Domain check — Columbia/Barnard only
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-
+      const { data: { user } } = await supabase.auth.getUser();
       if (user?.email && !isAllowedDomain(user.email)) {
         await supabase.auth.signOut();
         router.replace(`/login?error=domain&email=${encodeURIComponent(user.email)}`);
         return;
       }
 
-      // Redirect to profile — profile page handles the new-user → /onboarding redirect
+      // Profile page handles new-user → /onboarding redirect
       router.replace('/profile');
     }
 

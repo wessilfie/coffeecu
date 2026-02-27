@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { createBrowserClient } from '@supabase/ssr';
+import { createSupabaseBrowserClient } from '@/lib/supabase/browser';
 import { Mail, Lock, AlertCircle } from 'lucide-react';
 import { isAllowedDomain } from '@/lib/constants';
 
@@ -40,10 +40,7 @@ export default function LoginForm({
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [message, setMessage] = useState('');
 
-  const supabase = createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-  );
+  const supabase = createSupabaseBrowserClient();
 
   const domainError = errorParam ? (DOMAIN_ERRORS[errorParam] ?? 'Something went wrong. Please try again.') : null;
 
@@ -60,7 +57,7 @@ export default function LoginForm({
     }
 
     if (mode === 'sign_up') {
-      const { data, error } = await supabase.auth.signUp({
+      const { error } = await supabase.auth.signUp({
         email,
         password,
         options: {
@@ -74,11 +71,7 @@ export default function LoginForm({
             ? 'An account with this email already exists. Try signing in instead.'
             : error.message,
         );
-      } else if (data.session) {
-        // Email confirmation is disabled — user is already signed in
-        window.location.href = '/auth/callback';
       } else {
-        // Confirmation email sent
         setStatus('success');
         setMessage('');
       }
