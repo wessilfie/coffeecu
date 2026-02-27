@@ -8,7 +8,7 @@ const QUOTES = [
     attr: 'Columbia alum',
   },
   {
-    text: "I'm getting married to someone I met for tea once on here.",
+    text: "I'm getting married to someone I met for coffee once on here.",
     attr: 'Columbia alum',
   },
   {
