@@ -6,6 +6,7 @@ import { Search, ChevronDown } from 'lucide-react';
 import ProfileCard from '@/components/ProfileCard';
 import ProfileDrawer from '@/components/ProfileDrawer';
 import { getSupabaseClient } from '@/lib/supabase/client';
+import { createSupabaseBrowserClient } from '@/lib/supabase/browser';
 import { DEV_BYPASS, DEV_MOCK_PROFILES } from '@/lib/dev-bypass';
 import { PARALLAX_IMAGES, SCHOOL_GROUPS, YEARS } from '@/lib/constants';
 import type { Profile, ProfileFilters } from '@/types';
@@ -22,6 +23,29 @@ interface Props {
 }
 
 export default function HomeClient({ initialProfiles, meetingCount, isLoggedIn, userId, sentRequestIds, hasPublishedProfile }: Props) {
+  // Supabase sometimes redirects auth errors to the Site URL (homepage) as a hash fragment.
+  // Detect that, check if the user already has a valid session, and route them appropriately.
+  useEffect(() => {
+    const hash = window.location.hash.slice(1);
+    if (!hash) return;
+    const params = new URLSearchParams(hash);
+    if (!params.get('error')) return;
+
+    // Clean the hash so the ugly URL isn't visible while we redirect
+    window.history.replaceState(null, '', window.location.pathname + window.location.search);
+
+    const supabase = createSupabaseBrowserClient();
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        // Account is confirmed and session is live — go to profile (routes to onboarding if new)
+        window.location.href = '/profile';
+      } else {
+        // No session — link was expired or already used; ask them to sign in
+        window.location.href = '/login?error=link_expired';
+      }
+    });
+  }, []);
+
   // Anti-scraping: show a login gate instead of profiles for unauthenticated users
   // The hero and meeting count remain public (marketing), but profiles are gated.
   if (!isLoggedIn) {
