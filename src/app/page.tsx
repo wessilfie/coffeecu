@@ -40,8 +40,11 @@ export default async function HomePage({
     .order('random_sort', { ascending: true })
     .limit(12);
 
-  // Meeting count for the community stats display
-  const { count: meetingCount } = await supabase
+  // Meeting count for the community stats display — uses service client to bypass
+  // the meetings_participant_read RLS policy, which would otherwise only count
+  // the current user's own meetings (or return 0 for unauthenticated visitors).
+  const serviceClient = createSupabaseServiceClient();
+  const { count: meetingCount } = await serviceClient
     .from('meetings')
     .select('*', { count: 'exact', head: true });
 

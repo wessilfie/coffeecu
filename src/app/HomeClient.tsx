@@ -720,8 +720,8 @@ function AuthenticatedHome({ initialProfiles, meetingCount, userId, sentRequestI
   };
 
   const handleCoffeeSuccess = (firstName: string, receiverId: string) => {
-    setSuccessMessage(`Your request was sent to ${firstName}!`);
-    setTimeout(() => setSuccessMessage(''), 5000);
+    setSuccessMessage(`Request sent! We'll email both you and ${firstName} so you can connect and schedule a time to chat. Check your spam if it doesn't arrive in a few moments.`);
+    setTimeout(() => setSuccessMessage(''), 10000);
     setSelectedProfile(null);
     setSentIds(prev => new Set([...prev, receiverId]));
   };

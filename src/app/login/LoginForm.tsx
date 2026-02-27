@@ -39,6 +39,7 @@ export default function LoginForm({
   const [password, setPassword] = useState('');
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [message, setMessage] = useState('');
+  const [infoMessage, setInfoMessage] = useState('');
 
   const supabase = createSupabaseBrowserClient();
 
@@ -48,6 +49,7 @@ export default function LoginForm({
     e.preventDefault();
     setStatus('loading');
     setMessage('');
+    setInfoMessage('');
 
     // Client-side domain check (UX feedback only — server enforces too)
     if (!isAllowedDomain(email)) {
@@ -63,7 +65,7 @@ export default function LoginForm({
     }
 
     if (mode === 'sign_up') {
-      const { error } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
@@ -71,12 +73,19 @@ export default function LoginForm({
         },
       });
       if (error) {
-        setStatus('error');
-        setMessage(
-          error.message.includes('already registered')
-            ? 'An account with this email already exists. Try signing in instead.'
-            : error.message,
-        );
+        if (error.message.includes('already registered')) {
+          setMode('sign_in');
+          setStatus('idle');
+          setInfoMessage('An account with this email already exists. Enter your password below to sign in.');
+        } else {
+          setStatus('error');
+          setMessage(error.message);
+        }
+      } else if (!data.user?.identities?.length) {
+        // Supabase silently "succeeded" but sent no real confirmation — duplicate account
+        setMode('sign_in');
+        setStatus('idle');
+        setInfoMessage('An account with this email already exists. Enter your password below to sign in.');
       } else {
         setStatus('success');
         setMessage('');
@@ -157,7 +166,7 @@ export default function LoginForm({
           Already confirmed?{' '}
           <button
             type="button"
-            onClick={() => { setStatus('idle'); setMode('sign_in'); setMessage(''); }}
+            onClick={() => { setStatus('idle'); setMode('sign_in'); setMessage(''); setInfoMessage(''); }}
             style={{
               background: 'none',
               border: 'none',
@@ -208,6 +217,30 @@ export default function LoginForm({
                 Signed in as: {errorEmail}
               </span>
             )}
+          </p>
+        </div>
+      )}
+
+      {/* Informational banner (e.g. duplicate email auto-switch) */}
+      {infoMessage && (
+        <div style={{
+          display: 'flex',
+          gap: '0.625rem',
+          alignItems: 'flex-start',
+          padding: '0.75rem 1rem',
+          background: 'rgba(0,63,138,0.06)',
+          border: '1px solid rgba(0,63,138,0.2)',
+          borderRadius: '4px',
+          marginBottom: '1.5rem',
+        }}>
+          <p style={{
+            fontFamily: 'var(--font-mono), monospace',
+            fontSize: '0.7rem',
+            color: 'var(--color-columbia)',
+            margin: 0,
+            lineHeight: 1.5,
+          }}>
+            {infoMessage}
           </p>
         </div>
       )}
@@ -326,7 +359,7 @@ export default function LoginForm({
             New to Coffee@CU?{' '}
             <button
               type="button"
-              onClick={() => { setMode('sign_up'); setMessage(''); setStatus('idle'); }}
+              onClick={() => { setMode('sign_up'); setMessage(''); setInfoMessage(''); setStatus('idle'); }}
               style={{
                 background: 'none',
                 border: 'none',
@@ -346,7 +379,7 @@ export default function LoginForm({
             Already have an account?{' '}
             <button
               type="button"
-              onClick={() => { setMode('sign_in'); setMessage(''); setStatus('idle'); }}
+              onClick={() => { setMode('sign_in'); setMessage(''); setInfoMessage(''); setStatus('idle'); }}
               style={{
                 background: 'none',
                 border: 'none',
