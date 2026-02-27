@@ -6,7 +6,6 @@ import { Search, ChevronDown } from 'lucide-react';
 import ProfileCard from '@/components/ProfileCard';
 import ProfileDrawer from '@/components/ProfileDrawer';
 import { getSupabaseClient } from '@/lib/supabase/client';
-import { createSupabaseBrowserClient } from '@/lib/supabase/browser';
 import { DEV_BYPASS, DEV_MOCK_PROFILES } from '@/lib/dev-bypass';
 import { PARALLAX_IMAGES, SCHOOL_GROUPS, YEARS } from '@/lib/constants';
 import type { Profile, ProfileFilters } from '@/types';
@@ -23,27 +22,19 @@ interface Props {
 }
 
 export default function HomeClient({ initialProfiles, meetingCount, isLoggedIn, userId, sentRequestIds, hasPublishedProfile }: Props) {
-  // Supabase sometimes redirects auth errors to the Site URL (homepage) as a hash fragment.
-  // Detect that immediately and redirect — show nothing so the user never sees the homepage.
+  // Supabase redirects both successful tokens and errors to the Site URL (homepage) as a hash.
+  // Detect either case and forward to /auth/callback which handles both correctly.
   const [redirecting, setRedirecting] = useState(() => {
     if (typeof window === 'undefined') return false;
     const hash = window.location.hash.slice(1);
-    return !!hash && !!new URLSearchParams(hash).get('error');
+    if (!hash) return false;
+    const params = new URLSearchParams(hash);
+    return !!(params.get('access_token') || params.get('error'));
   });
 
   useEffect(() => {
     if (!redirecting) return;
-
-    window.history.replaceState(null, '', window.location.pathname + window.location.search);
-
-    const supabase = createSupabaseBrowserClient();
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) {
-        window.location.href = '/profile';
-      } else {
-        window.location.href = '/login?error=link_expired';
-      }
-    });
+    window.location.href = '/auth/callback' + window.location.hash;
   }, [redirecting]);
 
   if (redirecting) return null;
