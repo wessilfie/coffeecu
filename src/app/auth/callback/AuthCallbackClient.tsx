@@ -21,6 +21,7 @@ export default function AuthCallbackClient() {
 
       if (supabaseError) {
         // Supabase sends ?error= when the link is expired or already used
+        console.error('[auth/callback] Supabase error:', supabaseError, searchParams.get('error_description'));
         router.replace('/login?error=link_expired');
         return;
       }

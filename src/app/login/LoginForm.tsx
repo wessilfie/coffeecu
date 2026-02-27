@@ -60,7 +60,7 @@ export default function LoginForm({
     }
 
     if (mode === 'sign_up') {
-      const { error } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
@@ -69,8 +69,16 @@ export default function LoginForm({
       });
       if (error) {
         setStatus('error');
-        setMessage(error.message);
+        setMessage(
+          error.message.includes('already registered')
+            ? 'An account with this email already exists. Try signing in instead.'
+            : error.message,
+        );
+      } else if (data.session) {
+        // Email confirmation is disabled — user is already signed in
+        window.location.href = '/auth/callback';
       } else {
+        // Confirmation email sent
         setStatus('success');
         setMessage('');
       }
