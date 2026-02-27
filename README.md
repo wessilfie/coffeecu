@@ -1,225 +1,241 @@
-Coffee@CU
-=========
+# Coffee@CU
 
-[Coffee@CU][coffeecu] brings Columbia students, faculty, and alumni closer together--one coffee chat at a time.
+**Meet the Columbia community, one coffee at a time.**
 
-Originally built by Parthi. Adopted and maintained by [The Columbia Lion](https://github.com/thecolumbialion) & ADI Labs. In 2026, Will is working on a new version.
+Coffee@CU connects Columbia University students, faculty, and alumni for casual coffee chats. It's a community board — not a dating app. Browse people by interest, major, and availability. Request a chat with a personal message. Build connections across CC, SEAS, GS, Barnard, and Graduate programs.
 
-Setup
------
+> Built and maintained by [ADI](https://adicu.com) and [The Lion](https://www.columbiaspectator.com).
 
-1. To run locally, clone the repository to your local drive using: `git clone https://github.com/thecolumbialion/coffeecu.git`
+---
 
-2. Create a file called `settings.json` in your local repository formatted as follows:
+## Design
 
-```json
-{
-  "public": {
-    "recaptcha": {
-      "key": [
-        "<recaptcha-key>"
-      ]
-    }
-  },
-  "private": {
-    "mailgun": {
-      "host": "smtp.mailgun.org",
-      "username": "<mailgun-username>",
-      "password": "<mailgun-password>",
-      "port": 587
-    },
-    "google": {
-      "clientId": "<google-client-id>",
-      "secret": "<google-secret-key>"
-    },
-    "recaptcha": {
-      "secret": "<recaptcha-secret-key>"
-    },
-    "admins": [
-      "<admin-id>"
-    ]
-  }
-}
+**"Limestone & Blue"** — old Columbia meets modern.
+
+The Beaux-Arts grandeur of Low Library, the warm limestone of Butler, the specific Columbia blue — rendered in a clean contemporary UI. Intentionally not startup-y, not AI-generated-looking, not Inter.
+
+- **Display:** Cormorant Garamond — the serif of university presses and law reviews
+- **Body:** Lora — warm, readable
+- **Labels/Meta:** Courier Prime — typewritten campus memo energy
+- **Palette:** Limestone cream (`#F4F0E6`), Columbia blue (`#003F8A`), warm copper (`#7A4A1E`)
+
+---
+
+## Tech Stack
+
+| Layer | Technology |
+|---|---|
+| Framework | Next.js 16 (App Router, TypeScript) |
+| Database | Supabase (PostgreSQL) |
+| Auth | Supabase Auth (Google OAuth + email/password) |
+| File Storage | Supabase Storage (profile photos) |
+| Search | Supabase full-text search (PostgreSQL `tsvector`) |
+| Email | Resend |
+| Styling | Tailwind CSS v4 + CSS variables |
+| Animations | Framer Motion |
+| Forms | React Hook Form + Zod |
+
+---
+
+## Project Structure
+
+```
+src/
+├── app/
+│   ├── layout.tsx              # Root layout — fonts (Cormorant, Lora, Courier Prime), metadata
+│   ├── page.tsx                # Home (server) — fetches initial profiles, passes to HomeClient
+│   ├── HomeClient.tsx          # Home (client) — search, filter, profile grid, drawer, modals
+│   ├── login/
+│   │   ├── page.tsx            # Login page layout
+│   │   └── LoginForm.tsx       # Google OAuth + email/password form
+│   ├── verify/page.tsx         # Email verification prompt
+│   ├── profile/
+│   │   ├── page.tsx            # Profile editor (server — loads existing data)
+│   │   └── ProfileForm.tsx     # Profile form (client — RHF + Zod + photo upload)
+│   ├── admin/
+│   │   ├── page.tsx            # Admin page (server — role check)
+│   │   └── AdminClient.tsx     # Admin UI (profiles list, user lookup, role management)
+│   ├── auth/callback/route.ts  # OAuth callback — domain check, session exchange
+│   ├── not-found.tsx           # 404
+│   └── api/
+│       ├── coffee-request/route.ts  # POST: atomic rate-limit + email
+│       ├── profile/save/route.ts    # POST: save draft or publish profile
+│       └── admin/
+│           ├── toggle-visible/      # Mods: hide/restore profiles
+│           ├── remove/              # Admins: permanently remove
+│           ├── ban/                 # Admins: blacklist user
+│           ├── suspend/             # Mods: pause request sending
+│           ├── user-lookup/         # Mods: search user activity
+│           └── roles/
+│               ├── grant/           # Super admin: grant role
+│               └── revoke/          # Super admin: revoke role
+├── components/
+│   ├── Nav.tsx                 # Sticky Columbia-blue header
+│   ├── Footer.tsx              # ADI + The Lion credit
+│   ├── ProfileCard.tsx         # Portrait tile (3:4, name + school tag + contact snippet)
+│   ├── ProfileDrawer.tsx       # Slide-in profile detail panel (Framer Motion)
+│   └── CoffeeRequestModal.tsx  # Coffee chat request modal with required message
+├── lib/
+│   ├── supabase/
+│   │   ├── client.ts           # Browser Supabase singleton (anon key only)
+│   │   └── server.ts           # Server Supabase — session client + service role client
+│   ├── auth.ts                 # Role check helpers, requireAuth, logAuditAction
+│   ├── email.ts                # Resend helpers (coffee request + welcome email)
+│   └── constants.ts            # Majors, schools, years, UNIVERSITY_DOMAINS, DAILY_LIMIT
+├── types/index.ts              # TypeScript interfaces (Profile, DraftProfile, Meeting, etc.)
+└── middleware.ts               # Edge middleware — auth guards + Columbia domain check
 ```
 
-3. Install Meteor with `curl https://install.meteor.com/ | sh`.
+---
 
-4. Install the `babel-runtime` package using: `npm install --save babel-runtime`.
+## Database Schema
 
-4. Use the command `run.sh` to serve the app locally. If it works, visit [http://localhost:3000] to view the app. You can also specify a different port number with `--port=<port>`.
-
-5. To restore the local database, email coffeecu@adicu.com to get a database backup. Run `mongorestore -h 127.0.0.1 --port 3001 -d meteor path-to-database-backup/backups/db_dump/coffeecu`.
-
-Deployment
-----------
-
-To simplify the deployment process we use [Meteor Up][mup], a great tool that allows you to deploy a Meteor app to a server. For deploying with Meteor Up, you'll need to create a `.deploy` folder that also includes a `settings.json` file and a `mup.js` file. Then, follow the instructions on the [Meteor Up Github][mup-github] page exactly.
-
-Your mup.js file should be formatted as follows:
-
-```javascript
-module.exports = {
-  servers: {
-    one: {
-      host: '<ip-address>',
-      username: 'root',
-      pem: '<path-to-private-key>' 
-    }
-  },
-
-  meteor: {
-    name: 'coffeecu',
-    path: '<path-to-local-files>',
-
-    volumes: {
-      '/upload': '/upload'
-    },
-
-    servers: {
-      one: {},
-    },
-
-    buildOptions: {
-      serverOnly: true,
-    },
-
-    env: {
-      ROOT_URL: 'https://coffeecu.com',
-      MONGO_URL: 'mongodb://localhost/meteor',
-      MAIL_URL: '<mailgun-url>',
-    },
-
-    docker: {
-      image: 'abernix/meteord:base',
-      prepareBundle: false
-    },
-
-    // This is the maximum time in seconds it will wait
-    // for your app to start
-    // Add 30 seconds if the server has 512mb of ram
-    // And 30 more if you have binary npm dependencies.
-    deployCheckWaitTime: 300,
-
-    // Show progress bar while uploading bundle to server
-    // You might need to disable it on CI servers
-    enableUploadProgressBar: true
-  },
-
-  mongo: {
-    port: 27017,
-    version: '3.4.1',
-    servers: {
-      one: {}
-    }
-  },
-
-  proxy: {
-    domains: 'coffeecu.com,www.coffeecu.com',
-
-    ssl: {
-      // Enable Let's Encrypt
-      forceSSL: true,
-      letsEncryptEmail: '<letsencrypt-email>'
-    }
-  }
-}; 
+```
+profiles            — published community profiles (auth required to read — anti-scraping RLS)
+draft_profiles      — in-progress profiles (missing photo or not yet submitted)
+meetings            — coffee request log (dedup + daily rate-limit)
+blacklist           — banned users
+user_roles          — moderator / admin / super_admin hierarchy
+suspensions         — temporary or indefinite request-send pauses
+audit_log           — immutable record of all admin actions
+university_domains  — allowed email domains per university (extensible)
 ```
 
-Access the Server
------------------
+Full schema with RLS policies: `supabase/migrations/001_initial_schema.sql`
 
-[Coffee@CU][coffeecu] is hosted on DigitalOcean and maintained by ADI Labs. For those authorized to work on the site, generate an ssh key if you do not have one using the following: `ssh-keygen -t rsa -b 4096`
+---
 
-Find your key's fingerprint by examining the file the key was generated in. Note: A fingerprint will look something like `SHA256:AnrDG1bkV9u4HR6CVw4Qvo8EXkhPpyzxf+Bhn+GZnLU`.
+## Security Architecture
 
-Once you have gotten the actual key, log into DigitalOcean. Go to Settings --> Security, and an account for your name. In the box that pops up, paste your full key. If done correctly, you will now be able to ssh into the droplet from your computer by typing: `ssh root@coffeecu.com`.
+**Anti-scraping:** Profiles require authentication at two layers:
+1. RLS policy (`auth.uid() IS NOT NULL`) — unauthenticated Supabase queries return no rows
+2. App-layer gate — unauthenticated visitors see the landing page only, not the profile grid
 
-For troubleshooting, you can visit [this](https://www.digitalocean.com/community/tutorials/how-to-configure-ssh-key-based-authentication-on-a-freebsd-server) DigitalOcean Community post for more tips and instructions.
+**Domain restriction:** `@columbia.edu` and `@barnard.edu` only, enforced at:
+- Signup (client-side UX feedback)
+- OAuth callback (`/auth/callback/route.ts`)
+- Edge middleware (`middleware.ts`)
+- API route level (secondary check on all sensitive routes)
 
-Dependencies
-------------
+**Rate limiting:** Coffee requests are rate-limited to `DAILY_REQUEST_LIMIT` (default: 3/day). Implemented as an atomic PostgreSQL function (`attempt_coffee_request`) to prevent race conditions from concurrent requests.
 
-For login:
-- accounts-password
-- accounts-google
-- acccounts-ui
-- service-configuration
-- useraccounts:core
-- useraccounts:materialize
-- useraccounts:iron-routing
+**Role hierarchy:** `moderator → admin → super_admin`. All role checks are server-side via the `user_roles` table. Service role key never exposed to the browser (`server-only` import guard).
 
-For styling:
-- materialize:materialize-custom
-- semantic:ui
-- fourseven:scss (to compile SCSS for materialize)
+**Audit log:** All admin actions (hide, remove, ban, suspend, role changes) are logged to the `audit_log` table with actor, target, and timestamp.
 
-For email:
-- cunneen:mailgun (need to create Mailgun account too)
+---
 
-For search:
-- easy:search
+## Role Permissions
 
-For image upload:
-- tomi:upload-server
-- tomi:upload-jquery
+| Action | Moderator | Admin | Super Admin |
+|---|---|---|---|
+| Hide/restore profile | ✅ | ✅ | ✅ |
+| User lookup + activity | ✅ | ✅ | ✅ |
+| Suspend request-sending | ✅ | ✅ | ✅ |
+| Permanently remove profile | ❌ | ✅ | ✅ |
+| Ban user | ❌ | ✅ | ✅ |
+| Grant/revoke roles | ❌ | ❌ | ✅ |
 
-For routing:
-- iron:router
+---
 
-For bug tracking:
-- meteorhacks:kadira
+## Setup
 
-For SEO:
-- manuelschoebel:ms-seo
+### Prerequisites
+- Node.js 18+
+- A [Supabase](https://supabase.com) project
+- A [Resend](https://resend.com) account
 
-For recaptcha:
-- bratanon:recaptcha
+### 1. Clone and install
 
-Hacks
------
-
-materialize:materialize-custom is found in `/packages` and is pulled from [the GitHub repo](https://github.com/Dogfalo/materialize) and has the following modifications:
-`sass/components/_variables.scss` is modified for a custom color scheme. But we have to compile this scss. So in `package.js`, we add `api.use('fourseven:scss');` and 
-```javascript
-  api.addFiles([
-    'dist/js/materialize.js',
-    // Added custom
-    'sass/components/_buttons.scss',
-    'sass/components/_cards.scss',
-    'sass/components/_carousel.scss',
-    'sass/components/_chips.scss',
-    'sass/components/_collapsible.scss',
-    'sass/components/_color.scss',
-    'sass/components/_dropdown.scss',
-    'sass/components/_form.scss',
-    'sass/components/_global.scss',
-    'sass/components/_grid.scss',
-    'sass/components/_icons-material-design.scss',
-    'sass/components/_materialbox.scss',
-    'sass/components/_mixins.scss',
-    'sass/components/_modal.scss',
-    'sass/components/_navbar.scss',
-    'sass/components/_normalize.scss',
-    'sass/components/_prefixer.scss',
-    'sass/components/_preloader.scss',
-    'sass/components/_roboto.scss',
-    'sass/components/_sideNav.scss',
-    'sass/components/_slider.scss',
-    'sass/components/_table_of_contents.scss',
-    'sass/components/_tabs.scss',
-    'sass/components/_toast.scss',
-    'sass/components/_tooltip.scss',
-    'sass/components/_typography.scss',
-    'sass/components/_variables.scss',
-    'sass/components/_waves.scss',
-    'sass/components/date_picker/_default.date.scss',
-    'sass/components/date_picker/_default.scss',
-    'sass/components/date_picker/_default.time.scss',
-    'sass/materialize.scss',
-    //
-  ], 'client');
+```bash
+git clone https://github.com/wessilfie/coffeecu.git coffeecu-next
+cd coffeecu-next
+npm install
 ```
 
-[coffeecu]: https://coffeecu.com
-[mup]: http://meteor-up.com/
-[mup-github]: https://github.com/zodern/meteor-up
+### 2. Environment variables
+
+```bash
+cp .env.local.example .env.local
+```
+
+Fill in:
+```
+NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+RESEND_API_KEY=re_your_key
+RESEND_FROM_EMAIL=do-not-reply@coffeecu.com
+NEXT_PUBLIC_APP_URL=http://localhost:3000
+DAILY_REQUEST_LIMIT=3
+```
+
+### 3. Database
+
+Run the schema migration in your Supabase SQL editor:
+
+```bash
+# Copy contents of supabase/migrations/001_initial_schema.sql
+# Paste into Supabase Dashboard → SQL Editor → Run
+```
+
+Or with the Supabase CLI:
+```bash
+supabase db push
+```
+
+### 4. Supabase Auth setup
+
+In Supabase Dashboard:
+- **Authentication → Providers:** Enable Email and Google
+- **Authentication → URL Configuration:**
+  - Site URL: `https://your-domain.com`
+  - Redirect URLs: `https://your-domain.com/auth/callback`
+- **Storage:** Create a bucket named `profile-photos` (private)
+
+### 5. Google OAuth
+
+In [Google Cloud Console](https://console.cloud.google.com):
+- Create OAuth credentials
+- Add `https://your-project.supabase.co/auth/v1/callback` as an authorized redirect URI
+- Optionally restrict to `columbia.edu` hosted domain: add `"hd": "columbia.edu"` parameter
+
+### 6. Run locally
+
+```bash
+npm run dev
+```
+
+Open [http://localhost:3000](http://localhost:3000).
+
+---
+
+## Adding Your First Super Admin
+
+After setting up, grant yourself super_admin in Supabase SQL Editor:
+
+```sql
+-- First, find your user_id from auth.users
+SELECT id, email FROM auth.users WHERE email = 'your-columbia-email@columbia.edu';
+
+-- Then grant super_admin
+INSERT INTO user_roles (user_id, role)
+VALUES ('your-user-id-here', 'super_admin');
+```
+
+After that, use the `/admin` → Role Management tab to manage other admins and moderators through the UI.
+
+---
+
+## Future Roadmap
+
+- **WhatsApp/SMS notifications** — `phone` field already in schema; notification abstraction in `src/lib/email.ts` ready to extend
+- **Multi-university** — `university_domains` table and `university` field on profiles support expansion to other schools without schema changes
+- **Profile photo moderation** — flag inappropriate photos via admin panel
+- **Event integration** — Columbia-specific coffee hours and community events
+
+---
+
+## Contributing
+
+Built and maintained by ADI Labs and The Lion. Columbia community members with a Columbia email can contribute — open a PR against the `main` branch.
