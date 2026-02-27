@@ -64,8 +64,9 @@ export default function AuthCallbackClient() {
         return;
       }
 
-      // Profile page handles new-user → /onboarding redirect
-      router.replace('/profile');
+      // Profile page handles new-user → /onboarding redirect.
+      // Use full reload so the server receives fresh cookies on the first /profile request.
+      window.location.href = '/profile';
     }
 
     handleAuth();

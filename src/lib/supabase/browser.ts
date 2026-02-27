@@ -14,6 +14,9 @@ export function createSupabaseBrowserClient() {
     {
       auth: {
         flowType: 'implicit',
+        // Prevent the SDK from automatically calling /verify on page load.
+        // We parse the hash and set the session manually in AuthCallbackClient.
+        detectSessionInUrl: false,
       },
     },
   );
