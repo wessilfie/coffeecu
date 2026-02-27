@@ -214,11 +214,99 @@ export async function sendWelcomeEmail(params: {
   name: string;
   email: string;
 }) {
-  const body = `Welcome to Coffee@CU, ${params.name}!
+  const safeName = escapeHtml(params.name.slice(0, 40));
+
+  const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Welcome to Coffee@CU</title>
+</head>
+<body style="margin:0;padding:0;background-color:#F4F0E6;font-family:Georgia,'Times New Roman',serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#F4F0E6;padding:40px 16px;">
+    <tr>
+      <td align="center">
+        <table width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:520px;width:100%;">
+
+          <!-- Header -->
+          <tr>
+            <td align="center" style="padding-bottom:24px;">
+              <p style="margin:0;font-family:'Courier New',monospace;font-size:11px;letter-spacing:0.12em;color:#8a8078;text-transform:uppercase;">Columbia University</p>
+              <h1 style="margin:6px 0 0;font-family:Georgia,'Times New Roman',serif;font-size:32px;font-weight:600;color:#1A1410;line-height:1.1;">Coffee@CU</h1>
+              <p style="margin:6px 0 0;font-family:Georgia,serif;font-size:15px;color:#8a8078;font-style:italic;">Meet the Columbia community, one coffee at a time.</p>
+            </td>
+          </tr>
+
+          <!-- Card -->
+          <tr>
+            <td>
+              <table width="100%" cellpadding="0" cellspacing="0" border="0"
+                style="background-color:#ffffff;border:1px solid #ddd8cc;border-radius:6px;box-shadow:0 4px 24px rgba(26,20,16,0.08);">
+                <tr>
+                  <td style="padding:40px 36px;">
+
+                    <!-- Top accent bar -->
+                    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:28px;">
+                      <tr>
+                        <td style="height:3px;background:linear-gradient(90deg,#003F8A,#0d5eac);border-radius:2px;"></td>
+                      </tr>
+                    </table>
+
+                    <h2 style="margin:0 0 12px;font-family:Georgia,serif;font-size:22px;font-weight:600;color:#1A1410;">
+                      Welcome to Coffee@CU, ${safeName}!
+                    </h2>
+
+                    <p style="margin:0 0 24px;font-family:Georgia,serif;font-size:15px;color:#4a4540;line-height:1.65;">
+                      Your profile is now live on the Coffee@CU community board. Other Columbia community members can find you and reach out for a coffee chat.
+                    </p>
+
+                    <!-- CTA button -->
+                    <table cellpadding="0" cellspacing="0" border="0" style="margin-bottom:28px;">
+                      <tr>
+                        <td style="background-color:#003F8A;border-radius:4px;">
+                          <a href="${APP_URL}"
+                            style="display:inline-block;padding:14px 32px;font-family:Georgia,serif;font-size:15px;font-weight:600;color:#ffffff;text-decoration:none;letter-spacing:0.02em;">
+                            Browse the community &rarr;
+                          </a>
+                        </td>
+                      </tr>
+                    </table>
+
+                    <p style="margin:0;font-family:Georgia,serif;font-size:13px;color:#8a8078;line-height:1.65;">
+                      You can update your profile or adjust your visibility at any time from your <a href="${APP_URL}/profile" style="color:#003F8A;text-decoration:underline;">profile page</a>.
+                    </p>
+
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td align="center" style="padding-top:24px;">
+              <p style="margin:0;font-family:Georgia,serif;font-size:12px;color:#b0a898;line-height:1.7;">
+                Coffee@CU is open to @columbia.edu and @barnard.edu addresses only.<br />
+                <a href="${APP_URL}" style="color:#8a8078;text-decoration:underline;">coffeeatcu.com</a>
+              </p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
+
+  const text = `Welcome to Coffee@CU, ${params.name}!
 
 Your profile is now live on the Coffee@CU community board. Other Columbia community members can now find you and request a coffee chat.
 
-Visit ${APP_URL} to browse other members or update your profile.
+Browse the community: ${APP_URL}
+
+You can update your profile at any time: ${APP_URL}/profile
 
 One conversation at a time,
 — The Coffee@CU Team`;
@@ -227,6 +315,7 @@ One conversation at a time,
     from: FROM,
     to: params.email,
     subject: 'Welcome to Coffee@CU',
-    text: body,
+    html,
+    text,
   });
 }
