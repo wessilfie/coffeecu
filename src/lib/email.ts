@@ -2,9 +2,13 @@ import 'server-only';
 
 import { Resend } from 'resend';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
 const FROM = process.env.RESEND_FROM_EMAIL ?? 'do-not-reply@coffeeatcu.com';
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'https://coffeeatcu.com';
+
+function getResend() {
+  if (!process.env.RESEND_API_KEY) throw new Error('RESEND_API_KEY is not set');
+  return new Resend(process.env.RESEND_API_KEY);
+}
 
 // ============================================================
 // Email helpers — all plain-text to avoid HTML injection
@@ -60,7 +64,7 @@ Have a great conversation!
 — The Coffee@CU Team
 ${APP_URL}`;
 
-  return resend.emails.send({
+  return getResend().emails.send({
     from: FROM,
     to: receiverEmail,
     replyTo: senderEmail,
@@ -83,7 +87,7 @@ Visit ${APP_URL} to browse other members or update your profile.
 One conversation at a time,
 — The Coffee@CU Team`;
 
-  return resend.emails.send({
+  return getResend().emails.send({
     from: FROM,
     to: params.email,
     subject: 'Welcome to Coffee@CU',
