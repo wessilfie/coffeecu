@@ -24,27 +24,29 @@ interface Props {
 
 export default function HomeClient({ initialProfiles, meetingCount, isLoggedIn, userId, sentRequestIds, hasPublishedProfile }: Props) {
   // Supabase sometimes redirects auth errors to the Site URL (homepage) as a hash fragment.
-  // Detect that, check if the user already has a valid session, and route them appropriately.
-  useEffect(() => {
+  // Detect that immediately and redirect — show nothing so the user never sees the homepage.
+  const [redirecting, setRedirecting] = useState(() => {
+    if (typeof window === 'undefined') return false;
     const hash = window.location.hash.slice(1);
-    if (!hash) return;
-    const params = new URLSearchParams(hash);
-    if (!params.get('error')) return;
+    return !!hash && !!new URLSearchParams(hash).get('error');
+  });
 
-    // Clean the hash so the ugly URL isn't visible while we redirect
+  useEffect(() => {
+    if (!redirecting) return;
+
     window.history.replaceState(null, '', window.location.pathname + window.location.search);
 
     const supabase = createSupabaseBrowserClient();
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) {
-        // Account is confirmed and session is live — go to profile (routes to onboarding if new)
         window.location.href = '/profile';
       } else {
-        // No session — link was expired or already used; ask them to sign in
         window.location.href = '/login?error=link_expired';
       }
     });
-  }, []);
+  }, [redirecting]);
+
+  if (redirecting) return null;
 
   // Anti-scraping: show a login gate instead of profiles for unauthenticated users
   // The hero and meeting count remain public (marketing), but profiles are gated.
