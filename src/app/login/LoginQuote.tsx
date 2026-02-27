@@ -56,7 +56,7 @@ export default function LoginQuote() {
       >
         {quote.attr}
         {quote.location && (
-          <span style={{ marginLeft: '0.5rem', opacity: 0.6 }}>· {quote.location}</span>
+          <span style={{ marginLeft: '0.5rem', opacity: 0.6 }}>· First coffee at {quote.location}</span>
         )}
       </footer>
     </blockquote>
