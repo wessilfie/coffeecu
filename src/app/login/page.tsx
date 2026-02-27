@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { createSupabaseServerClient } from '@/lib/supabase/server';
 import { DEV_BYPASS } from '@/lib/dev-bypass';
 import LoginForm from './LoginForm';
+import LoginQuote from './LoginQuote';
 
 export const metadata = {
   title: 'Sign In — Coffee@CU',
@@ -28,32 +29,6 @@ export default async function LoginPage({
       redirect('/profile');
     }
   }
-
-  const quotes = [
-    {
-      text: 'I met one of my closest friends on Coffee@CU. We\'re still close nearly a decade later.',
-      attr: 'Columbia alum',
-    },
-    {
-      text: 'I\'m getting married to someone I met for tea once on here.',
-      attr: 'Columbia alum',
-    },
-    {
-      text: 'Had one Zoom call with a professor I found on here. It completely changed the direction of my research.',
-      attr: 'GSAS student',
-    },
-    {
-      text: 'I\'ve wanted to find other folks looking to get into entrepreneurship. Coffee@CU is helping me meet others in that space I might not have met otherwise.',
-      attr: 'CBS \'26 MBA candidate',
-    },
-    {
-      text: 'I already go to Dear Mama midday; will be nice to have some others to meet over there.',
-      attr: 'CBS \'26 EMBA candidate',
-    },
-  ];
-
-  // Rotate by hour so it changes throughout the day without hydration issues
-  const quote = quotes[new Date().getHours() % quotes.length];
 
   return (
     <main style={{ minHeight: '100vh', display: 'flex' }}>
@@ -98,12 +73,6 @@ export default async function LoginPage({
 
           {/* Header */}
           <div style={{ textAlign: 'center', marginBottom: '1.25rem' }}>
-            <p
-              className="label-mono"
-              style={{ color: 'var(--color-text-muted)', marginBottom: '0.5rem' }}
-            >
-              Columbia University
-            </p>
             <h1
               style={{
                 fontFamily: 'var(--font-display), serif',
@@ -142,8 +111,7 @@ export default async function LoginPage({
             {DEV_BYPASS ? (
               <div style={{ textAlign: 'center', padding: '1rem 0' }}>
                 <p
-                  className="label-mono"
-                  style={{ color: 'var(--color-text-muted)', marginBottom: '1.25rem', fontSize: '0.65rem' }}
+                  style={{ color: 'var(--color-text-muted)', marginBottom: '1.25rem', fontSize: '0.75rem', fontFamily: 'var(--font-mono), monospace' }}
                 >
                   Dev mode — no real auth required
                 </p>
@@ -174,18 +142,16 @@ export default async function LoginPage({
 
           {/* Footer note */}
           <p
-            className="label-mono"
             style={{
               textAlign: 'center',
               color: 'var(--color-text-muted)',
               marginTop: '0.75rem',
-              fontSize: '0.65rem',
+              fontSize: '0.8rem',
               lineHeight: 1.6,
+              fontFamily: 'var(--font-body), serif',
             }}
           >
-            For Columbia University students, faculty &amp; alumni only.
-            <br />
-            @columbia.edu and @barnard.edu addresses accepted.
+            At this time, joining Coffee@CU requires an active Columbia email ending in @barnard.edu or @columbia.edu.
           </p>
         </div>
       </div>
@@ -216,53 +182,7 @@ export default async function LoginPage({
         />
 
         <div style={{ position: 'relative', zIndex: 2, maxWidth: '480px' }}>
-          <blockquote style={{ margin: 0 }}>
-            <p
-              style={{
-                fontFamily: 'var(--font-display), serif',
-                fontStyle: 'italic',
-                fontSize: 'clamp(1.625rem, 3vw, 2.25rem)',
-                fontWeight: 400,
-                color: 'rgba(255,255,255,0.97)',
-                lineHeight: 1.35,
-                marginBottom: '1.25rem',
-              }}
-            >
-              &ldquo;{quote.text}&rdquo;
-            </p>
-            <footer
-              style={{
-                fontFamily: 'var(--font-body), serif',
-                fontSize: '0.8125rem',
-                color: 'rgba(255,255,255,0.5)',
-              }}
-            >
-              {quote.attr}
-            </footer>
-          </blockquote>
-
-          {/* Bottom badge */}
-          <div
-            style={{
-              marginTop: '2rem',
-              paddingTop: '1.5rem',
-              borderTop: '1px solid rgba(255,255,255,0.1)',
-            }}
-          >
-            <p className="label-mono" style={{ color: 'rgba(117,170,219,0.6)', fontSize: '0.65rem' }}>
-              Built by Columbians, for Columbians
-            </p>
-            <p
-              style={{
-                fontFamily: 'var(--font-body), serif',
-                fontSize: '0.8125rem',
-                color: 'rgba(255,255,255,0.35)',
-                marginTop: '0.25rem',
-              }}
-            >
-              @columbia.edu and @barnard.edu only
-            </p>
-          </div>
+          <LoginQuote />
         </div>
       </div>
     </main>

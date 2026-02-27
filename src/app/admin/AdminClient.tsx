@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Image from 'next/image';
-import { Search, Eye, EyeOff, Ban, Trash2, Clock, User } from 'lucide-react';
+import { Search, Eye, EyeOff, Ban, Trash2, Clock, User, UserX } from 'lucide-react';
 import type { FullProfile } from '@/types';
 
 interface Props {
@@ -76,6 +76,24 @@ export default function AdminClient({ currentUserId, profiles: initialProfiles, 
       showMessage(`${profile.name}'s profile removed.`);
     } else {
       showMessage('Remove failed. Please try again.');
+    }
+    setActionLoading(null);
+  };
+
+  const handleDeleteAccount = async (profile: FullProfile) => {
+    if (!isAdmin) return;
+    if (!confirm(`Permanently delete ${profile.name}'s entire account? This removes their profile, photo, and all data and cannot be undone.`)) return;
+    setActionLoading(profile.id);
+    const res = await fetch('/api/admin/delete-account', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId: profile.user_id }),
+    });
+    if (res.ok) {
+      setProfiles(prev => prev.filter(p => p.id !== profile.id));
+      showMessage(`${profile.name}'s account has been deleted.`);
+    } else {
+      showMessage('Delete failed. Please try again.');
     }
     setActionLoading(null);
   };
@@ -238,13 +256,13 @@ export default function AdminClient({ currentUserId, profiles: initialProfiles, 
                     <Clock size={13} />
                   </button>
 
-                  {/* Admin-only: permanent remove + ban */}
+                  {/* Admin-only: permanent remove + ban + delete account */}
                   {isAdmin && (
                     <>
                       <button
                         onClick={() => handleRemove(profile)}
                         disabled={actionLoading === profile.id}
-                        title="Remove profile permanently"
+                        title="Remove profile (keeps account)"
                         className="btn-danger"
                         style={{ padding: '0.375rem 0.625rem', fontSize: '0.65rem' }}
                       >
@@ -258,6 +276,15 @@ export default function AdminClient({ currentUserId, profiles: initialProfiles, 
                         style={{ padding: '0.375rem 0.625rem', fontSize: '0.65rem' }}
                       >
                         <Ban size={13} />
+                      </button>
+                      <button
+                        onClick={() => handleDeleteAccount(profile)}
+                        disabled={actionLoading === profile.id}
+                        title="Delete account entirely (profile + photo + auth)"
+                        className="btn-danger"
+                        style={{ padding: '0.375rem 0.625rem', fontSize: '0.65rem' }}
+                      >
+                        <UserX size={13} />
                       </button>
                     </>
                   )}
@@ -348,10 +375,13 @@ export default function AdminClient({ currentUserId, profiles: initialProfiles, 
                     {isAdmin && (
                       <>
                         <button onClick={() => handleRemove(lookupResult.profile!)} className="btn-danger" style={{ fontSize: '0.7rem' }}>
-                          <Trash2 size={12} /> Remove
+                          <Trash2 size={12} /> Remove profile
                         </button>
                         <button onClick={() => handleBan(lookupResult.profile!)} className="btn-danger" style={{ fontSize: '0.7rem' }}>
                           <Ban size={12} /> Ban
+                        </button>
+                        <button onClick={() => handleDeleteAccount(lookupResult.profile!)} className="btn-danger" style={{ fontSize: '0.7rem' }}>
+                          <UserX size={12} /> Delete account
                         </button>
                       </>
                     )}

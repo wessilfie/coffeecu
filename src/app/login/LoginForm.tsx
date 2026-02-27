@@ -11,7 +11,9 @@ type AuthMode = 'sign_in' | 'sign_up';
 const DOMAIN_ERRORS: Record<string, string> = {
   domain: 'Coffee@CU is for Columbia University community members only. Please sign in with your @columbia.edu or @barnard.edu address.',
   auth_failed: 'Authentication failed. Please try again.',
-  missing_code: 'Invalid login link. Please try again.',
+  missing_code: 'This sign-in link is invalid. Please request a new one.',
+  link_expired: 'This sign-in link has expired or already been used. Please sign in again to get a new one.',
+  wrong_device: 'Please open the sign-in link on the same browser where you created your account, or sign in again here.',
   no_email: 'Could not read your email address. Please try again.',
 };
 
@@ -134,8 +136,7 @@ export default function LoginForm({
           Click it and you&rsquo;ll be signed in automatically.
         </p>
         <p
-          className="label-mono"
-          style={{ color: 'var(--color-text-muted)', fontSize: '0.65rem', marginBottom: '1.5rem' }}
+          style={{ color: 'var(--color-text-muted)', fontSize: '0.8rem', marginBottom: '1.5rem', fontFamily: 'var(--font-body), serif' }}
         >
           Check your spam folder if it doesn&rsquo;t arrive within a minute.
         </p>
