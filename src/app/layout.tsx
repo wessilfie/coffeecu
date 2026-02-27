@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import { DM_Serif_Display, Lora, DM_Sans } from "next/font/google";
+import Script from "next/script";
 import "./globals.css";
+
+const GA_ID = "G-0YGFM88PE4";
 
 // ============================================================
 // TYPOGRAPHY — Limestone & Blue Design System
@@ -37,7 +40,7 @@ export const metadata: Metadata = {
   title: "Coffee@CU — Meet the Columbia Community",
   description:
     "Connect with Columbia University students, faculty, and alumni over coffee. One conversation at a time.",
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL ?? "https://coffeecu.com"),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL ?? "https://coffeeatcu.com"),
   openGraph: {
     title: "Coffee@CU",
     description: "Meet the Columbia community, one coffee at a time.",
@@ -58,6 +61,16 @@ export default function RootLayout({
     >
       <body className="min-h-screen flex flex-col">
         {children}
+        <Script
+          src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`}
+          strategy="afterInteractive"
+        />
+        <Script id="ga4-init" strategy="afterInteractive">{`
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', '${GA_ID}');
+        `}</Script>
       </body>
     </html>
   );
