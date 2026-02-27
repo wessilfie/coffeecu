@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { createBrowserClient } from '@supabase/ssr';
-import { Chrome, Mail, Lock, AlertCircle } from 'lucide-react';
+import { Mail, Lock, AlertCircle } from 'lucide-react';
 import { isAllowedDomain } from '@/lib/constants';
 
 type AuthMode = 'sign_in' | 'sign_up';
@@ -44,25 +44,6 @@ export default function LoginForm({
   );
 
   const domainError = errorParam ? (DOMAIN_ERRORS[errorParam] ?? 'Something went wrong. Please try again.') : null;
-
-  const handleGoogleOAuth = async () => {
-    setStatus('loading');
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
-        queryParams: {
-          // Hint to Google to show Columbia GSuite accounts
-          hd: 'columbia.edu',
-        },
-      },
-    });
-    if (error) {
-      setStatus('error');
-      setMessage('Could not initiate Google sign-in. Please try again.');
-    }
-    // On success the user is redirected; no need to handle the ok case
-  };
 
   const handleEmailAuth = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -222,65 +203,6 @@ export default function LoginForm({
           </p>
         </div>
       )}
-
-      {/* Google OAuth */}
-      <button
-        type="button"
-        onClick={handleGoogleOAuth}
-        disabled={status === 'loading'}
-        style={{
-          width: '100%',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: '0.625rem',
-          padding: '0.75rem 1.25rem',
-          background: 'var(--color-white)',
-          border: '1px solid var(--color-mist)',
-          borderRadius: '4px',
-          cursor: 'pointer',
-          fontFamily: 'var(--font-mono), monospace',
-          fontSize: '0.7rem',
-          letterSpacing: '0.08em',
-          textTransform: 'uppercase',
-          color: 'var(--color-ink)',
-          transition: 'border-color 180ms ease, background 180ms ease',
-          marginBottom: '1rem',
-          opacity: status === 'loading' ? 0.7 : 1,
-        }}
-        onMouseOver={(e) => {
-          if (status !== 'loading') {
-            (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--color-ink)';
-            (e.currentTarget as HTMLButtonElement).style.background = 'rgba(26,20,16,0.02)';
-          }
-        }}
-        onMouseOut={(e) => {
-          (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--color-mist)';
-          (e.currentTarget as HTMLButtonElement).style.background = 'var(--color-white)';
-        }}
-      >
-        <Chrome size={16} />
-        Continue with Google
-      </button>
-
-      {/* Divider */}
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '0.75rem',
-          marginBottom: '1rem',
-        }}
-      >
-        <div style={{ flex: 1, height: '1px', background: 'var(--color-mist)' }} />
-        <span
-          className="label-mono"
-          style={{ color: 'var(--color-text-muted)', fontSize: '0.65rem' }}
-        >
-          or
-        </span>
-        <div style={{ flex: 1, height: '1px', background: 'var(--color-mist)' }} />
-      </div>
 
       {/* Email/password form */}
       <form onSubmit={handleEmailAuth}>
