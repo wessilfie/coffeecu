@@ -13,6 +13,15 @@ export default function AuthCallbackClient() {
     const supabase = createSupabaseBrowserClient();
 
     async function handleAuth() {
+      // If the user already has a valid session (e.g. email was confirmed on a
+      // previous attempt, or they clicked an old link), skip token processing
+      // entirely and send them straight in.
+      const { data: { session: existingSession } } = await supabase.auth.getSession();
+      if (existingSession) {
+        window.location.href = '/profile';
+        return;
+      }
+
       // Supabase may send errors in query params (some versions) or hash (others)
       const queryError = searchParams.get('error');
       const hash = window.location.hash.slice(1);
