@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { createSupabaseBrowserClient } from '@/lib/supabase/browser';
-import { Mail, Lock, AlertCircle } from 'lucide-react';
+import { Mail, Lock, AlertCircle, Check, X } from 'lucide-react';
 import { isAllowedDomain } from '@/lib/constants';
 
 type AuthMode = 'sign_in' | 'sign_up';
@@ -53,6 +53,12 @@ export default function LoginForm({
     if (!isAllowedDomain(email)) {
       setStatus('error');
       setMessage('Coffee@CU is for Columbia University community members. Please use your @columbia.edu or @barnard.edu address.');
+      return;
+    }
+
+    if (mode === 'sign_up' && !passwordMeetsRequirements(password)) {
+      setStatus('error');
+      setMessage('Your password must include an uppercase letter, a lowercase letter, a number, and a symbol (e.g. !@#$).');
       return;
     }
 
@@ -267,6 +273,11 @@ export default function LoginForm({
               style={{ paddingLeft: '2.5rem' }}
             />
           </div>
+
+          {/* Password requirements — only shown during sign-up once the user starts typing */}
+          {mode === 'sign_up' && password.length > 0 && (
+            <PasswordRequirements password={password} />
+          )}
         </div>
 
         {status === 'error' && message && (
@@ -353,5 +364,58 @@ export default function LoginForm({
         )}
       </p>
     </div>
+  );
+}
+
+// ─── Password helpers ────────────────────────────────────────────────────────
+
+const REQUIREMENTS = [
+  { key: 'length',    label: 'At least 8 characters',  test: (p: string) => p.length >= 8 },
+  { key: 'upper',     label: 'Uppercase letter',        test: (p: string) => /[A-Z]/.test(p) },
+  { key: 'lower',     label: 'Lowercase letter',        test: (p: string) => /[a-z]/.test(p) },
+  { key: 'digit',     label: 'Number',                  test: (p: string) => /[0-9]/.test(p) },
+  { key: 'symbol',    label: 'Symbol (e.g. !@#$)',      test: (p: string) => /[^A-Za-z0-9]/.test(p) },
+];
+
+function passwordMeetsRequirements(p: string) {
+  return REQUIREMENTS.every(r => r.test(p));
+}
+
+function PasswordRequirements({ password }: { password: string }) {
+  return (
+    <ul
+      style={{
+        margin: '0.5rem 0 0',
+        padding: 0,
+        listStyle: 'none',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '0.3rem',
+      }}
+    >
+      {REQUIREMENTS.map(req => {
+        const met = req.test(password);
+        return (
+          <li
+            key={req.key}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.4rem',
+              fontSize: '0.75rem',
+              fontFamily: 'var(--font-body), serif',
+              color: met ? '#1C5C3A' : 'var(--color-text-muted)',
+              transition: 'color 0.15s',
+            }}
+          >
+            {met
+              ? <Check size={11} color="#1C5C3A" strokeWidth={2.5} />
+              : <X size={11} color="var(--color-text-muted)" strokeWidth={2} />
+            }
+            {req.label}
+          </li>
+        );
+      })}
+    </ul>
   );
 }
