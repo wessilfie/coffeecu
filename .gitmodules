@@ -1,3 +1,0 @@
-[submodule "packages/materialize-custom"]
-	path = packages/materialize-custom
-	url = git@github.com:parthibanloganathan/materialize-custom.git

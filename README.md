@@ -1,7 +1,9 @@
 Coffee@CU
 =========
 
-[Coffee@CU][coffeecu] brings Columbia students, faculty, and alumni closer together--one coffee chat at a time. Maintained by ADI Labs.
+[Coffee@CU][coffeecu] brings Columbia students, faculty, and alumni closer together--one coffee chat at a time.
+
+Originally built by Parthi. Adopted and maintained by [The Columbia Lion](https://github.com/thecolumbialion) & ADI Labs. In 2026, Will is working on a new version.
 
 Setup
 -----

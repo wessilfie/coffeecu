@@ -1,0 +1,443 @@
+@import "tailwindcss";
+
+/* ============================================================
+   LIMESTONE & BLUE — Coffee@CU Design System
+   Old Columbia meets modern. Beaux-Arts warmth, collegiate
+   precision. Every value is intentional.
+   ============================================================ */
+
+@theme inline {
+  /* Color palette */
+  --color-limestone:    #F4F0E6;
+  --color-limestone-dk: #E8E2D4;
+  --color-limestone-md: #D8D0C0;
+  --color-ink:          #1A1410;
+  --color-ink-soft:     #2E2318;
+  --color-columbia:     #003F8A;
+  --color-columbia-lt:  #75AADB;
+  --color-columbia-pale:#C8DCF0;
+  --color-copper:       #7A4A1E;
+  --color-copper-lt:    #A06830;
+  --color-gold:         #B8860B;
+  --color-gold-lt:      #D4A520;
+  --color-mist:         #DDD8CC;
+  --color-text-muted:   #6B5E52;
+  --color-white:        #FFFFFF;
+  --color-error:        #9B1C1C;
+  --color-success:      #1C5C3A;
+
+  /* Typography */
+  --font-display:  var(--font-dm-serif);
+  --font-body:     var(--font-lora);
+  --font-mono:     var(--font-dm-sans);
+
+  /* Spacing scale additions */
+  --spacing-18: 4.5rem;
+  --spacing-22: 5.5rem;
+
+  /* Border radius */
+  --radius-sm:   2px;
+  --radius-md:   4px;
+  --radius-lg:   8px;
+  --radius-xl:   12px;
+  --radius-full: 9999px;
+
+  /* Shadow system */
+  --shadow-card: 0 1px 3px rgba(26,20,16,0.08), 0 4px 12px rgba(26,20,16,0.06);
+  --shadow-card-hover: 0 4px 16px rgba(26,20,16,0.14), 0 8px 32px rgba(26,20,16,0.08);
+  --shadow-drawer: -8px 0 40px rgba(26,20,16,0.16);
+
+  /* Transitions */
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ============================================================
+   BASE RESET & DEFAULTS
+   ============================================================ */
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  background-color: #f6f1e8;
+  color: var(--color-ink);
+  font-family: var(--font-body), Georgia, serif;
+  font-size: 1rem;
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ============================================================
+   TYPOGRAPHY UTILITIES
+   ============================================================ */
+
+.font-display {
+  font-family: var(--font-display), 'Times New Roman', serif;
+}
+
+.font-mono {
+  font-family: var(--font-mono), 'Helvetica Neue', sans-serif;
+}
+
+/* Display heading — DM Serif Display, high-contrast editorial serif */
+.heading-display {
+  font-family: var(--font-display), 'Times New Roman', serif;
+  font-weight: 400;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+
+.heading-display-italic {
+  font-family: var(--font-display), 'Times New Roman', serif;
+  font-style: italic;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+  line-height: 1.15;
+}
+
+/* Section heading */
+.heading-section {
+  font-family: var(--font-display), 'Times New Roman', serif;
+  font-weight: 400;
+  letter-spacing: 0.01em;
+  line-height: 1.25;
+}
+
+/* Courier Prime meta/label text */
+.label-mono {
+  font-family: var(--font-mono), 'Helvetica Neue', sans-serif;
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* ============================================================
+   GRAIN TEXTURE OVERLAY
+   Evokes aged paper, limestone dust, the patina of old Columbia
+   ============================================================ */
+
+.grain-overlay {
+  position: relative;
+}
+
+.grain-overlay::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0.035;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  background-size: 256px 256px;
+}
+
+/* ============================================================
+   CARD SYSTEM
+   ============================================================ */
+
+.card {
+  background: #ffffff;
+  border: 1px solid #d4dfec;
+  border-radius: var(--radius-lg);
+  box-shadow: 0 10px 28px rgba(0,45,99,0.06);
+  transition: transform 220ms var(--ease-out-expo), box-shadow 220ms var(--ease-out-expo);
+}
+
+.card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 16px 36px rgba(0,45,99,0.12);
+}
+
+/* ============================================================
+   BUTTON SYSTEM
+   ============================================================ */
+
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1.5rem;
+  background: #003f8a;
+  color: var(--color-white);
+  font-family: var(--font-mono), 'Helvetica Neue', sans-serif;
+  font-size: 0.75rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  border: none;
+  border-radius: 9999px;
+  cursor: pointer;
+  transition: background 180ms ease, transform 100ms ease;
+  text-decoration: none;
+}
+
+.btn-primary:hover {
+  background: #002f67;
+  transform: translateY(-1px);
+}
+
+.btn-primary:active {
+  transform: translateY(0);
+}
+
+.btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1.25rem;
+  background: transparent;
+  color: var(--color-ink);
+  font-family: var(--font-mono), 'Helvetica Neue', sans-serif;
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  border: 1px solid #b8cce3;
+  border-radius: 9999px;
+  cursor: pointer;
+  transition: border-color 180ms ease, background 180ms ease;
+  text-decoration: none;
+}
+
+.btn-ghost:hover {
+  border-color: #003f8a;
+  background: rgba(0,63,138,0.05);
+}
+
+.btn-danger {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1.25rem;
+  background: transparent;
+  color: var(--color-error);
+  font-family: var(--font-mono), 'Helvetica Neue', sans-serif;
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  border: 1px solid var(--color-error);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background 180ms ease;
+}
+
+.btn-danger:hover {
+  background: rgba(155, 28, 28, 0.06);
+}
+
+/* ============================================================
+   FORM ELEMENTS
+   ============================================================ */
+
+.form-input {
+  width: 100%;
+  padding: 0.625rem 0.875rem;
+  background: var(--color-white);
+  border: 1px solid #c4d4e5;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-body), Georgia, serif;
+  font-size: 0.9375rem;
+  color: var(--color-ink);
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+  outline: none;
+}
+
+.form-input:focus {
+  border-color: #0053a6;
+  box-shadow: 0 0 0 3px rgba(117,170,219,0.35);
+}
+
+.form-input::placeholder {
+  color: var(--color-text-muted);
+}
+
+.form-label {
+  display: block;
+  font-family: var(--font-mono), 'Helvetica Neue', sans-serif;
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  margin-bottom: 0.375rem;
+}
+
+.form-error {
+  font-family: var(--font-mono), 'Helvetica Neue', sans-serif;
+  font-size: 0.7rem;
+  letter-spacing: 0.05em;
+  color: var(--color-error);
+  margin-top: 0.25rem;
+}
+
+.char-count {
+  font-family: var(--font-mono), 'Helvetica Neue', sans-serif;
+  font-size: 0.65rem;
+  color: var(--color-text-muted);
+  text-align: right;
+  margin-top: 0.2rem;
+}
+
+.char-count.near-limit {
+  color: var(--color-gold);
+}
+
+.char-count.at-limit {
+  color: var(--color-error);
+}
+
+/* ============================================================
+   SCHOOL BADGE
+   Each school gets a distinct Columbia-adjacent color
+   ============================================================ */
+
+.badge {
+  display: inline-block;
+  padding: 0.15rem 0.5rem;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-mono), 'Helvetica Neue', sans-serif;
+  font-size: 0.65rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-weight: 700;
+}
+
+.badge-CC    { background: var(--color-columbia-pale); color: var(--color-columbia); }
+.badge-SEAS  { background: #D4E8D4; color: #1C5C3A; }
+.badge-GS    { background: #EAD8C8; color: var(--color-copper); }
+.badge-BC    { background: #E8D4E8; color: #5C1C6E; }
+.badge-GSAS  { background: var(--color-limestone-md); color: var(--color-ink); }
+.badge-BUS   { background: #D4DDE8; color: #1A3A5C; }
+.badge-LAW   { background: #D4DDE8; color: #1A3A5C; }
+.badge-VPS   { background: #D4E8D4; color: #1C5C3A; }
+.badge-JRN   { background: #E0DAD0; color: var(--color-ink); }
+.badge-SIPA  { background: #D4DDE8; color: #1A3A5C; }
+.badge-GSAPP { background: #E0DAD0; color: var(--color-ink); }
+.badge-SOA   { background: #E8D4E8; color: #5C1C6E; }
+.badge-SW    { background: #EAD8C8; color: var(--color-copper); }
+.badge-PH    { background: #D4E8D4; color: #1C5C3A; }
+.badge-NRS   { background: #D4E8D4; color: #1C5C3A; }
+.badge-DM    { background: #D4E8D4; color: #1C5C3A; }
+.badge-SPS   { background: #E0DAD0; color: var(--color-ink); }
+.badge-CS    { background: #D4E8D4; color: #1C5C3A; }
+.badge-TC    { background: #EAD8C8; color: var(--color-copper); }
+
+/* ============================================================
+   DIVIDER
+   ============================================================ */
+
+.divider {
+  border: none;
+  border-top: 1px solid var(--color-mist);
+  margin: 2rem 0;
+}
+
+/* ============================================================
+   SCROLL BEHAVIOR
+   ============================================================ */
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-limestone);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-mist);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-text-muted);
+}
+
+/* ============================================================
+   FOCUS VISIBLE (accessibility)
+   ============================================================ */
+
+:focus-visible {
+  outline: 2px solid var(--color-columbia);
+  outline-offset: 2px;
+}
+
+/* ============================================================
+   STATUS BANNERS
+   ============================================================ */
+
+.status-banner {
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-md);
+  font-family: var(--font-mono), 'Helvetica Neue', sans-serif;
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.status-draft     { background: var(--color-limestone-md); color: var(--color-ink); }
+.status-published { background: #D4E8D4; color: #1C5C3A; }
+.status-suspended { background: #FDECD4; color: #7A4A1E; }
+.status-removed   { background: #FAD4D4; color: var(--color-error); }
+
+/* ============================================================
+   LOADING SKELETON
+   ============================================================ */
+
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--color-limestone-dk) 25%,
+    var(--color-limestone-md) 50%,
+    var(--color-limestone-dk) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: var(--radius-sm);
+}
+
+/* ============================================================
+   ANIMATIONS
+   ============================================================ */
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 400ms var(--ease-out-expo) both;
+}
+
+@keyframes marquee {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+.marquee-container {
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.marquee-inner {
+  display: inline-flex;
+  animation: marquee 36s linear infinite;
+  will-change: transform;
+}
+
+.marquee-inner:hover {
+  animation-play-state: paused;
+}
