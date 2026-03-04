@@ -505,33 +505,16 @@ export default function ProfileForm({ userId, userEmail, existingProfile, existi
 
         {/* Student Clubs — BUS only */}
         {selectedSchool === 'BUS' && <div style={{ marginTop: '1rem' }}>
-          <label className="form-label">Student Clubs — select all that apply</label>
+          <label className="form-label">Student Clubs</label>
           <Controller
             name="clubs"
             control={control}
             render={({ field }) => (
-              <div style={{ position: 'relative' }}>
-                <select
-                  className="form-input"
-                  multiple
-                  value={field.value}
-                  onChange={e => {
-                    const selected = Array.from(e.target.selectedOptions, o => o.value);
-                    if (selected.length <= 10) field.onChange(selected);
-                  }}
-                  size={6}
-                  style={{ height: 'auto', minHeight: '140px' }}
-                >
-                  {CBS_CLUBS.map(c => (
-                    <option key={c} value={c}>{c}</option>
-                  ))}
-                </select>
-                {field.value.length > 0 && (
-                  <p className="label-mono" style={{ marginTop: '0.25rem', color: 'var(--color-text-muted)' }}>
-                    Selected: {field.value.join(' · ')}
-                  </p>
-                )}
-              </div>
+              <ClubPicker
+                value={field.value}
+                onChange={field.onChange}
+                max={10}
+              />
             )}
           />
         </div>}
@@ -976,4 +959,159 @@ function CharCount({ value, max }: { value: string; max: number }) {
   const len = (value ?? '').length;
   const cls = len >= max ? 'at-limit' : len >= max * 0.85 ? 'near-limit' : '';
   return <div className={`char-count ${cls}`}>{len}/{max}</div>;
+}
+
+function ClubPicker({ value, onChange, max }: { value: string[]; onChange: (v: string[]) => void; max: number }) {
+  const [query, setQuery] = useState('');
+  const [open, setOpen] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const suggestions = query.trim()
+    ? (CBS_CLUBS as readonly string[])
+        .filter(c => !value.includes(c) && c.toLowerCase().includes(query.toLowerCase()))
+        .slice(0, 8)
+    : [];
+
+  // Close on outside click
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
+  const add = (club: string) => {
+    if (value.length >= max) return;
+    onChange([...value, club]);
+    setQuery('');
+    inputRef.current?.focus();
+  };
+
+  const remove = (club: string) => {
+    onChange(value.filter(c => c !== club));
+  };
+
+  return (
+    <div ref={containerRef}>
+      {/* Search input */}
+      <div style={{ position: 'relative' }}>
+        <input
+          ref={inputRef}
+          type="text"
+          className="form-input"
+          placeholder={value.length >= max ? `Max ${max} clubs selected` : 'Search clubs…'}
+          value={query}
+          disabled={value.length >= max}
+          onChange={e => { setQuery(e.target.value); setOpen(true); }}
+          onFocus={() => { if (query.trim()) setOpen(true); }}
+          style={{ fontSize: '0.875rem' }}
+        />
+
+        {/* Dropdown */}
+        {open && suggestions.length > 0 && (
+          <ul
+            style={{
+              position: 'absolute',
+              top: 'calc(100% + 4px)',
+              left: 0,
+              right: 0,
+              background: '#ffffff',
+              border: '1px solid var(--color-mist)',
+              borderRadius: '6px',
+              boxShadow: '0 4px 20px rgba(26,20,16,0.12)',
+              listStyle: 'none',
+              margin: 0,
+              padding: '0.25rem 0',
+              zIndex: 50,
+              maxHeight: '240px',
+              overflowY: 'auto',
+            }}
+          >
+            {suggestions.map(club => (
+              <li
+                key={club}
+                onMouseDown={e => { e.preventDefault(); add(club); setOpen(false); }}
+                style={{
+                  padding: '0.5rem 0.875rem',
+                  fontFamily: 'var(--font-body), serif',
+                  fontSize: '0.875rem',
+                  color: 'var(--color-ink)',
+                  cursor: 'pointer',
+                  transition: 'background 100ms',
+                }}
+                onMouseEnter={e => (e.currentTarget.style.background = 'var(--color-limestone-dk, #ece8de)')}
+                onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+              >
+                {club}
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+
+      {/* Selected pills */}
+      {value.length > 0 && (
+        <div
+          style={{
+            display: 'flex',
+            flexWrap: 'wrap',
+            gap: '0.4rem',
+            marginTop: '0.625rem',
+          }}
+        >
+          {value.map(club => (
+            <span
+              key={club}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.3rem',
+                background: 'rgba(0,63,138,0.08)',
+                border: '1px solid rgba(0,63,138,0.2)',
+                borderRadius: '100px',
+                padding: '0.25rem 0.625rem 0.25rem 0.75rem',
+                fontFamily: 'var(--font-body), serif',
+                fontSize: '0.8125rem',
+                color: 'var(--color-columbia)',
+                lineHeight: 1.3,
+              }}
+            >
+              {club}
+              <button
+                type="button"
+                onClick={() => remove(club)}
+                aria-label={`Remove ${club}`}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  padding: 0,
+                  display: 'flex',
+                  alignItems: 'center',
+                  color: 'rgba(0,63,138,0.5)',
+                  fontSize: '0.9rem',
+                  lineHeight: 1,
+                  marginLeft: '0.1rem',
+                  transition: 'color 120ms',
+                }}
+                onMouseEnter={e => (e.currentTarget.style.color = 'var(--color-columbia)')}
+                onMouseLeave={e => (e.currentTarget.style.color = 'rgba(0,63,138,0.5)')}
+              >
+                ×
+              </button>
+            </span>
+          ))}
+        </div>
+      )}
+
+      {/* Count hint */}
+      <p className="label-mono" style={{ color: 'var(--color-text-muted)', marginTop: '0.375rem' }}>
+        {value.length}/{max} selected
+      </p>
+    </div>
+  );
 }

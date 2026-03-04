@@ -49,17 +49,19 @@ export default function Footer() {
         >
           Contact
         </a>
-        <a
-          href="/#how-it-works"
-          style={{
-            fontFamily: 'var(--font-body), serif',
-            fontSize: '0.875rem',
-            color: 'var(--color-columbia)',
-            textDecoration: 'none',
-          }}
-        >
-          How it works
-        </a>
+        {!isLoggedIn && (
+          <a
+            href="/#how-it-works"
+            style={{
+              fontFamily: 'var(--font-body), serif',
+              fontSize: '0.875rem',
+              color: 'var(--color-columbia)',
+              textDecoration: 'none',
+            }}
+          >
+            How it works
+          </a>
+        )}
       </nav>
       <p
         style={{
