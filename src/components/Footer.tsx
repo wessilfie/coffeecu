@@ -1,4 +1,24 @@
+'use client';
+
+import { useEffect, useState } from 'react';
+import { getSupabaseClient } from '@/lib/supabase/client';
+import { DEV_BYPASS } from '@/lib/dev-bypass';
+
 export default function Footer() {
+  const [isLoggedIn, setIsLoggedIn] = useState(DEV_BYPASS);
+
+  useEffect(() => {
+    if (DEV_BYPASS) return;
+    const supabase = getSupabaseClient();
+    void supabase.auth.getUser().then((res: { data: { user: unknown } }) => {
+      setIsLoggedIn(!!res.data.user);
+    });
+  }, []);
+
+  const contactHref = isLoggedIn
+    ? 'mailto:wessilfie26@gsb.columbia.edu'
+    : 'mailto:hi@coffeeatcu.com';
+
   return (
     <footer
       style={{
@@ -19,7 +39,7 @@ export default function Footer() {
         }}
       >
         <a
-          href="mailto:hi@coffeeatcu.com"
+          href={contactHref}
           style={{
             fontFamily: 'var(--font-body), serif',
             fontSize: '0.875rem',

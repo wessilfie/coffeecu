@@ -363,80 +363,107 @@ function LoginGate({ meetingCount, heroImage }: { meetingCount: number; heroImag
       </section>
 
       {/* ————————————————————————————————————————
-          HOW IT WORKS — 3 steps
+          HOW IT WORKS — 3 steps (editorial redesign)
       ———————————————————————————————————————— */}
       <section
         id="how-it-works"
         style={{
-          background: '#edf3fa',
-          borderBottom: '1px solid #b8d4ed',
-          padding: 'clamp(4rem, 6vw, 5.25rem) clamp(1rem, 4vw, 1.5rem)',
+          background: '#0f1e35',
+          padding: 'clamp(4rem, 7vw, 6rem) clamp(1.25rem, 4vw, 1.5rem)',
         }}
       >
         <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
-          <div style={{ textAlign: 'center', marginBottom: 'clamp(2.5rem, 4vw, 3.5rem)' }}>
+          {/* Section heading */}
+          <div style={{ marginBottom: 'clamp(3rem, 5vw, 4.5rem)' }}>
+            <p
+              style={{
+                fontFamily: 'var(--font-mono), monospace',
+                fontSize: '0.65rem',
+                letterSpacing: '0.18em',
+                textTransform: 'uppercase',
+                color: 'rgba(160,196,240,0.6)',
+                margin: '0 0 1rem',
+              }}
+            >
+              How it works
+            </p>
             <h2
               style={{
                 fontFamily: 'var(--font-display), serif',
-                fontSize: 'clamp(1.875rem, 3.5vw, 2.75rem)',
+                fontStyle: 'italic',
+                fontSize: 'clamp(2rem, 4vw, 3.25rem)',
                 fontWeight: 600,
-                color: 'var(--color-ink)',
-                lineHeight: 1.2,
+                color: 'rgba(255,255,255,0.96)',
+                lineHeight: 1.1,
+                margin: 0,
+                maxWidth: '680px',
               }}
             >
-              Three steps to a better conversation
+              Three steps to a better conversation.
             </h2>
           </div>
 
+          {/* Steps grid — auto-wraps to single column on mobile */}
           <div
             style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(min(260px, 100%), 1fr))',
-              gap: '1.5rem',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(min(280px, 100%), 1fr))',
+              gap: 'clamp(2rem, 4vw, 3rem)',
             }}
           >
-            {steps.map((step) => (
+            {steps.map((step, i) => (
               <div
                 key={step.number}
                 style={{
-                  background: '#ffffff',
-                  border: '1px solid #b8d4ed',
-                  borderRadius: '8px',
-                  padding: '2rem',
                   position: 'relative',
-                  boxShadow: '0 10px 28px rgba(0,60,130,0.07)',
+                  paddingTop: '1.75rem',
+                  borderTop: '1px solid rgba(255,255,255,0.12)',
+                  overflow: 'hidden',
                 }}
               >
+                {/* Large background numeral — texture, not label */}
                 <div
+                  aria-hidden="true"
                   style={{
-                    fontFamily: 'var(--font-mono), monospace',
-                    fontSize: '0.7rem',
-                    letterSpacing: '0.15em',
-                    color: '#75aadb',
-                    marginBottom: '1rem',
+                    position: 'absolute',
+                    top: '-0.5rem',
+                    right: '-0.25rem',
+                    fontFamily: 'var(--font-display), serif',
+                    fontSize: 'clamp(6rem, 10vw, 8.5rem)',
+                    fontWeight: 600,
+                    color: 'rgba(255,255,255,0.04)',
+                    lineHeight: 1,
+                    userSelect: 'none',
+                    pointerEvents: 'none',
                   }}
                 >
-                  {step.number}
+                  {i + 1}
                 </div>
+
+                {/* Step heading */}
                 <h3
                   style={{
                     fontFamily: 'var(--font-display), serif',
-                    fontSize: '1.5rem',
+                    fontSize: 'clamp(1.25rem, 2.5vw, 1.5rem)',
                     fontWeight: 600,
-                    color: 'var(--color-ink)',
-                    marginBottom: '0.75rem',
+                    color: 'rgba(255,255,255,0.94)',
+                    margin: '0 0 0.875rem',
                     lineHeight: 1.2,
+                    position: 'relative',
                   }}
                 >
                   {step.title}
                 </h3>
+
+                {/* Body */}
                 <p
                   style={{
                     fontFamily: 'var(--font-body), serif',
                     fontSize: '0.9375rem',
-                    color: '#4f5d6a',
-                    lineHeight: 1.65,
+                    color: 'rgba(200,220,245,0.68)',
+                    lineHeight: 1.7,
                     margin: 0,
+                    position: 'relative',
                   }}
                 >
                   {step.body}
