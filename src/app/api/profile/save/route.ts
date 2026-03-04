@@ -28,6 +28,7 @@ const schema = z.object({
   year: z.string().optional().transform(v => v || null),
   degree: z.string().optional().transform(v => v || null),
   major: z.array(z.string()).max(3).default([]),
+  clubs: z.array(z.string()).max(10).default([]),
   pronouns: z.string().max(50).optional().transform(v => v || null),
   responses: z.array(
     z.object({
@@ -113,6 +114,7 @@ export async function POST(req: NextRequest) {
         year: data.year,
         degree: data.degree,
         major: data.major,
+        clubs: data.clubs,
         pronouns: data.pronouns,
         responses: data.responses,
         twitter: data.twitter,
@@ -152,6 +154,7 @@ export async function POST(req: NextRequest) {
         year: data.year,
         degree: data.degree,
         major: data.major,
+        clubs: data.clubs,
         pronouns: data.pronouns,
         responses: data.responses,
         twitter: data.twitter,

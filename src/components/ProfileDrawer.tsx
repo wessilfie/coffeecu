@@ -286,6 +286,15 @@ export default function ProfileDrawer({ profile, onClose, onCoffeeSuccess, isLog
                 </Section>
               )}
 
+              {/* CBS Clubs */}
+              {profile.clubs && profile.clubs.length > 0 && (
+                <Section label="CBS Clubs">
+                  <p style={{ fontFamily: 'var(--font-body), serif', fontSize: '0.9375rem', color: 'var(--color-ink)', margin: 0 }}>
+                    {profile.clubs.join(' · ')}
+                  </p>
+                </Section>
+              )}
+
               {/* Q&A Responses */}
               {profile.responses && profile.responses.length > 0 && (
                 <>

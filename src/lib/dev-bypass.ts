@@ -26,7 +26,7 @@ const now = new Date().toISOString();
 export const DEV_MOCK_PROFILES: Profile[] = [
   {
     id: '1', user_id: 'u1', name: 'Amara Okafor', uni: 'ao1234', university: 'columbia',
-    school: 'CC', year: 'Junior', degree: 'AB', major: ['Computer Science', 'Philosophy'],
+    school: 'CC', year: 'Junior', degree: 'AB', major: ['Computer Science', 'Philosophy'], clubs: [],
     pronouns: 'she/her',
     responses: [
       { question: "What's a topic you could talk about for 20 minutes with zero prep?", answer: 'AI ethics and what we lose when we treat machines as moral agents — I could go forever on this.' },
@@ -38,7 +38,7 @@ export const DEV_MOCK_PROFILES: Profile[] = [
   },
   {
     id: '2', user_id: 'u2', name: 'Marco Reyes', uni: 'mr5678', university: 'columbia',
-    school: 'SEAS', year: 'Senior', degree: 'BS', major: ['Mechanical Engineering'],
+    school: 'SEAS', year: 'Senior', degree: 'BS', major: ['Mechanical Engineering'], clubs: [],
     pronouns: 'he/him',
     responses: [
       { question: "What's a small obsession you have right now?", answer: 'Vertical-axis wind turbines — I\'m convinced they\'re underrated for urban environments and I can\'t stop reading about them.' },
@@ -50,7 +50,7 @@ export const DEV_MOCK_PROFILES: Profile[] = [
   },
   {
     id: '3', user_id: 'u3', name: 'Priya Shankar', uni: 'ps9012', university: 'columbia',
-    school: 'GSAS', year: 'Year 3+', degree: 'PhD', major: ['Economics'],
+    school: 'GSAS', year: 'Year 3+', degree: 'PhD', major: ['Economics'], clubs: [],
     pronouns: 'she/they',
     responses: [
       { question: "What's something you've recently changed your mind about?", answer: 'I used to think randomized control trials were the gold standard for everything. Development work has complicated that view significantly.' },
@@ -62,7 +62,7 @@ export const DEV_MOCK_PROFILES: Profile[] = [
   },
   {
     id: '4', user_id: 'u4', name: 'Jake Thornton', uni: 'jt3456', university: 'columbia',
-    school: 'CC', year: 'Sophomore', degree: 'AB', major: ['History', 'Political Science'],
+    school: 'CC', year: 'Sophomore', degree: 'AB', major: ['History', 'Political Science'], clubs: [],
     pronouns: 'he/him',
     responses: [
       { question: "What's a problem people tend to come to you for?", answer: 'Research rabbit holes — if you need to trace an event back to its roots or find primary sources, I\'m your person.' },
@@ -73,7 +73,7 @@ export const DEV_MOCK_PROFILES: Profile[] = [
   },
   {
     id: '5', user_id: 'u5', name: 'Lena Dubois', uni: 'ld7890', university: 'columbia',
-    school: 'BC', year: 'Senior', degree: 'AB', major: ['Comparative Literature'],
+    school: 'BC', year: 'Senior', degree: 'AB', major: ['Comparative Literature'], clubs: [],
     pronouns: 'she/her',
     responses: [
       { question: "Where on campus do you go to think clearly?", answer: 'The steps behind Low Library around 7am, before anyone else shows up. Or the Barnard library when I need to actually write.' },
@@ -85,7 +85,7 @@ export const DEV_MOCK_PROFILES: Profile[] = [
   },
   {
     id: '6', user_id: 'u6', name: 'David Kim', uni: 'dk2345', university: 'columbia',
-    school: 'SEAS', year: 'First Year', degree: 'BS', major: ['Computer Science'],
+    school: 'SEAS', year: 'First Year', degree: 'BS', major: ['Computer Science'], clubs: [],
     pronouns: 'he/him',
     responses: [
       { question: "What are you quietly trying to get better at this semester?", answer: 'Actually asking for help. I keep trying to figure everything out alone and it\'s making me slower than I need to be.' },
@@ -96,7 +96,7 @@ export const DEV_MOCK_PROFILES: Profile[] = [
   },
   {
     id: '7', user_id: 'u7', name: 'Sofia Alvarez', uni: 'sa6789', university: 'columbia',
-    school: 'GS', year: 'Junior', degree: 'AB', major: ['Art History'],
+    school: 'GS', year: 'Junior', degree: 'AB', major: ['Art History'], clubs: [],
     pronouns: 'she/her',
     responses: [
       { question: "When do you feel most like yourself?", answer: 'In a museum on a Tuesday morning when it\'s nearly empty. Or making something with my hands — ceramics, mostly.' },
@@ -109,7 +109,7 @@ export const DEV_MOCK_PROFILES: Profile[] = [
   },
   {
     id: '8', user_id: 'u8', name: 'Prof. James Wright', uni: 'jw0001', university: 'columbia',
-    school: 'CC', year: 'Faculty/Professor', degree: null, major: ['Physics'],
+    school: 'CC', year: 'Faculty/Professor', degree: null, major: ['Physics'], clubs: [],
     pronouns: 'he/him',
     responses: [
       { question: "What's a topic you could talk about for 20 minutes with zero prep?", answer: 'The philosophical implications of quantum entanglement. Not the physics — the question of what it means for locality and causation.' },
@@ -132,6 +132,7 @@ export const DEV_MOCK_FULL_PROFILE: FullProfile = {
   year: 'Junior',
   degree: null,
   major: ['Computer Science'],
+  clubs: [],
   pronouns: 'they/them',
   responses: [
     { question: "What's a small obsession you have right now?", answer: 'This is a dev mode profile for testing the UI. Nothing to see here but valid mock data.' },
@@ -166,6 +167,7 @@ export const DEV_MOCK_DRAFT: DraftProfile = {
   year: 'Junior',
   degree: null,
   major: ['Computer Science'],
+  clubs: [],
   pronouns: 'they/them',
   responses: [
     { question: "What are you quietly trying to get better at this semester?", answer: 'Testing React components without breaking everything. Dev mode makes this a bit easier though.' },

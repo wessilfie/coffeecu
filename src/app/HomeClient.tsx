@@ -7,7 +7,7 @@ import ProfileCard from '@/components/ProfileCard';
 import ProfileDrawer from '@/components/ProfileDrawer';
 import { getSupabaseClient } from '@/lib/supabase/client';
 import { DEV_BYPASS, DEV_MOCK_PROFILES } from '@/lib/dev-bypass';
-import { PARALLAX_IMAGES, SCHOOL_GROUPS, YEARS } from '@/lib/constants';
+import { PARALLAX_IMAGES, SCHOOL_GROUPS, YEARS, CBS_CLUBS } from '@/lib/constants';
 import type { Profile, ProfileFilters } from '@/types';
 
 const PAGE_SIZE = 12;
@@ -619,6 +619,121 @@ function LoginGate({ meetingCount, heroImage }: { meetingCount: number; heroImag
   );
 }
 
+// ——— Club typeahead filter ———
+function ClubTypeahead({ value, onSelect }: { value: string; onSelect: (club: string) => void }) {
+  const [inputValue, setInputValue] = useState(value);
+  const [open, setOpen] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  const suggestions = inputValue.trim()
+    ? (CBS_CLUBS as readonly string[]).filter(c =>
+        c.toLowerCase().includes(inputValue.toLowerCase())
+      ).slice(0, 8)
+    : [];
+
+  useEffect(() => {
+    setInputValue(value);
+  }, [value]);
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
+  const handleSelect = (club: string) => {
+    onSelect(club);
+    setInputValue(club);
+    setOpen(false);
+  };
+
+  const handleClear = () => {
+    onSelect('');
+    setInputValue('');
+    setOpen(false);
+  };
+
+  return (
+    <div ref={containerRef} style={{ position: 'relative', minWidth: '180px' }}>
+      <div style={{ position: 'relative' }}>
+        <input
+          type="text"
+          className="form-input"
+          placeholder="Filter by CBS club…"
+          value={inputValue}
+          onChange={e => { setInputValue(e.target.value); setOpen(true); }}
+          onFocus={() => { if (inputValue.trim()) setOpen(true); }}
+          style={{ fontSize: '0.8125rem', paddingRight: value ? '2rem' : undefined }}
+        />
+        {value && (
+          <button
+            type="button"
+            onClick={handleClear}
+            aria-label="Clear club filter"
+            style={{
+              position: 'absolute',
+              right: '0.5rem',
+              top: '50%',
+              transform: 'translateY(-50%)',
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+              color: 'var(--color-text-muted)',
+              fontSize: '0.875rem',
+              lineHeight: 1,
+              padding: '0.125rem',
+            }}
+          >
+            ×
+          </button>
+        )}
+      </div>
+      {open && suggestions.length > 0 && (
+        <ul
+          style={{
+            position: 'absolute',
+            top: 'calc(100% + 4px)',
+            left: 0,
+            right: 0,
+            background: 'var(--color-white, #fff)',
+            border: '1px solid var(--color-mist)',
+            borderRadius: '4px',
+            boxShadow: '0 4px 16px rgba(26,20,16,0.12)',
+            listStyle: 'none',
+            margin: 0,
+            padding: '0.25rem 0',
+            zIndex: 50,
+            maxHeight: '260px',
+            overflowY: 'auto',
+          }}
+        >
+          {suggestions.map(club => (
+            <li
+              key={club}
+              onMouseDown={() => handleSelect(club)}
+              style={{
+                padding: '0.5rem 0.875rem',
+                fontFamily: 'var(--font-body), serif',
+                fontSize: '0.8125rem',
+                color: 'var(--color-ink)',
+                cursor: 'pointer',
+              }}
+              onMouseEnter={e => (e.currentTarget.style.background = 'var(--color-limestone-dk, #ece8de)')}
+              onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+            >
+              {club}
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+
 // ——— The actual home page for authenticated users ———
 function AuthenticatedHome({ initialProfiles, meetingCount, userId, sentRequestIds }: { initialProfiles: Profile[]; meetingCount: number; userId: string | null; sentRequestIds: string[] }) {
   const [profiles, setProfiles] = useState<Profile[]>(initialProfiles);
@@ -628,7 +743,7 @@ function AuthenticatedHome({ initialProfiles, meetingCount, userId, sentRequestI
   const [page, setPage] = useState(0);
   const [hasMore, setHasMore] = useState(initialProfiles.length === PAGE_SIZE);
 
-  const [filters, setFilters] = useState<ProfileFilters>({ query: '', year: '', school: '', major: '' });
+  const [filters, setFilters] = useState<ProfileFilters>({ query: '', year: '', school: '', major: '', clubs: '' });
   const [selectedProfile, setSelectedProfile] = useState<Profile | null>(null);
   const [successMessage, setSuccessMessage] = useState('');
   const [sentIds, setSentIds] = useState<Set<string>>(new Set(sentRequestIds));
@@ -669,7 +784,7 @@ function AuthenticatedHome({ initialProfiles, meetingCount, userId, sentRequestI
 
     let query = supabase
       .from('public_profiles')
-      .select('id, user_id, name, uni, university, school, year, degree, major, pronouns, responses, twitter, facebook, linkedin, instagram, youtube, tiktok, website, image_url, is_public, random_sort, created_at, updated_at', { count: 'exact' });
+      .select('id, user_id, name, uni, university, school, year, degree, major, clubs, pronouns, responses, twitter, facebook, linkedin, instagram, youtube, tiktok, website, image_url, is_public, random_sort, created_at, updated_at', { count: 'exact' });
 
     // Full-text search
     if (f.query.trim()) {
@@ -682,6 +797,7 @@ function AuthenticatedHome({ initialProfiles, meetingCount, userId, sentRequestI
     if (f.year) query = query.eq('year', f.year);
     if (f.school) query = query.eq('school', f.school);
     if (f.major) query = query.contains('major', [f.major]);
+    if (f.clubs) query = query.contains('clubs', [f.clubs]);
 
     query = query.range(pageNum * PAGE_SIZE, pageNum * PAGE_SIZE + PAGE_SIZE - 1);
 
@@ -903,6 +1019,12 @@ function AuthenticatedHome({ initialProfiles, meetingCount, userId, sentRequestI
             </select>
             <ChevronDown size={13} style={{ position: 'absolute', right: '0.6rem', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', color: 'var(--color-text-muted)' }} />
           </div>
+
+          {/* CBS Club filter */}
+          <ClubTypeahead
+            value={filters.clubs}
+            onSelect={club => handleFilterChange('clubs', club)}
+          />
         </div>
       </div>
 

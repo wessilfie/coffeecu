@@ -7,7 +7,7 @@ import { z } from 'zod';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Upload, Plus, Trash2, ChevronDown } from 'lucide-react';
-import { SCHOOL_GROUPS, UNDERGRAD_SCHOOL_CODES, UNDERGRAD_YEARS, GRAD_YEARS, YEARS, DEGREE_GROUPS, MAJORS, PROFILE_QUESTIONS, COFFEE_QUESTION } from '@/lib/constants';
+import { SCHOOL_GROUPS, UNDERGRAD_SCHOOL_CODES, UNDERGRAD_YEARS, GRAD_YEARS, YEARS, DEGREE_GROUPS, MAJORS, CBS_CLUBS, PROFILE_QUESTIONS, COFFEE_QUESTION } from '@/lib/constants';
 import type { ProfileFormData, FullProfile, DraftProfile, School, ProfileResponse } from '@/types';
 
 // ============================================================
@@ -26,6 +26,7 @@ const schema = z.object({
   year: z.string(),
   degree: z.string(),
   major: z.array(z.string()).max(3, 'Select up to 3 majors'),
+  clubs: z.array(z.string()).max(10, 'Select up to 10 clubs'),
   pronouns: z.string().max(50, 'Max 50 characters'),
   responses: z.array(z.object({ question: z.string(), answer: z.string() })),
   twitter: urlSchema,
@@ -105,6 +106,7 @@ export default function ProfileForm({ userId, userEmail, existingProfile, existi
       year: source?.year ?? '',
       degree: source?.degree ?? '',
       major: source?.major ?? [],
+      clubs: source?.clubs ?? [],
       pronouns: source?.pronouns ?? '',
       responses: [],
       twitter: source?.twitter ?? '',
@@ -489,6 +491,39 @@ export default function ProfileForm({ userId, userEmail, existingProfile, existi
                 >
                   {MAJORS.map(m => (
                     <option key={m} value={m}>{m}</option>
+                  ))}
+                </select>
+                {field.value.length > 0 && (
+                  <p className="label-mono" style={{ marginTop: '0.25rem', color: 'var(--color-text-muted)' }}>
+                    Selected: {field.value.join(' · ')}
+                  </p>
+                )}
+              </div>
+            )}
+          />
+        </div>}
+
+        {/* Student Clubs — BUS only */}
+        {selectedSchool === 'BUS' && <div style={{ marginTop: '1rem' }}>
+          <label className="form-label">Student Clubs — select all that apply</label>
+          <Controller
+            name="clubs"
+            control={control}
+            render={({ field }) => (
+              <div style={{ position: 'relative' }}>
+                <select
+                  className="form-input"
+                  multiple
+                  value={field.value}
+                  onChange={e => {
+                    const selected = Array.from(e.target.selectedOptions, o => o.value);
+                    if (selected.length <= 10) field.onChange(selected);
+                  }}
+                  size={6}
+                  style={{ height: 'auto', minHeight: '140px' }}
+                >
+                  {CBS_CLUBS.map(c => (
+                    <option key={c} value={c}>{c}</option>
                   ))}
                 </select>
                 {field.value.length > 0 && (

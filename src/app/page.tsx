@@ -36,7 +36,7 @@ export default async function HomePage({
   // Initial profiles (server-rendered for fast FCP + SEO)
   const { data: profiles } = await supabase
     .from('public_profiles')
-    .select('id, user_id, name, uni, university, school, year, degree, major, pronouns, responses, twitter, facebook, linkedin, instagram, youtube, tiktok, website, image_url, is_public, random_sort, created_at, updated_at')
+    .select('id, user_id, name, uni, university, school, year, degree, major, clubs, pronouns, responses, twitter, facebook, linkedin, instagram, youtube, tiktok, website, image_url, is_public, random_sort, created_at, updated_at')
     .order('random_sort', { ascending: true })
     .limit(12);
 
@@ -63,7 +63,7 @@ export default async function HomePage({
       const serviceClient = createSupabaseServiceClient();
       const { data: ownProfile } = await serviceClient
         .from('profiles')
-        .select('id, user_id, name, uni, university, school, year, degree, major, pronouns, responses, twitter, facebook, linkedin, instagram, youtube, tiktok, website, image_url, is_public, random_sort, created_at, updated_at')
+        .select('id, user_id, name, uni, university, school, year, degree, major, clubs, pronouns, responses, twitter, facebook, linkedin, instagram, youtube, tiktok, website, image_url, is_public, random_sort, created_at, updated_at')
         .eq('user_id', user.id)
         .eq('is_public', true)
         .eq('is_visible', true)
