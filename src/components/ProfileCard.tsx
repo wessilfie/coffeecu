@@ -122,6 +122,7 @@ export default function ProfileCard({ profile, onClick, isOwn = false }: Props) 
             }}
           >
             <h3
+              className="line-clamp-2"
               style={{
                 fontFamily: 'var(--font-display), serif',
                 fontSize: '1.3rem',
@@ -130,10 +131,8 @@ export default function ProfileCard({ profile, onClick, isOwn = false }: Props) 
                 letterSpacing: '0.01em',
                 lineHeight: 1.2,
                 margin: 0,
-                display: '-webkit-box',
-                WebkitLineClamp: 2,
-                WebkitBoxOrient: 'vertical',
-                overflow: 'hidden',
+                overflowWrap: 'break-word',
+                wordBreak: 'break-word',
               }}
             >
               {profile.name}
@@ -141,7 +140,7 @@ export default function ProfileCard({ profile, onClick, isOwn = false }: Props) 
           </div>
         </div>
 
-        <div style={{ padding: '0.78rem 0.85rem 0.9rem', minHeight: '6.4rem', display: 'flex', flexDirection: 'column' }}>
+        <div style={{ padding: '0.78rem 0.85rem 0.9rem', height: '7rem', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', flexWrap: 'wrap', minHeight: '1.5rem', marginBottom: '0.45rem' }}>
             {badge && schoolLabel && (
               <span
@@ -191,17 +190,14 @@ export default function ProfileCard({ profile, onClick, isOwn = false }: Props) 
           </div>
 
           <p
+            className="line-clamp-3"
             style={{
               fontFamily: 'var(--font-body), serif',
               fontSize: '0.82rem',
               color: '#2f2a24',
-              lineHeight: 1.42,
+              lineHeight: 1.5,
               margin: 0,
               flex: 1,
-              display: '-webkit-box',
-              WebkitLineClamp: 2,
-              WebkitBoxOrient: 'vertical',
-              overflow: 'hidden',
             }}
           >
             {profile.responses?.[0]?.answer ?? ''}

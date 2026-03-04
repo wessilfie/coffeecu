@@ -441,3 +441,19 @@ body {
 .marquee-inner:hover {
   animation-play-state: paused;
 }
+
+/* ============================================================
+   LINE-CLAMP UTILITIES
+   Must live in CSS (not inline styles) — React strips
+   -webkit-box-orient: vertical from inline style objects.
+   ============================================================ */
+
+.line-clamp-2,
+.line-clamp-3 {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.line-clamp-2 { -webkit-line-clamp: 2; }
+.line-clamp-3 { -webkit-line-clamp: 3; }
