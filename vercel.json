@@ -1,0 +1,7 @@
+{
+  "buildCommand": "cd coffeecu-next && npm install && npm run build",
+  "outputDirectory": "coffeecu-next/.next",
+  "devCommand": "cd coffeecu-next && npm run dev",
+  "framework": "nextjs",
+  "installCommand": "cd coffeecu-next && npm install"
+}
