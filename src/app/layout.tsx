@@ -1,38 +1,26 @@
 import type { Metadata } from "next";
-import { DM_Serif_Display, Lora, DM_Sans } from "next/font/google";
+import { Newsreader, Manrope } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
 
 const GA_ID = "G-0YGFM88PE4";
 
 // ============================================================
-// TYPOGRAPHY — Limestone & Blue Design System
-// DM Serif Display: high-contrast editorial serif for headings
-// Lora: warm, readable serif for body copy
-// DM Sans: clean geometric sans for UI labels, buttons, meta
-//          (designed as the companion to DM Serif Display)
+// TYPOGRAPHY — Premium Editorial-Meets-Tech
+// Newsreader: elegant, high-contrast serif for headings
+// Manrope: sharp, geometric modern sans for body/UI text
 // ============================================================
 
-const dmSerifDisplay = DM_Serif_Display({
+const newsreader = Newsreader({
   subsets: ["latin"],
-  weight: ["400"],
   style: ["normal", "italic"],
-  variable: "--font-dm-serif",
+  variable: "--font-newsreader",
   display: "swap",
 });
 
-const lora = Lora({
+const manrope = Manrope({
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
-  style: ["normal", "italic"],
-  variable: "--font-lora",
-  display: "swap",
-});
-
-const dmSans = DM_Sans({
-  subsets: ["latin"],
-  weight: ["400", "500", "600"],
-  variable: "--font-dm-sans",
+  variable: "--font-manrope",
   display: "swap",
 });
 
@@ -65,7 +53,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${dmSerifDisplay.variable} ${lora.variable} ${dmSans.variable}`}
+      className={`${newsreader.variable} ${manrope.variable}`}
     >
       <body className="min-h-screen flex flex-col">
         {children}

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { createSupabaseBrowserClient } from '@/lib/supabase/browser';
 import { Mail, Lock, AlertCircle, Check, X } from 'lucide-react';
@@ -31,6 +31,14 @@ export default function LoginForm({
   // Read email + mode directly from URL — more reliable than Suspense-wrapped prop
   const urlEmail = searchParams.get('email');
   const urlMode = searchParams.get('mode');
+  const urlSchool = searchParams.get('school');
+
+  // Persist the referral school so it survives the Supabase email auth flow
+  useEffect(() => {
+    if (urlSchool) {
+      sessionStorage.setItem('referral_school', urlSchool);
+    }
+  }, [urlSchool]);
 
   const [mode, setMode] = useState<AuthMode>(
     initialMode ?? (urlMode === 'signup' ? 'sign_up' : 'sign_in')
@@ -248,7 +256,7 @@ export default function LoginForm({
       {/* Email/password form */}
       <form onSubmit={handleEmailAuth}>
         <div style={{ marginBottom: '1rem' }}>
-          <label className="form-label" htmlFor="auth-email">
+          <label className="form-label" htmlFor="auth-email" style={{ fontFamily: 'var(--font-body)', fontSize: '0.875rem', fontWeight: 500, color: 'var(--color-ink)' }}>
             Columbia Email *
           </label>
           <div style={{ position: 'relative' }}>
@@ -272,13 +280,22 @@ export default function LoginForm({
               onChange={(e) => setEmail(e.target.value)}
               required
               autoComplete="email"
-              style={{ paddingLeft: '2.5rem' }}
+              style={{
+                paddingLeft: '2.5rem',
+                fontFamily: 'var(--font-body)',
+                borderRadius: '8px',
+                border: '1px solid var(--color-mist)',
+                paddingTop: '0.75rem',
+                paddingBottom: '0.75rem',
+                boxShadow: '0 1px 2px rgba(0,0,0,0.02)',
+                backgroundColor: '#FAFAF9',
+              }}
             />
           </div>
         </div>
 
         <div style={{ marginBottom: '1rem' }}>
-          <label className="form-label" htmlFor="auth-password">
+          <label className="form-label" htmlFor="auth-password" style={{ fontFamily: 'var(--font-body)', fontSize: '0.875rem', fontWeight: 500, color: 'var(--color-ink)' }}>
             Password *
           </label>
           <div style={{ position: 'relative' }}>
@@ -303,7 +320,16 @@ export default function LoginForm({
               required
               autoComplete={mode === 'sign_up' ? 'new-password' : 'current-password'}
               minLength={8}
-              style={{ paddingLeft: '2.5rem' }}
+              style={{
+                paddingLeft: '2.5rem',
+                fontFamily: 'var(--font-body)',
+                borderRadius: '8px',
+                border: '1px solid var(--color-mist)',
+                paddingTop: '0.75rem',
+                paddingBottom: '0.75rem',
+                boxShadow: '0 1px 2px rgba(0,0,0,0.02)',
+                backgroundColor: '#FAFAF9',
+              }}
             />
           </div>
 
@@ -334,13 +360,21 @@ export default function LoginForm({
           type="submit"
           className="btn-primary"
           disabled={status === 'loading'}
-          style={{ width: '100%', opacity: status === 'loading' ? 0.7 : 1 }}
+          style={{
+            width: '100%',
+            opacity: status === 'loading' ? 0.7 : 1,
+            borderRadius: '8px',
+            fontFamily: 'var(--font-body)',
+            fontWeight: 500,
+            padding: '0.875rem',
+            marginTop: '0.5rem',
+          }}
         >
           {status === 'loading'
             ? 'Please wait...'
             : mode === 'sign_up'
-            ? 'Create Account'
-            : 'Sign In'}
+              ? 'Create Account'
+              : 'Sign In'}
         </button>
       </form>
 
@@ -403,11 +437,11 @@ export default function LoginForm({
 // ─── Password helpers ────────────────────────────────────────────────────────
 
 const REQUIREMENTS = [
-  { key: 'length',    label: 'At least 8 characters',  test: (p: string) => p.length >= 8 },
-  { key: 'upper',     label: 'Uppercase letter',        test: (p: string) => /[A-Z]/.test(p) },
-  { key: 'lower',     label: 'Lowercase letter',        test: (p: string) => /[a-z]/.test(p) },
-  { key: 'digit',     label: 'Number',                  test: (p: string) => /[0-9]/.test(p) },
-  { key: 'symbol',    label: 'Symbol (e.g. !@#$)',      test: (p: string) => /[^A-Za-z0-9]/.test(p) },
+  { key: 'length', label: 'At least 8 characters', test: (p: string) => p.length >= 8 },
+  { key: 'upper', label: 'Uppercase letter', test: (p: string) => /[A-Z]/.test(p) },
+  { key: 'lower', label: 'Lowercase letter', test: (p: string) => /[a-z]/.test(p) },
+  { key: 'digit', label: 'Number', test: (p: string) => /[0-9]/.test(p) },
+  { key: 'symbol', label: 'Symbol (e.g. !@#$)', test: (p: string) => /[^A-Za-z0-9]/.test(p) },
 ];
 
 function passwordMeetsRequirements(p: string) {

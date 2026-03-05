@@ -67,8 +67,7 @@ export default function Footer() {
         style={{
           fontFamily: 'var(--font-mono), monospace',
           fontSize: '0.68rem',
-          letterSpacing: '0.08em',
-          textTransform: 'uppercase',
+          letterSpacing: '0.01em',
           color: 'var(--color-text-muted)',
         }}
       >

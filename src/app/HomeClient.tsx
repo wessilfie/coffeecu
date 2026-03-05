@@ -1,13 +1,16 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { useRouter } from 'next/navigation';
-import { Search, ChevronDown } from 'lucide-react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { Search, ChevronRight } from 'lucide-react';
+import ColumbiaCrown from '@/components/ColumbiaCrown';
 import ProfileCard from '@/components/ProfileCard';
 import ProfileDrawer from '@/components/ProfileDrawer';
+import Image from 'next/image';
+import Link from 'next/link';
 import { getSupabaseClient } from '@/lib/supabase/client';
 import { DEV_BYPASS, DEV_MOCK_PROFILES } from '@/lib/dev-bypass';
-import { PARALLAX_IMAGES, SCHOOL_GROUPS, YEARS, CBS_CLUBS } from '@/lib/constants';
+import { PARALLAX_IMAGES, CBS_CLUBS, MAJORS, SCHOOLS } from '@/lib/constants';
 import type { Profile, ProfileFilters } from '@/types';
 
 const PAGE_SIZE = 12;
@@ -17,11 +20,11 @@ interface Props {
   meetingCount: number;
   isLoggedIn: boolean;
   userId: string | null;
-  sentRequestIds: string[];
+  sentRequests: { id: string; date: string }[];
   hasPublishedProfile: boolean;
 }
 
-export default function HomeClient({ initialProfiles, meetingCount, isLoggedIn, userId, sentRequestIds, hasPublishedProfile }: Props) {
+export default function HomeClient({ initialProfiles, meetingCount, isLoggedIn, userId, sentRequests, hasPublishedProfile }: Props) {
   // Supabase redirects both successful tokens and errors to the Site URL (homepage) as a hash.
   // Detect either case and forward to /auth/callback which handles both correctly.
   const [redirecting, setRedirecting] = useState(() => {
@@ -50,7 +53,7 @@ export default function HomeClient({ initialProfiles, meetingCount, isLoggedIn, 
     return <ProfileGate />;
   }
 
-  return <AuthenticatedHome initialProfiles={initialProfiles} meetingCount={meetingCount} userId={userId} sentRequestIds={sentRequestIds} />;
+  return <AuthenticatedHome initialProfiles={initialProfiles} meetingCount={meetingCount} userId={userId} sentRequests={sentRequests} />;
 }
 
 // ——— Gate for logged-in users who haven't published yet ———
@@ -167,477 +170,495 @@ function EmailSignupInput({ darkBackground = false }: { darkBackground?: boolean
 
 // ——— Login gate / landing page for unauthenticated visitors ———
 function LoginGate({ meetingCount, heroImage }: { meetingCount: number; heroImage: string }) {
-  const steps = [
+  const testimonials = [
     {
-      number: '01',
-      title: 'Create your profile',
-      body: 'Share your school, major, interests, and what you\'d love to talk about. Your profile goes live right after email verification.',
+      quote: "I met one of my closest friends on Coffee@CU. We're still close nearly a decade later.",
+      author: 'Columbia alum',
+      school: 'Met at Hungarian Pastry Shop'
     },
     {
-      number: '02',
-      title: 'Browse the community',
-      body: 'Search by name, interest, major, or availability. Filter by year and school. Discover students, faculty, and alumni you\'d never stumble across otherwise.',
+      quote: "I'm getting married to someone I met for coffee once on here.",
+      author: 'Columbia alum',
+      school: 'Met at Joe Coffee (Noco)'
     },
     {
-      number: '03',
-      title: 'Reach out with purpose',
-      body: 'Send a personal note explaining what you\'d like to discuss. Coffee, tea, or a quick Zoom. No anonymous reach-outs, ever.',
+      quote: "I've wanted to find other folks looking to get into entrepreneurship. Coffee@CU is helping me meet others in that space I might not have met otherwise.",
+      author: "CBS '26 MBA candidate",
+      school: 'Met at Kuro Kuma'
     },
+    {
+      quote: 'I already go to Dear Mama midday; will be nice to have some others to meet over there.',
+      author: "CBS '26 EMBA candidate",
+      school: 'Met at Pisticci'
+    }
   ];
-
-  const useCases = [
-    'Finding a study partner for a course outside your major',
-    'Getting coffee with a researcher in your dream field',
-    'Connecting with an alum at the company you want to join',
-    'Building a project with someone from a different school',
-    'Discovering a campus community you never knew existed',
-    'Having a real conversation with a professor outside office hours',
-  ];
-
-  const marqueeSchools = [
-    'Columbia College',
-    'Fu Foundation School of Engineering & Applied Science',
-    'School of General Studies',
-    'Barnard College',
-    'Graduate School of Arts & Sciences',
-    'Columbia Business School',
-    'Columbia Law School',
-    'Vagelos College of Physicians & Surgeons',
-    'Columbia Journalism School',
-    'School of International & Public Affairs',
-    'Graduate School of Architecture, Planning & Preservation',
-    'School of the Arts',
-    'School of Social Work',
-    'Mailman School of Public Health',
-    'School of Nursing',
-    'College of Dental Medicine',
-    'School of Professional Studies',
-    'Columbia Climate School',
-    'Teachers College',
-  ];
-  const marqueeContent = [...marqueeSchools, ...marqueeSchools];
 
   return (
-    <main style={{ flex: 1, background: '#f6f1e8' }}>
+    <main style={{ flex: 1, background: 'var(--color-limestone)' }}>
       {/* ————————————————————————————————————————
-          HERO — full-bleed Columbia blue
+          HERO — Dynamic Asymmetrical Layout
       ———————————————————————————————————————— */}
       <section
-        className="grain-overlay"
         style={{
-          position: 'relative',
-          minHeight: '100svh',
-          background: 'linear-gradient(150deg, #012a61 0%, #00418c 54%, #0d5eac 100%)',
-          overflow: 'hidden',
+          minHeight: 'auto',
           display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'center',
+          alignItems: 'center',
+          position: 'relative',
+          overflow: 'hidden',
+          backgroundColor: '#FAFAFA',
+          backgroundImage: `url('/img/apsia-columbia-campus.jpg')`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundBlendMode: 'normal',
+          paddingTop: '2rem',
+          paddingBottom: '2rem',
         }}
       >
-        {/* Parallax image underlay */}
-        <div
-          style={{
-            position: 'absolute',
-            inset: 0,
-            backgroundImage: `url(/img/parallax/${heroImage}.jpg)`,
-            backgroundSize: 'cover',
-            backgroundPosition: 'center 30%',
-            opacity: 0.23,
-          }}
-        />
-
-        {/* Decorative rule — Beaux-Arts feel */}
-        <div
-          style={{
-            position: 'absolute',
-            left: 0,
-            top: 0,
-            bottom: 0,
-            width: '5px',
-            background: 'linear-gradient(to bottom, transparent, rgba(244,240,230,0.9), transparent)',
-          }}
-        />
-
-        <div
-          style={{
-            position: 'relative',
-            zIndex: 2,
-            maxWidth: '1120px',
-            margin: '0 auto',
-            padding: 'clamp(3.25rem, 7vw, 5.5rem) 1.5rem clamp(2.25rem, 5vw, 3.5rem)',
-            width: '100%',
-            textAlign: 'center',
-          }}
-        >
-          <h1
-            className="heading-display-italic"
-            style={{
-              fontSize: 'clamp(1.85rem, 3.2vw, 2.9rem)',
-              color: 'rgba(255,255,255,0.99)',
-              marginBottom: '1rem',
-              lineHeight: 1.08,
-            }}
-          >
-            You&apos;re surrounded by some of the most interesting people on earth. Why not meet someone new?
-          </h1>
-          <p
-            style={{
-              fontFamily: 'var(--font-body), serif',
-              fontSize: 'clamp(0.875rem, 1.4vw, 1rem)',
-              color: 'rgba(228,239,251,0.86)',
-              maxWidth: '580px',
-              margin: '0 auto 1.35rem',
-              lineHeight: 1.55,
-            }}
-          >
-            From Morningside to Manhattanville and beyond, meet and connect with other Columbians over coffee (or tea!) or even Zoom with Coffee@CU
-          </p>
-          <EmailSignupInput darkBackground />
-          <div
-            style={{
-              marginTop: '1rem',
-              display: 'flex',
-              alignItems: 'baseline',
-              gap: '0.625rem',
-              justifyContent: 'center',
-            }}
-          >
-            <span
-              style={{
-                fontFamily: 'var(--font-mono), monospace',
-                fontSize: '1.875rem',
-                fontWeight: 700,
-                color: '#f2ebde',
-                letterSpacing: '-0.02em',
-              }}
-            >
-              {meetingCount.toLocaleString()}
-            </span>
-            <span
-              className="label-mono"
-              style={{ color: 'rgba(235,243,252,0.7)', letterSpacing: '0.1em' }}
-            >
-              conversations started
-            </span>
-          </div>
-        </div>
-      </section>
-
-      {/* ————————————————————————————————————————
-          WHAT THIS IS
-      ———————————————————————————————————————— */}
-      <section
-        style={{
-          background: '#f9f5ee',
-          borderBottom: '1px solid #d4dfec',
-          padding: 'clamp(4rem, 6vw, 5.25rem) 1.5rem',
-        }}
-      >
-        <div style={{ maxWidth: '900px', margin: '0 auto', textAlign: 'center' }}>
-          <h2
-            style={{
-              fontFamily: 'var(--font-display), serif',
-              fontSize: 'clamp(2rem, 4vw, 3rem)',
+        <div style={{
+          position: 'relative',
+          zIndex: 2,
+          maxWidth: '1200px',
+          margin: '0 auto',
+          padding: '0 1.5rem',
+          width: '100%',
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(min(380px, 100%), 1fr))',
+          gap: '2rem',
+          alignItems: 'center',
+        }}>
+          {/* Left: Copy & Action */}
+          <div style={{
+            background: 'rgba(255, 255, 255, 0.85)',
+            backdropFilter: 'blur(20px)',
+            borderRadius: '24px',
+            padding: '2.5rem',
+            boxShadow: '0 20px 40px -10px rgba(0,0,0,0.05), inset 0 0 0 1px rgba(255,255,255,0.4)',
+            border: '1px solid rgba(255, 255, 255, 0.8)',
+            maxWidth: '100%'
+          }}>
+            <div style={{
+              display: 'inline-block',
+              padding: '0.25rem 0.75rem',
+              background: 'var(--color-columbia-pale)',
+              color: 'var(--color-columbia)',
+              borderRadius: '99px',
+              fontFamily: 'var(--font-mono)',
+              fontSize: '0.75rem',
               fontWeight: 600,
-              color: '#10273f',
-              marginBottom: '1.25rem',
-              lineHeight: 1.15,
-            }}
-          >
-            Columbia is bigger than your corner of campus.
-          </h2>
-          <p
-            style={{
-              fontFamily: 'var(--font-body), serif',
-              fontSize: 'clamp(0.9375rem, 2vw, 1.0625rem)',
-              color: '#4f5d6a',
-              maxWidth: '640px',
-              margin: '0 auto',
-              lineHeight: 1.7,
-            }}
-          >
-            Coffee@CU helps students across every school meet each other, then opens doors to the faculty and alumni
-            who&apos;ve been where you want to go. Every reach-out starts with a real message, so conversations begin with purpose.
-          </p>
-        </div>
-      </section>
+              letterSpacing: '0.04em',
+              marginBottom: '1.5rem'
+            }}>
+              Over {meetingCount.toLocaleString()} conversations started at Columbia
+            </div>
 
-      {/* ————————————————————————————————————————
-          HOW IT WORKS — 3 steps (editorial redesign)
-      ———————————————————————————————————————— */}
-      <section
-        id="how-it-works"
-        style={{
-          background: '#0f1e35',
-          padding: 'clamp(4rem, 7vw, 6rem) clamp(1.25rem, 4vw, 1.5rem)',
-        }}
-      >
-        <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
-          {/* Section heading */}
-          <div style={{ marginBottom: 'clamp(3rem, 5vw, 4.5rem)' }}>
-            <p
+            <h1
+              className="heading-display"
               style={{
-                fontFamily: 'var(--font-mono), monospace',
-                fontSize: '0.65rem',
-                letterSpacing: '0.18em',
-                textTransform: 'uppercase',
-                color: 'rgba(160,196,240,0.6)',
-                margin: '0 0 1rem',
-              }}
-            >
-              How it works
-            </p>
-            <h2
-              style={{
-                fontFamily: 'var(--font-display), serif',
-                fontStyle: 'italic',
-                fontSize: 'clamp(2rem, 4vw, 3.25rem)',
-                fontWeight: 600,
-                color: 'rgba(255,255,255,0.96)',
-                lineHeight: 1.1,
-                margin: 0,
-                maxWidth: '680px',
-              }}
-            >
-              Three steps to a better conversation.
-            </h2>
-          </div>
-
-          {/* Steps grid — auto-wraps to single column on mobile */}
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(min(280px, 100%), 1fr))',
-              gap: 'clamp(2rem, 4vw, 3rem)',
-            }}
-          >
-            {steps.map((step, i) => (
-              <div
-                key={step.number}
-                style={{
-                  position: 'relative',
-                  paddingTop: '1.75rem',
-                  borderTop: '1px solid rgba(255,255,255,0.12)',
-                  overflow: 'hidden',
-                }}
-              >
-                {/* Large background numeral — texture, not label */}
-                <div
-                  aria-hidden="true"
-                  style={{
-                    position: 'absolute',
-                    top: '-0.5rem',
-                    right: '-0.25rem',
-                    fontFamily: 'var(--font-display), serif',
-                    fontSize: 'clamp(6rem, 10vw, 8.5rem)',
-                    fontWeight: 600,
-                    color: 'rgba(255,255,255,0.04)',
-                    lineHeight: 1,
-                    userSelect: 'none',
-                    pointerEvents: 'none',
-                  }}
-                >
-                  {i + 1}
-                </div>
-
-                {/* Step heading */}
-                <h3
-                  style={{
-                    fontFamily: 'var(--font-display), serif',
-                    fontSize: 'clamp(1.25rem, 2.5vw, 1.5rem)',
-                    fontWeight: 600,
-                    color: 'rgba(255,255,255,0.94)',
-                    margin: '0 0 0.875rem',
-                    lineHeight: 1.2,
-                    position: 'relative',
-                  }}
-                >
-                  {step.title}
-                </h3>
-
-                {/* Body */}
-                <p
-                  style={{
-                    fontFamily: 'var(--font-body), serif',
-                    fontSize: '0.9375rem',
-                    color: 'rgba(200,220,245,0.68)',
-                    lineHeight: 1.7,
-                    margin: 0,
-                    position: 'relative',
-                  }}
-                >
-                  {step.body}
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ————————————————————————————————————————
-          WHO'S HERE + STORIES
-      ———————————————————————————————————————— */}
-      <section
-        style={{
-          background: '#f9f5ee',
-          borderBottom: '1px solid #b8d4ed',
-          padding: 'clamp(4rem, 6vw, 5.25rem) 1.5rem',
-        }}
-      >
-        <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
-          <div style={{ textAlign: 'center', marginBottom: 'clamp(2.5rem, 4vw, 3.5rem)' }}>
-            <h2
-              style={{
-                fontFamily: 'var(--font-display), serif',
-                fontSize: 'clamp(1.875rem, 3.5vw, 2.75rem)',
-                fontWeight: 600,
+                fontSize: 'clamp(2rem, 4vw, 3rem)',
                 color: 'var(--color-ink)',
                 marginBottom: '1rem',
-                lineHeight: 1.2,
+                lineHeight: 1.05,
+                letterSpacing: '-0.02em'
               }}
             >
-              Every school. Every year. Every path.
-            </h2>
+              Meet remarkable people at Columbia.
+            </h1>
+
+            <div style={{ marginBottom: '1.5rem' }}>
+              <EmailSignupInput />
+            </div>
+
             <p
               style={{
-                fontFamily: 'var(--font-body), serif',
-                fontSize: '0.9375rem',
-                color: '#4f5d6a',
-                maxWidth: '500px',
-                margin: '0 auto',
-                lineHeight: 1.65,
+                fontFamily: 'var(--font-body)',
+                fontSize: 'clamp(1rem, 1.5vw, 1.125rem)',
+                color: 'var(--color-text-muted)',
+                lineHeight: 1.6,
+                maxWidth: '650px'
               }}
             >
-              From first-years to faculty, CC to Teachers College.
-              Verified @columbia.edu and @barnard.edu accounts only.
+              Coffee@CU helps students, alumni, and faculty across every school meet each other. Real conversations. No anonymous reach-outs.
             </p>
           </div>
 
-          {/* Use case vignettes */}
-          <p className="label-mono" style={{ color: 'var(--color-text-muted)', marginBottom: '1.25rem', textAlign: 'center' }}>
-            What people come here for
-          </p>
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(min(280px, 100%), 1fr))',
-              gap: '1rem',
-            }}
-          >
-            {useCases.map((useCase) => (
-              <div
-                key={useCase}
-                style={{
-                  background: '#ffffff',
-                  border: '1px solid #b8d4ed',
-                  borderLeft: '3px solid #75aadb',
-                  borderRadius: '8px',
-                  padding: '1.25rem 1.5rem',
-                  boxShadow: '0 4px 16px rgba(0,60,130,0.06)',
-                }}
-              >
-                <p
+          {/* Right: Product Visual Mockup */}
+          <div style={{ position: 'relative', perspective: '1200px', display: 'flex', justifyContent: 'center', transformStyle: 'preserve-3d' }}>
+            <style>{`
+              @keyframes float-bg-bottom {
+                0%, 100% { transform: translate3d(50px, -25px, -120px) rotateZ(8deg) rotateY(-10deg); }
+                50% { transform: translate3d(50px, -15px, -120px) rotateZ(8deg) rotateY(-10deg); }
+              }
+              @keyframes float-bg-mid {
+                0%, 100% { transform: translate3d(-40px, -15px, -60px) rotateZ(-5deg) rotateY(-12deg); }
+                50% { transform: translate3d(-40px, -25px, -60px) rotateZ(-5deg) rotateY(-12deg); }
+              }
+              @keyframes float-main {
+                0%, 100% { transform: translateY(0px); box-shadow: 0 24px 48px -12px rgba(0,20,60,0.15); }
+                50% { transform: translateY(-8px); box-shadow: 0 32px 56px -12px rgba(0,20,60,0.2); }
+              }
+            `}</style>
+
+            {/* Stacked Card 2 (Bottom Layer) */}
+            <div style={{
+              position: 'absolute',
+              width: '100%',
+              maxWidth: '320px',
+              background: '#fdfbf6',
+              border: '1px solid #d9e4f0',
+              borderRadius: '8px',
+              transformOrigin: 'center center',
+              transform: 'translate3d(50px, -25px, -120px) rotateZ(8deg) rotateY(-10deg)',
+              opacity: 0.6,
+              zIndex: 0,
+              boxShadow: '0 20px 40px -10px rgba(0,20,60,0.1)',
+              overflow: 'hidden',
+              display: 'flex',
+              flexDirection: 'column',
+              animation: 'float-bg-bottom 8s ease-in-out infinite'
+            }}>
+              <div style={{ position: 'relative', paddingBottom: '122%', overflow: 'hidden', background: 'rgba(0,0,0,0.05)' }}>
+                <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: '42%', background: 'linear-gradient(to top, rgba(0,42,90,0.2) 0%, transparent 100%)' }} />
+                <div style={{ position: 'absolute', bottom: '0.75rem', left: '0.85rem' }}>
+                  <div style={{ height: '28px', width: '140px', background: 'rgba(255,255,255,0.4)', borderRadius: '4px' }} />
+                </div>
+              </div>
+              <div style={{ padding: '0.78rem 0.85rem 0.9rem', height: '7rem', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <div style={{ display: 'flex', gap: '0.4rem' }}>
+                  <div style={{ height: '18px', width: '120px', background: 'var(--color-ink)', opacity: 0.1, borderRadius: '2px' }} />
+                  <div style={{ height: '18px', width: '40px', background: 'var(--color-ink)', opacity: 0.1, borderRadius: '2px' }} />
+                </div>
+                <div style={{ height: '12px', width: '40px', background: 'var(--color-text-muted)', opacity: 0.1, borderRadius: '2px', marginTop: '4px' }} />
+                <div style={{ height: '14px', width: '90%', background: 'var(--color-ink)', opacity: 0.15, borderRadius: '2px', marginTop: 'auto' }} />
+                <div style={{ height: '14px', width: '70%', background: 'var(--color-ink)', opacity: 0.15, borderRadius: '2px' }} />
+              </div>
+            </div>
+
+            {/* Stacked Card 1 (Middle Layer) */}
+            <div style={{
+              position: 'absolute',
+              width: '100%',
+              maxWidth: '320px',
+              background: '#fdfbf6',
+              border: '1px solid #d9e4f0',
+              borderRadius: '8px',
+              transformOrigin: 'center center',
+              transform: 'translate3d(-40px, -15px, -60px) rotateZ(-5deg) rotateY(-12deg)',
+              opacity: 0.8,
+              zIndex: 1,
+              boxShadow: '0 30px 60px -15px rgba(0,30,80,0.1)',
+              overflow: 'hidden',
+              display: 'flex',
+              flexDirection: 'column',
+              animation: 'float-bg-mid 7s ease-in-out infinite'
+            }}>
+              <div style={{ position: 'relative', paddingBottom: '122%', overflow: 'hidden', background: 'rgba(0,0,0,0.08)' }}>
+                <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: '42%', background: 'linear-gradient(to top, rgba(0,42,90,0.3) 0%, transparent 100%)' }} />
+                <div style={{ position: 'absolute', bottom: '0.75rem', left: '0.85rem' }}>
+                  <div style={{ height: '28px', width: '180px', background: 'rgba(255,255,255,0.5)', borderRadius: '4px' }} />
+                </div>
+              </div>
+              <div style={{ padding: '0.78rem 0.85rem 0.9rem', height: '7rem', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <div style={{ display: 'flex', gap: '0.4rem' }}>
+                  <div style={{ height: '18px', width: '140px', background: 'var(--color-ink)', opacity: 0.15, borderRadius: '2px' }} />
+                  <div style={{ height: '18px', width: '50px', background: 'var(--color-ink)', opacity: 0.15, borderRadius: '2px' }} />
+                </div>
+                <div style={{ height: '12px', width: '45px', background: 'var(--color-text-muted)', opacity: 0.15, borderRadius: '2px', marginTop: '4px' }} />
+                <div style={{ height: '14px', width: '95%', background: 'var(--color-ink)', opacity: 0.2, borderRadius: '2px', marginTop: 'auto' }} />
+                <div style={{ height: '14px', width: '80%', background: 'var(--color-ink)', opacity: 0.2, borderRadius: '2px' }} />
+              </div>
+            </div>
+
+            {/* Main Profile Card (Top Layer) */}
+            <div style={{
+              position: 'relative',
+              zIndex: 2,
+              width: '100%',
+              maxWidth: '320px',
+              background: '#fdfbf6',
+              border: '1px solid #d9e4f0',
+              borderRadius: '8px',
+              boxShadow: '0 24px 48px -12px rgba(0,20,60,0.15)',
+              overflow: 'hidden',
+              display: 'flex',
+              flexDirection: 'column',
+              animation: 'float-main 6s ease-in-out infinite'
+            }}>
+              <div style={{ position: 'relative', paddingBottom: '122%', overflow: 'hidden' }}>
+                <img
+                  src="https://hpgieevpapwqitlsegqg.supabase.co/storage/v1/object/public/profile-photos/profiles/5b83ec3f-19ae-4189-9585-2f89601c5120/avatar.png?t=1771944923246"
+                  alt="Will Essilfie"
+                  style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
+                />
+                <div
                   style={{
-                    fontFamily: 'var(--font-display), serif',
-                    fontSize: '1.125rem',
-                    fontStyle: 'italic',
-                    fontWeight: 500,
-                    color: 'var(--color-ink)',
-                    lineHeight: 1.4,
-                    margin: 0,
+                    position: 'absolute',
+                    bottom: 0,
+                    left: 0,
+                    right: 0,
+                    height: '42%',
+                    background: 'linear-gradient(to top, rgba(0,42,90,0.72) 0%, transparent 100%)',
                   }}
-                >
-                  {useCase}
+                />
+                <div style={{ position: 'absolute', bottom: '0.75rem', left: '0.85rem', right: '0.85rem' }}>
+                  <h3 style={{ fontFamily: 'var(--font-display), serif', fontSize: '1.3rem', fontWeight: 600, color: 'white', letterSpacing: '0.01em', lineHeight: 1.2, margin: 0 }}>
+                    Will
+                  </h3>
+                </div>
+              </div>
+
+              <div style={{ padding: '0.78rem 0.85rem 0.9rem', height: '7rem', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', flexWrap: 'wrap', minHeight: '1.5rem', marginBottom: '0.45rem' }}>
+                  <span style={{ background: '#D4DFF0', color: '#1A3060', fontFamily: 'var(--font-mono), monospace', fontSize: '0.6rem', fontWeight: 700, padding: '0.15rem 0.45rem', borderRadius: '2px' }}>
+                    COLUMBIA BUSINESS SCHOOL
+                  </span>
+                  <span style={{ fontFamily: 'var(--font-mono), monospace', fontSize: '0.6rem', fontWeight: 700, padding: '0.15rem 0.45rem', borderRadius: '2px', background: '#E8EEF6', color: '#2A4A70' }}>
+                    EMBA
+                  </span>
+                  <span style={{ fontFamily: 'var(--font-mono), monospace', fontSize: '0.6rem', letterSpacing: '0.06em', color: 'var(--color-text-muted)', width: '100%', marginTop: '0.3rem' }}>
+                    Year 2
+                  </span>
+                </div>
+                <p style={{ fontFamily: 'var(--font-body), serif', fontSize: '0.82rem', color: '#2f2a24', lineHeight: 1.5, margin: 0, flex: 1 }}>
+                  “Chat with me about building consumer apps like Coffee@CU or about seeing a Broadway show”
                 </p>
               </div>
-            ))}
+            </div>
+
           </div>
         </div>
       </section>
 
       {/* ————————————————————————————————————————
-          SCHOOLS MARQUEE
+          SCHOOLS MARQUEE — Higher conversion, Interactive
       ———————————————————————————————————————— */}
       <div
         style={{
-          background: '#deeaf6',
-          borderTop: '1px solid #b8d4ed',
-          borderBottom: '1px solid #b8d4ed',
-          padding: '1.1rem 0',
+          background: 'var(--color-white)',
+          borderTop: '1px solid var(--color-mist)',
+          borderBottom: '1px solid var(--color-mist)',
+          padding: '1.5rem 0',
           overflow: 'hidden',
           whiteSpace: 'nowrap',
+          position: 'relative',
         }}
       >
-        {/* Keyframe embedded directly — avoids CSS processing quirks */}
         <style>{`
           @keyframes cu-marquee {
             from { transform: translateX(0); }
             to   { transform: translateX(-50%); }
           }
+          .marquee-hover:hover .marquee-track {
+            animation-play-state: paused;
+          }
+          .school-pill {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.6rem 1.25rem;
+            background: var(--color-limestone);
+            border: 1px solid var(--color-mist);
+            border-radius: 99px;
+            font-family: var(--font-body);
+            font-size: 0.875rem;
+            color: var(--color-ink-soft);
+            text-decoration: none;
+            transition: all 0.25s ease;
+            margin: 0 0.75rem;
+            position: relative;
+            overflow: hidden;
+          }
+          .school-pill:hover {
+            border-color: var(--color-columbia-lt);
+            color: var(--color-columbia);
+            background: var(--color-columbia-pale);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px -10px rgba(26, 81, 200, 0.3);
+          }
+          .school-pill .hover-text {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--color-columbia);
+            color: white;
+            font-weight: 600;
+            opacity: 0;
+            transform: translateY(100%);
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+          }
+          .school-pill:hover .hover-text {
+            opacity: 1;
+            transform: translateY(0);
+          }
+          .school-pill:hover .default-text {
+            opacity: 0;
+            transform: translateY(-100%);
+          }
+          .default-text {
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+          }
         `}</style>
-        <div
-          style={{
-            display: 'inline-flex',
-            animation: 'cu-marquee 54s linear infinite',
-          }}
-        >
-          {marqueeContent.map((school, i) => (
-            <span
-              key={i}
-              style={{
-                fontFamily: 'var(--font-body), serif',
-                fontSize: '0.875rem',
-                letterSpacing: '0.01em',
-                fontStyle: 'italic',
-                color: '#1a4f8a',
-                padding: '0 2.5rem',
-                flexShrink: 0,
-              }}
-            >
-              {school}
-              <span style={{ marginLeft: '2.5rem', color: '#75aadb' }}>·</span>
-            </span>
-          ))}
+
+        <div className="marquee-hover" style={{ display: 'flex' }}>
+          <div className="marquee-track" style={{ display: 'inline-flex', animation: 'cu-marquee 90s linear infinite' }}>
+            {[...SCHOOLS, ...SCHOOLS, ...SCHOOLS].map((school, i) => (
+              <Link
+                key={`${school.value}-${i}`}
+                href={`/login?school=${school.value}&mode=signup`}
+                className="school-pill"
+              >
+                <span className="default-text">{school.label}</span>
+                <span className="hover-text">Join from {school.value} →</span>
+              </Link>
+            ))}
+          </div>
         </div>
       </div>
+
+      {/* ————————————————————————————————————————
+          BENTO BOX FEATURES
+      ———————————————————————————————————————— */}
+      <section id="how-it-works" style={{ padding: 'clamp(5rem, 8vw, 7rem) 1.5rem', background: 'var(--color-white)' }}>
+        <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+          <div style={{ textAlign: 'center', marginBottom: '4rem' }}>
+            <h2
+              style={{
+                fontFamily: 'var(--font-display)',
+                fontSize: 'clamp(2rem, 4vw, 3rem)',
+                color: 'var(--color-ink)',
+                marginBottom: '1rem',
+                lineHeight: 1.1,
+                letterSpacing: '-0.01em'
+              }}
+            >
+              Connect with the people who could change your trajectory at Columbia.
+            </h2>
+            <p style={{ fontFamily: 'var(--font-body)', fontSize: '1.125rem', color: 'var(--color-text-muted)', maxWidth: '600px', margin: '0 auto' }}>
+              Columbia is bigger than your corner of campus. With Coffee@CU you can meet new people across the Columbia University community.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-6" style={{ gridAutoRows: 'minmax(280px, auto)' }}>
+            {/* Bento Item 1: Wide */}
+            <div className="col-span-1 md:col-span-8 flex flex-col md:flex-row items-center justify-between rounded-[24px] border border-[var(--color-mist)] p-8 lg:p-10 gap-8" style={{ background: 'linear-gradient(145deg, var(--color-limestone) 0%, var(--color-white) 100%)' }}>
+              <div className="w-full md:w-[55%]">
+                <h3 className="mb-3 text-3xl text-[var(--color-ink)] font-display" style={{ fontFamily: 'var(--font-display)' }}>Meet new people and expand your horizons.</h3>
+                <p className="font-body text-[var(--color-text-muted)] leading-relaxed" style={{ fontFamily: 'var(--font-body)' }}>Send a personal note explaining exactly what you'd like to discuss. No awkward cold emails or anonymous messages.</p>
+              </div>
+              <div className="w-full md:w-[45%] bg-white border border-[var(--color-mist)] rounded-2xl shadow-lg p-6">
+                <p className="text-xs mb-2" style={{ fontFamily: 'var(--font-mono)', color: 'var(--color-text-muted)' }}>Message Preview</p>
+                <div className="inline-block p-4 rounded-xl rounded-br-sm text-sm leading-relaxed" style={{ background: 'var(--color-columbia-pale)', color: 'var(--color-columbia)' }}>
+                  "Hey Taylor! I'm producing a new short film and would love to grab a tea and talk about your Directing background"
+                </div>
+              </div>
+            </div>
+
+            {/* Bento Item 2: Square */}
+            <div className="col-span-1 md:col-span-4 flex flex-col justify-between rounded-[24px] p-8 lg:p-10 text-white" style={{ background: 'var(--color-columbia)' }}>
+              <div>
+                <img
+                  src="/img/logo.png"
+                  alt="Coffee@CU"
+                  width="56"
+                  height="56"
+                  style={{
+                    marginBottom: '1rem',
+                    borderRadius: '50%',
+                    border: '1px solid rgba(255,255,255,0.22)'
+                  }}
+                />
+                <h3 className="mb-3 text-[1.75rem]" style={{ fontFamily: 'var(--font-display)' }}>Just for Columbia.</h3>
+                <p className="text-[0.9375rem] leading-relaxed opacity-90" style={{ fontFamily: 'var(--font-body)' }}>Coffee@CU is currently available exclusively to members of the Columbia community and requires a @columbia.edu or @barnard.edu email.</p>
+              </div>
+            </div>
+
+            {/* Bento Item 3: Square */}
+            <div className="col-span-1 md:col-span-4 rounded-[24px] border border-[var(--color-mist)] p-8 lg:p-10" style={{ background: 'var(--color-limestone)' }}>
+              <Search size={32} color="var(--color-columbia)" className="mb-6" />
+              <h3 className="mb-3 text-[1.75rem] text-[var(--color-ink)]" style={{ fontFamily: 'var(--font-display)' }}>Find your people.</h3>
+              <p className="text-[0.9375rem] text-[var(--color-text-muted)] leading-relaxed" style={{ fontFamily: 'var(--font-body)' }}>Search by school, major, interests, or availability to find exactly who you're looking for.</p>
+            </div>
+
+            {/* Bento Item 4: Wide */}
+            <div className="col-span-1 md:col-span-8 rounded-[24px] border border-[var(--color-mist)] p-8 lg:p-10" style={{ background: 'var(--color-limestone)' }}>
+              <h3 className="mb-6 text-[2rem] text-[var(--color-ink)]" style={{ fontFamily: 'var(--font-display)' }}>Every year. Every path.</h3>
+              <div className="flex flex-wrap gap-2">
+                {['First-Years', 'Seniors', 'MBA Candidates', 'Law Students', 'PhD Researchers', 'Faculty', 'Alumni', 'Journalism Masters'].map(tag => (
+                  <span key={tag} className="rounded-full border border-mist bg-white px-4 py-2 text-sm font-medium shadow-sm transition hover:bg-slate-50" style={{ fontFamily: 'var(--font-mono)' }}>
+                    {tag}
+                  </span>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ————————————————————————————————————————
+          TESTIMONIALS
+      ———————————————————————————————————————— */}
+      <section style={{ padding: '5rem 1.5rem', background: 'var(--color-limestone)' }}>
+        <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
+          <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
+            <h2
+              style={{
+                fontFamily: 'var(--font-display)',
+                fontSize: 'clamp(1.5rem, 3vw, 2rem)',
+                color: 'var(--color-ink)',
+              }}
+            >
+              Real quotes from Coffee@CU members
+            </h2>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '2rem' }}>
+            {testimonials.slice(0, 3).map((t, i) => (
+              <div key={i} style={{ padding: '2rem', background: 'white', borderRadius: '16px', border: '1px solid var(--color-mist)', boxShadow: '0 4px 6px rgba(0,0,0,0.02)' }}>
+                <p style={{ fontFamily: 'var(--font-display)', fontSize: '1.25rem', color: 'var(--color-ink)', lineHeight: 1.5, marginBottom: '1.5rem' }}>"{t.quote}"</p>
+                <div>
+                  <p style={{ fontFamily: 'var(--font-body)', fontWeight: 600, fontSize: '0.875rem', color: 'var(--color-ink)' }}>{t.author}</p>
+                  <p style={{ fontFamily: 'var(--font-mono)', fontSize: '0.75rem', color: 'var(--color-text-muted)' }}>{t.school}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
 
       {/* ————————————————————————————————————————
           FINAL CTA
       ———————————————————————————————————————— */}
       <section
-        className="grain-overlay"
         style={{
           position: 'relative',
-          background: 'linear-gradient(150deg, #012a61 0%, #004f9f 100%)',
-          padding: 'clamp(4rem, 7vw, 6rem) 1.5rem',
+          background: 'var(--color-columbia)',
+          padding: 'clamp(5rem, 8vw, 7rem) 1.5rem',
           textAlign: 'center',
           overflow: 'hidden',
         }}
       >
+        <div style={{ position: 'absolute', inset: 0, backgroundImage: 'radial-gradient(rgba(255,255,255,0.1) 1px, transparent 1px)', backgroundSize: '32px 32px' }}></div>
         <div style={{ position: 'relative', zIndex: 1, maxWidth: '640px', margin: '0 auto' }}>
           <h2
+            className="heading-display"
             style={{
-              fontFamily: 'var(--font-display), serif',
-              fontStyle: 'italic',
-              fontSize: 'clamp(2rem, 5vw, 3.25rem)',
-              fontWeight: 500,
-              color: 'rgba(255,255,255,0.97)',
+              fontSize: 'clamp(2rem, 5vw, 3.5rem)',
+              color: 'white',
               marginBottom: '1.5rem',
-              lineHeight: 1.15,
+              lineHeight: 1.1,
             }}
           >
-            Your next great conversation is one email away.
+            Your next great conversation is an email away.
           </h2>
           <p
             style={{
-              fontFamily: 'var(--font-body), serif',
-              fontSize: '0.9375rem',
-              color: 'rgba(228,239,251,0.78)',
+              fontFamily: 'var(--font-body)',
+              fontSize: '1.125rem',
+              color: 'rgba(255,255,255,0.8)',
               marginBottom: '2.5rem',
-              lineHeight: 1.65,
+              lineHeight: 1.6,
             }}
           >
-            Sign up with your @columbia.edu or @barnard.edu email. Two minutes to set up your profile, then start meeting people who&apos;ll change how you see your time at Columbia.
+            Sign up with your @columbia.edu or @barnard.edu email. Two minutes to set up your profile, then start meeting people who'll change how you see your time at Columbia.
           </p>
           <EmailSignupInput darkBackground />
         </div>
@@ -646,17 +667,47 @@ function LoginGate({ meetingCount, heroImage }: { meetingCount: number; heroImag
   );
 }
 
-// ——— Club typeahead filter ———
-function ClubTypeahead({ value, onSelect }: { value: string; onSelect: (club: string) => void }) {
+// ——— Unified Search Typeahead ———
+type SuggestionType = 'name' | 'club' | 'major';
+interface Suggestion { type: SuggestionType; label: string; }
+
+function MainSearchTypeahead({
+  value,
+  onSelect,
+  initialProfiles,
+  onRandomSelect
+}: {
+  value: string;
+  onSelect: (val: string, type: SuggestionType | 'text') => void;
+  initialProfiles: Profile[];
+  onRandomSelect: () => void;
+}) {
   const [inputValue, setInputValue] = useState(value);
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const suggestions = inputValue.trim()
-    ? (CBS_CLUBS as readonly string[]).filter(c =>
-        c.toLowerCase().includes(inputValue.toLowerCase())
-      ).slice(0, 8)
-    : [];
+  // Group suggestions
+  const term = inputValue.trim().toLowerCase();
+
+  const suggestions: Suggestion[] = [];
+  if (term.length > 1) {
+    // 1. Names (from currently loaded initial profiles)
+    const matchedNames = initialProfiles
+      .filter(p => p.name.toLowerCase().includes(term))
+      .map(p => p.name);
+    // deduplicate
+    Array.from(new Set(matchedNames)).slice(0, 3).forEach(name => {
+      suggestions.push({ type: 'name', label: name });
+    });
+
+    // 2. Clubs
+    const matchedClubs = CBS_CLUBS.filter(c => c.toLowerCase().includes(term)).slice(0, 4);
+    matchedClubs.forEach(c => suggestions.push({ type: 'club', label: c }));
+
+    // 3. Majors
+    const matchedMajors = MAJORS.filter(m => m.toLowerCase().includes(term)).slice(0, 4);
+    matchedMajors.forEach(m => suggestions.push({ type: 'major', label: m }));
+  }
 
   useEffect(() => {
     setInputValue(value);
@@ -672,97 +723,139 @@ function ClubTypeahead({ value, onSelect }: { value: string; onSelect: (club: st
     return () => document.removeEventListener('mousedown', handler);
   }, []);
 
-  const handleSelect = (club: string) => {
-    onSelect(club);
-    setInputValue(club);
+  const handleSelect = (sug: Suggestion) => {
+    setInputValue(sug.label);
     setOpen(false);
+    onSelect(sug.label, sug.type);
   };
 
-  const handleClear = () => {
-    onSelect('');
-    setInputValue('');
-    setOpen(false);
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      setOpen(false);
+      onSelect(inputValue, 'text');
+    }
   };
 
   return (
-    <div ref={containerRef} style={{ position: 'relative', minWidth: '180px' }}>
-      <div style={{ position: 'relative' }}>
+    <div ref={containerRef} style={{ position: 'relative', flex: '1', minWidth: '280px', display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+      <div style={{ position: 'relative', flex: '1', display: 'flex', alignItems: 'center' }}>
+        <Search
+          size={16}
+          style={{
+            position: 'absolute',
+            left: '1rem',
+            color: 'var(--color-text-muted)',
+            pointerEvents: 'none',
+            zIndex: 10,
+          }}
+        />
         <input
           type="text"
           className="form-input"
-          placeholder="Filter by CBS club…"
+          placeholder="Search by name, clubs, major…"
           value={inputValue}
-          onChange={e => { setInputValue(e.target.value); setOpen(true); }}
-          onFocus={() => { if (inputValue.trim()) setOpen(true); }}
-          style={{ fontSize: '0.8125rem', paddingRight: value ? '2rem' : undefined }}
+          onChange={e => {
+            setInputValue(e.target.value);
+            setOpen(true);
+            if (e.target.value === '') {
+              onSelect('', 'text');
+            }
+          }}
+          onKeyDown={handleKeyDown}
+          onFocus={() => { if (inputValue.trim().length > 1) setOpen(true); }}
+          style={{
+            paddingLeft: '2.75rem',
+            paddingRight: inputValue ? '2.5rem' : '1rem',
+            fontSize: '0.9375rem',
+            borderRadius: '99px',
+            border: '1px solid var(--color-mist)',
+            boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.02)',
+            height: '44px',
+            width: '100%'
+          }}
         />
-        {value && (
+        {inputValue && (
           <button
             type="button"
-            onClick={handleClear}
-            aria-label="Clear club filter"
+            onClick={() => { setInputValue(''); onSelect('', 'text'); setOpen(false); }}
             style={{
               position: 'absolute',
-              right: '0.5rem',
-              top: '50%',
-              transform: 'translateY(-50%)',
+              right: '1rem',
               background: 'none',
               border: 'none',
               cursor: 'pointer',
               color: 'var(--color-text-muted)',
-              fontSize: '0.875rem',
-              lineHeight: 1,
-              padding: '0.125rem',
+              fontSize: '1rem',
+              padding: '0.25rem',
             }}
           >
             ×
           </button>
         )}
       </div>
+
+
+
       {open && suggestions.length > 0 && (
-        <ul
+        <div
           style={{
             position: 'absolute',
-            top: 'calc(100% + 4px)',
+            top: 'calc(100% + 8px)',
             left: 0,
             right: 0,
-            background: 'var(--color-white, #fff)',
+            background: 'var(--color-white)',
             border: '1px solid var(--color-mist)',
-            borderRadius: '4px',
-            boxShadow: '0 4px 16px rgba(26,20,16,0.12)',
-            listStyle: 'none',
-            margin: 0,
-            padding: '0.25rem 0',
+            borderRadius: '12px',
+            boxShadow: '0 12px 32px rgba(0,0,0,0.08)',
             zIndex: 50,
-            maxHeight: '260px',
+            maxHeight: '360px',
             overflowY: 'auto',
+            overflowX: 'hidden',
+            flexDirection: 'column',
+            display: 'flex'
           }}
         >
-          {suggestions.map(club => (
-            <li
-              key={club}
-              onMouseDown={() => handleSelect(club)}
-              style={{
-                padding: '0.5rem 0.875rem',
-                fontFamily: 'var(--font-body), serif',
-                fontSize: '0.8125rem',
-                color: 'var(--color-ink)',
-                cursor: 'pointer',
-              }}
-              onMouseEnter={e => (e.currentTarget.style.background = 'var(--color-limestone-dk, #ece8de)')}
-              onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
-            >
-              {club}
-            </li>
-          ))}
-        </ul>
+          {['name', 'major', 'club'].map(type => {
+            const typeSugs = suggestions.filter(s => s.type === type);
+            if (typeSugs.length === 0) return null;
+            return (
+              <div key={type} style={{ padding: '0.5rem 0' }}>
+                <div style={{ padding: '0.25rem 1rem', fontSize: '0.75rem', fontFamily: 'var(--font-mono)', color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                  {type === 'name' ? 'People' : type === 'major' ? 'Majors' : 'Clubs'}
+                </div>
+                {typeSugs.map(s => (
+                  <div
+                    key={`${s.type}-${s.label}`}
+                    onMouseDown={() => handleSelect(s)}
+                    style={{
+                      padding: '0.6rem 1rem',
+                      fontFamily: 'var(--font-body)',
+                      fontSize: '0.875rem',
+                      color: 'var(--color-ink)',
+                      cursor: 'pointer',
+                      transition: 'background 0.15s ease'
+                    }}
+                    onMouseEnter={e => (e.currentTarget.style.background = 'var(--color-columbia-pale)')}
+                    onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+                  >
+                    {s.label}
+                  </div>
+                ))}
+              </div>
+            );
+          })}
+        </div>
       )}
     </div>
   );
 }
 
 // ——— The actual home page for authenticated users ———
-function AuthenticatedHome({ initialProfiles, meetingCount, userId, sentRequestIds }: { initialProfiles: Profile[]; meetingCount: number; userId: string | null; sentRequestIds: string[] }) {
+function AuthenticatedHome({ initialProfiles, meetingCount, userId, sentRequests }: { initialProfiles: Profile[]; meetingCount: number; userId: string | null; sentRequests: { id: string; date: string }[] }) {
+  const searchParams = useSearchParams();
+  const initSearch = searchParams.get('search') ?? '';
+
   const [profiles, setProfiles] = useState<Profile[]>(initialProfiles);
   const [totalCount, setTotalCount] = useState<number>(initialProfiles.length);
   const [loading, setLoading] = useState(false);
@@ -770,10 +863,12 @@ function AuthenticatedHome({ initialProfiles, meetingCount, userId, sentRequestI
   const [page, setPage] = useState(0);
   const [hasMore, setHasMore] = useState(initialProfiles.length === PAGE_SIZE);
 
-  const [filters, setFilters] = useState<ProfileFilters>({ query: '', year: '', school: '', major: '', clubs: '' });
+  const [filters, setFilters] = useState<ProfileFilters>({ query: initSearch, year: '', school: '', major: '', clubs: '' });
   const [selectedProfile, setSelectedProfile] = useState<Profile | null>(null);
   const [successMessage, setSuccessMessage] = useState('');
-  const [sentIds, setSentIds] = useState<Set<string>>(new Set(sentRequestIds));
+
+  // Track requests sent perfectly
+  const [activeSentRequests, setActiveSentRequests] = useState<{ id: string; date: string }[]>(sentRequests);
 
   const supabase = getSupabaseClient();
   const searchTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -783,6 +878,15 @@ function AuthenticatedHome({ initialProfiles, meetingCount, userId, sentRequestI
   useEffect(() => {
     setHeroImage(PARALLAX_IMAGES[Math.floor(Math.random() * PARALLAX_IMAGES.length)]);
   }, []);
+
+  // Sync initial URL search parameter
+  useEffect(() => {
+    if (initSearch) {
+      setLoading(true);
+      fetchProfiles({ query: initSearch, year: '', school: '', major: '', clubs: '' }, 0, false);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initSearch]);
 
   // ——— Search/filter logic ———
   const fetchProfiles = useCallback(async (f: ProfileFilters, pageNum: number, append = false) => {
@@ -842,20 +946,29 @@ function AuthenticatedHome({ initialProfiles, meetingCount, userId, sentRequestI
     setLoadingMore(false);
   }, [supabase]);
 
-  // Debounce search input
-  const handleSearchChange = (value: string) => {
-    const newFilters = { ...filters, query: value };
-    setFilters(newFilters);
-    if (searchTimeout.current) clearTimeout(searchTimeout.current);
-    searchTimeout.current = setTimeout(() => {
-      fetchProfiles(newFilters, 0);
-    }, 350);
-  };
+  // Handle typeahead selection (structured logic)
+  const handleTypeaheadSelect = (value: string, type: SuggestionType | 'text') => {
+    let newFilters = { ...filters, query: '', major: '', clubs: '' };
+    if (type === 'name') {
+      newFilters.query = value; // Search full-text for the name
+    } else if (type === 'major') {
+      newFilters.major = value;
+    } else if (type === 'club') {
+      newFilters.clubs = value;
+    } else {
+      newFilters.query = value; // Fallback plain text query
+    }
 
-  const handleFilterChange = (key: keyof ProfileFilters, value: string) => {
-    const newFilters = { ...filters, [key]: value };
     setFilters(newFilters);
     fetchProfiles(newFilters, 0);
+  };
+
+  const handleRandomSelect = () => {
+    const validProfiles = profiles.filter(p => p.user_id !== userId);
+    if (validProfiles.length > 0) {
+      const randomIndex = Math.floor(Math.random() * validProfiles.length);
+      setSelectedProfile(validProfiles[randomIndex]);
+    }
   };
 
   const handleLoadMore = () => {
@@ -866,7 +979,7 @@ function AuthenticatedHome({ initialProfiles, meetingCount, userId, sentRequestI
     setSuccessMessage(`Request sent! We'll email both you and ${firstName} so you can connect and schedule a time to chat. Check your spam if it doesn't arrive in a few moments.`);
     setTimeout(() => setSuccessMessage(''), 10000);
     setSelectedProfile(null);
-    setSentIds(prev => new Set([...prev, receiverId]));
+    setActiveSentRequests(prev => [...prev, { id: receiverId, date: new Date().toISOString() }]);
   };
 
   return (
@@ -881,13 +994,13 @@ function AuthenticatedHome({ initialProfiles, meetingCount, userId, sentRequestI
         className="grain-overlay"
         style={{
           position: 'relative',
-          minHeight: '420px',
+          minHeight: '160px',
           background: 'linear-gradient(150deg, #012a61 0%, #00418c 54%, #0d5eac 100%)',
           overflow: 'hidden',
           display: 'flex',
           flexDirection: 'column',
           justifyContent: 'flex-end',
-          padding: '0 0 3.5rem',
+          padding: '0 0 1.5rem',
         }}
       >
         {/* Subtle parallax image overlay */}
@@ -909,57 +1022,47 @@ function AuthenticatedHome({ initialProfiles, meetingCount, userId, sentRequestI
             zIndex: 2,
             maxWidth: '1180px',
             margin: '0 auto',
-            padding: '5rem 1.5rem 0',
+            padding: '2.5rem 1.5rem 0',
             width: '100%',
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-            gap: '1.25rem',
-            alignItems: 'end',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '0.5rem',
+            justifyContent: 'flex-end',
           }}
         >
           <div>
-            <p
-              className="label-mono"
-              style={{
-                color: 'rgba(235,243,252,0.8)',
-                marginBottom: '1rem',
-                letterSpacing: '0.15em',
-              }}
-            >
-              Columbia University Community
-            </p>
             <h1
               className="heading-display-italic"
               style={{
-                fontSize: 'clamp(2.5rem, 6vw, 4.5rem)',
+                fontSize: 'clamp(1.75rem, 4.5vw, 2.5rem)',
                 color: 'rgba(255,255,255,0.97)',
-                maxWidth: '680px',
-                marginBottom: '1.5rem',
+                maxWidth: '780px',
+                marginBottom: '0.25rem',
+                lineHeight: 1.1,
               }}
             >
-              Find your next conversation.
+              Connect with the people who could change your trajectory.
             </h1>
-            <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.75rem' }}>
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem' }}>
               <span
                 style={{
                   fontFamily: 'var(--font-mono), monospace',
-                  fontSize: '2rem',
+                  fontSize: '1.25rem',
                   fontWeight: 700,
                   color: '#f2ebde',
-                  letterSpacing: '-0.02em',
+                  letterSpacing: '-0.01em',
                 }}
               >
                 {meetingCount.toLocaleString()}
               </span>
               <span
                 className="label-mono"
-                style={{ color: 'rgba(235,243,252,0.72)', letterSpacing: '0.12em' }}
+                style={{ color: 'rgba(235,243,252,0.72)', fontSize: '0.65rem', letterSpacing: '0.08em' }}
               >
                 conversations started
               </span>
             </div>
           </div>
-
         </div>
       </section>
 
@@ -984,74 +1087,25 @@ function AuthenticatedHome({ initialProfiles, meetingCount, userId, sentRequestI
             margin: '0 auto',
             display: 'flex',
             gap: '0.75rem',
-            flexWrap: 'wrap',
             alignItems: 'center',
           }}
         >
-          {/* Search input */}
-          <div style={{ position: 'relative', flex: '1', minWidth: '220px' }}>
-            <Search
-              size={15}
-              style={{
-                position: 'absolute',
-                left: '0.75rem',
-                top: '50%',
-                transform: 'translateY(-50%)',
-                color: 'var(--color-text-muted)',
-                pointerEvents: 'none',
-              }}
-            />
-            <input
-              type="search"
-              className="form-input"
-              placeholder="Search by name, interests, major…"
-              value={filters.query}
-              onChange={e => handleSearchChange(e.target.value)}
-              style={{ paddingLeft: '2.25rem', fontSize: '0.875rem' }}
+          {/* Main Unified Search Typeahead */}
+          <div style={{ flex: 1 }}>
+            <MainSearchTypeahead
+              value={filters.query || filters.major || filters.clubs}
+              onSelect={handleTypeaheadSelect}
+              initialProfiles={initialProfiles}
+              onRandomSelect={handleRandomSelect}
             />
           </div>
-
-          {/* Year filter */}
-          <div style={{ position: 'relative', minWidth: '140px' }}>
-            <select
-              className="form-input"
-              value={filters.year}
-              onChange={e => handleFilterChange('year', e.target.value)}
-              style={{ fontSize: '0.8125rem', appearance: 'none', paddingRight: '2rem', cursor: 'pointer' }}
-            >
-              <option value="">All years</option>
-              {YEARS.map(y => (
-                <option key={y} value={y}>{y}</option>
-              ))}
-            </select>
-            <ChevronDown size={13} style={{ position: 'absolute', right: '0.6rem', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', color: 'var(--color-text-muted)' }} />
-          </div>
-
-          {/* School filter */}
-          <div style={{ position: 'relative', minWidth: '140px' }}>
-            <select
-              className="form-input"
-              value={filters.school}
-              onChange={e => handleFilterChange('school', e.target.value)}
-              style={{ fontSize: '0.8125rem', appearance: 'none', paddingRight: '2rem', cursor: 'pointer' }}
-            >
-              <option value="">All schools</option>
-              {SCHOOL_GROUPS.map(group => (
-                <optgroup key={group.label} label={group.label}>
-                  {group.schools.map(s => (
-                    <option key={s.value} value={s.value}>{s.label}</option>
-                  ))}
-                </optgroup>
-              ))}
-            </select>
-            <ChevronDown size={13} style={{ position: 'absolute', right: '0.6rem', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', color: 'var(--color-text-muted)' }} />
-          </div>
-
-          {/* CBS Club filter */}
-          <ClubTypeahead
-            value={filters.clubs}
-            onSelect={club => handleFilterChange('clubs', club)}
-          />
+          <button
+            onClick={handleRandomSelect}
+            className="btn-primary hidden sm:flex"
+            style={{ whiteSpace: 'nowrap', height: '48px', padding: '0 1.5rem', borderRadius: '12px', flexShrink: 0 }}
+          >
+            Choose for me ✨
+          </button>
         </div>
       </div>
 
@@ -1103,16 +1157,27 @@ function AuthenticatedHome({ initialProfiles, meetingCount, userId, sentRequestI
             ))}
           </div>
         ) : profiles.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '5rem 0' }}>
+          <div style={{ textAlign: 'center', padding: '6rem 1rem' }}>
             <p
               className="heading-display-italic"
-              style={{ fontSize: '2rem', color: 'var(--color-text-muted)', marginBottom: '0.5rem' }}
+              style={{ fontSize: '2.5rem', color: 'var(--color-ink)', marginBottom: '1rem', lineHeight: 1.1 }}
             >
-              No one found
+              We didn't find someone on<br />Coffee@CU for that search yet
             </p>
-            <p className="label-mono" style={{ color: 'var(--color-text-muted)' }}>
-              Try a different search or clear your filters
-            </p>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '1rem', marginTop: '2rem' }}>
+              <button
+                onClick={() => handleTypeaheadSelect('', 'text')}
+                className="btn-ghost"
+              >
+                Clear your filters
+              </button>
+              <button
+                onClick={handleRandomSelect}
+                className="btn-primary"
+              >
+                Choose for me ✨
+              </button>
+            </div>
           </div>
         ) : (
           <>
@@ -1157,7 +1222,7 @@ function AuthenticatedHome({ initialProfiles, meetingCount, userId, sentRequestI
         onCoffeeSuccess={handleCoffeeSuccess}
         isLoggedIn={true}
         userId={userId}
-        sentIds={sentIds}
+        sentRequests={activeSentRequests}
       />
     </main>
   );

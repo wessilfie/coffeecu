@@ -58,8 +58,7 @@ export default function ProfilePageClient({ profile, currentUserId }: Props) {
               style={{
                 fontFamily: 'var(--font-mono), monospace',
                 fontSize: '0.68rem',
-                letterSpacing: '0.08em',
-                textTransform: 'uppercase',
+                letterSpacing: '0.01em',
                 color: 'var(--color-columbia)',
                 textDecoration: 'underline',
                 whiteSpace: 'nowrap',
@@ -79,8 +78,7 @@ export default function ProfilePageClient({ profile, currentUserId }: Props) {
             gap: '0.375rem',
             fontFamily: 'var(--font-mono), monospace',
             fontSize: '0.7rem',
-            letterSpacing: '0.08em',
-            textTransform: 'uppercase',
+            letterSpacing: '0.01em',
             color: 'var(--color-text-muted)',
             textDecoration: 'none',
             marginBottom: '2rem',
@@ -149,6 +147,45 @@ export default function ProfilePageClient({ profile, currentUserId }: Props) {
             <p style={{ fontFamily: 'var(--font-body), serif', fontSize: '0.9375rem', color: 'var(--color-ink)', margin: 0 }}>
               {profile.major.join(' · ')}
             </p>
+          </Section>
+        )}
+
+        {/* Clubs */}
+        {profile.clubs && profile.clubs.length > 0 && (
+          <Section label="Member of">
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+              {profile.clubs.map((club, idx) => (
+                <Link
+                  key={idx}
+                  href={`/?search=${encodeURIComponent(club)}`}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    padding: '0.375rem 0.875rem',
+                    background: 'var(--color-white)',
+                    border: '1px solid var(--color-mist)',
+                    borderRadius: '9999px',
+                    fontFamily: 'var(--font-body)',
+                    fontSize: '0.8125rem',
+                    color: 'var(--color-ink)',
+                    textDecoration: 'none',
+                    transition: 'all 0.2s',
+                    boxShadow: '0 1px 2px rgba(26,20,16,0.04)',
+                    cursor: 'pointer',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.borderColor = 'var(--color-columbia)';
+                    e.currentTarget.style.color = 'var(--color-columbia)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.borderColor = 'var(--color-mist)';
+                    e.currentTarget.style.color = 'var(--color-ink)';
+                  }}
+                >
+                  {club}
+                </Link>
+              ))}
+            </div>
           </Section>
         )}
 
@@ -279,8 +316,7 @@ function SocialLink({ href, icon, label }: { href: string; icon: React.ReactNode
         gap: '0.375rem',
         fontFamily: 'var(--font-mono), monospace',
         fontSize: '0.68rem',
-        letterSpacing: '0.08em',
-        textTransform: 'uppercase',
+        letterSpacing: '0.01em',
         color: 'var(--color-columbia)',
         textDecoration: 'none',
         padding: '0.375rem 0.625rem',

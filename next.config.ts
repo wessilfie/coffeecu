@@ -6,9 +6,10 @@ const isProd = process.env.NODE_ENV === 'production';
 
 const nextConfig: NextConfig = {
   images: {
-    remotePatterns: supabaseHostname
-      ? [{ protocol: 'https', hostname: supabaseHostname, pathname: '/storage/v1/object/**' }]
-      : [],
+    remotePatterns: [
+      { protocol: 'https' as const, hostname: 'i.pravatar.cc', pathname: '/**' },
+      ...(supabaseHostname ? [{ protocol: 'https' as const, hostname: supabaseHostname, pathname: '/storage/v1/object/**' }] : [])
+    ],
   },
 
   async headers() {
@@ -22,7 +23,7 @@ const nextConfig: NextConfig = {
             value: [
               "default-src 'self'",
               `connect-src 'self' ${SUPABASE_URL} https://api.resend.com`,
-              `img-src 'self' data: blob: ${supabaseHostname ? `https://${supabaseHostname}` : ''}`,
+              `img-src 'self' data: blob: https://i.pravatar.cc ${supabaseHostname ? `https://${supabaseHostname}` : ''}`,
               isProd
                 ? "script-src 'self' 'unsafe-inline'"
                 : "script-src 'self' 'unsafe-eval' 'unsafe-inline'", // relaxed only for local dev

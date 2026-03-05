@@ -58,7 +58,7 @@ export default async function LoginPage({
             <Link
               href="/"
               style={{
-                fontFamily: 'var(--font-body), serif',
+                fontFamily: 'var(--font-body)',
                 fontSize: '0.875rem',
                 color: 'var(--color-text-muted)',
                 textDecoration: 'none',
@@ -74,24 +74,23 @@ export default async function LoginPage({
           {/* Header */}
           <div style={{ textAlign: 'center', marginBottom: '1.25rem' }}>
             <h1
+              className="heading-display"
               style={{
-                fontFamily: 'var(--font-display), serif',
-                fontSize: 'clamp(2rem, 5vw, 2.75rem)',
-                fontWeight: 600,
+                fontSize: 'clamp(2.5rem, 5vw, 3rem)',
                 color: 'var(--color-ink)',
                 margin: 0,
-                lineHeight: 1.1,
+                lineHeight: 1.05,
+                letterSpacing: '-0.02em'
               }}
             >
               Coffee@CU
             </h1>
             <p
               style={{
-                fontFamily: 'var(--font-body), serif',
-                fontSize: '0.9375rem',
+                fontFamily: 'var(--font-body)',
+                fontSize: '1rem',
                 color: 'var(--color-text-muted)',
                 marginTop: '0.5rem',
-                fontStyle: 'italic',
               }}
             >
               Meet the Columbia community, one coffee at a time.
@@ -103,15 +102,15 @@ export default async function LoginPage({
             style={{
               background: 'var(--color-white)',
               border: '1px solid var(--color-mist)',
-              borderRadius: '6px',
-              padding: '1.5rem',
-              boxShadow: '0 4px 24px rgba(26,20,16,0.08)',
+              borderRadius: '24px',
+              padding: '2rem',
+              boxShadow: 'var(--shadow-card)',
             }}
           >
             {DEV_BYPASS ? (
               <div style={{ textAlign: 'center', padding: '1rem 0' }}>
                 <p
-                  style={{ color: 'var(--color-text-muted)', marginBottom: '1.25rem', fontSize: '0.75rem', fontFamily: 'var(--font-mono), monospace' }}
+                  style={{ color: 'var(--color-text-muted)', marginBottom: '1.25rem', fontSize: '0.75rem', fontFamily: 'var(--font-mono)' }}
                 >
                   Dev mode — no real auth required
                 </p>
@@ -148,7 +147,7 @@ export default async function LoginPage({
               marginTop: '0.75rem',
               fontSize: '0.8rem',
               lineHeight: 1.6,
-              fontFamily: 'var(--font-body), serif',
+              fontFamily: 'var(--font-body)',
             }}
           >
             At this time, joining Coffee@CU requires an active Columbia email ending in @barnard.edu or @columbia.edu.

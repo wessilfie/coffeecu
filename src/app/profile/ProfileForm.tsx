@@ -7,8 +7,9 @@ import { z } from 'zod';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Upload, Plus, Trash2, ChevronDown } from 'lucide-react';
-import { SCHOOL_GROUPS, UNDERGRAD_SCHOOL_CODES, UNDERGRAD_YEARS, GRAD_YEARS, YEARS, DEGREE_GROUPS, MAJORS, CBS_CLUBS, PROFILE_QUESTIONS, COFFEE_QUESTION } from '@/lib/constants';
+import { SCHOOL_GROUPS, UNDERGRAD_SCHOOL_CODES, UNDERGRAD_YEARS, GRAD_YEARS, YEARS, DEGREE_GROUPS, MAJORS, CBS_CLUBS, PROFILE_QUESTIONS_GROUPED, PROFILE_QUESTIONS, COFFEE_QUESTION } from '@/lib/constants';
 import type { ProfileFormData, FullProfile, DraftProfile, School, ProfileResponse } from '@/types';
+import PromptDropdown from '@/components/PromptDropdown';
 
 // ============================================================
 // Validation schema — mirrors DB constraints
@@ -127,7 +128,7 @@ export default function ProfileForm({ userId, userEmail, existingProfile, existi
   const isUndergrad = UNDERGRAD_SCHOOL_CODES.has(selectedSchool);
   const yearOptions = isUndergrad ? UNDERGRAD_YEARS
     : selectedSchool ? GRAD_YEARS
-    : YEARS;
+      : YEARS;
 
   // ——— Auto-save (debounced, draft only) ———
   const allFormValues = watch();
@@ -210,7 +211,7 @@ export default function ProfileForm({ userId, userEmail, existingProfile, existi
         headers: { 'Content-Type': 'application/json' },
         body: payloadString,
         keepalive: true,
-      }).catch(() => {});
+      }).catch(() => { });
     };
 
     const onBeforeUnload = () => flushDraftSave();
@@ -556,7 +557,6 @@ export default function ProfileForm({ userId, userEmail, existingProfile, existi
                   background: '#fdfaf5',
                   border: '1px solid #e5ddd0',
                   borderRadius: '12px',
-                  overflow: 'hidden',
                 }}
               >
                 {/* Question selector row */}
@@ -570,42 +570,10 @@ export default function ProfileForm({ userId, userEmail, existingProfile, existi
                   }}
                 >
                   <div style={{ flex: 1, position: 'relative' }}>
-                    <select
+                    <PromptDropdown
                       value={slot.question}
-                      onChange={e => setOptionalResponses(prev => prev.map((r, j) => j === i ? { ...r, question: e.target.value } : r))}
-                      style={{
-                        width: '100%',
-                        appearance: 'none',
-                        WebkitAppearance: 'none',
-                        background: 'none',
-                        border: 'none',
-                        padding: '0.875rem 1.5rem 0.875rem 0',
-                        fontFamily: 'var(--font-body), Georgia, serif',
-                        fontStyle: 'italic',
-                        fontSize: '0.9375rem',
-                        color: 'var(--color-ink)',
-                        cursor: 'pointer',
-                        outline: 'none',
-                      }}
-                    >
-                      <option value="">Choose a prompt…</option>
-                      {PROFILE_QUESTIONS.filter(q => !usedQuestions.includes(q)).map(q => (
-                        <option key={q} value={q}>{q}</option>
-                      ))}
-                      {slot.question && !PROFILE_QUESTIONS.includes(slot.question as typeof PROFILE_QUESTIONS[number]) && (
-                        <option value={slot.question}>{slot.question}</option>
-                      )}
-                    </select>
-                    <ChevronDown
-                      size={13}
-                      style={{
-                        position: 'absolute',
-                        right: 0,
-                        top: '50%',
-                        transform: 'translateY(-50%)',
-                        pointerEvents: 'none',
-                        color: 'var(--color-text-muted)',
-                      }}
+                      onChange={(val) => setOptionalResponses(prev => prev.map((r, j) => j === i ? { ...r, question: val } : r))}
+                      otherSelected={usedQuestions}
                     />
                   </div>
                   {optionalResponses.length > 1 && (
@@ -689,7 +657,6 @@ export default function ProfileForm({ userId, userEmail, existingProfile, existi
                 color: 'var(--color-text-muted)',
                 fontFamily: 'var(--font-mono), monospace',
                 fontSize: '0.6875rem',
-                letterSpacing: '0.1em',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -915,8 +882,7 @@ export default function ProfileForm({ userId, userEmail, existingProfile, existi
               gap: '0.375rem',
               fontFamily: 'var(--font-mono), monospace',
               fontSize: '0.75rem',
-              letterSpacing: '0.08em',
-              textTransform: 'uppercase',
+              letterSpacing: '0.01em',
               color: 'var(--color-columbia)',
               textDecoration: 'none',
               fontWeight: 600,
@@ -969,8 +935,8 @@ function ClubPicker({ value, onChange, max }: { value: string[]; onChange: (v: s
 
   const suggestions = query.trim()
     ? (CBS_CLUBS as readonly string[])
-        .filter(c => !value.includes(c) && c.toLowerCase().includes(query.toLowerCase()))
-        .slice(0, 8)
+      .filter(c => !value.includes(c) && c.toLowerCase().includes(query.toLowerCase()))
+      .slice(0, 8)
     : [];
 
   // Close on outside click

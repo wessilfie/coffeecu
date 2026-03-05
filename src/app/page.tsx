@@ -23,7 +23,7 @@ export default async function HomePage({
           meetingCount={247}
           isLoggedIn={!isDevGuest}
           userId={isDevGuest ? null : DEV_USER.id}
-          sentRequestIds={[]}
+          sentRequests={[]}
           hasPublishedProfile={!isDevGuest}
         />
         <Footer />
@@ -75,14 +75,17 @@ export default async function HomePage({
     }
   }
 
-  // IDs of profiles the current user has already requested (to prevent resends)
-  let sentRequestIds: string[] = [];
+  // Meetings the current user has already requested (to prevent resends and show dates)
+  let sentRequests: { id: string; date: string }[] = [];
   if (user) {
     const { data: sentMeetings } = await supabase
       .from('meetings')
-      .select('receiver_id')
+      .select('receiver_id, created_at')
       .eq('sender_id', user.id);
-    sentRequestIds = (sentMeetings ?? []).map((m: { receiver_id: string }) => m.receiver_id);
+    sentRequests = (sentMeetings ?? []).map((m: { receiver_id: string; created_at: string }) => ({
+      id: m.receiver_id,
+      date: m.created_at,
+    }));
   }
 
   return (
@@ -93,7 +96,7 @@ export default async function HomePage({
         meetingCount={meetingCount ?? 0}
         isLoggedIn={!!user}
         userId={user?.id ?? null}
-        sentRequestIds={sentRequestIds}
+        sentRequests={sentRequests}
         hasPublishedProfile={hasPublishedProfile}
       />
       <Footer />

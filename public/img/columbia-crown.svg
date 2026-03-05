@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="currentColor">
+  <!-- Outer ring -->
+  <circle cx="50" cy="50" r="48" fill="none" stroke="currentColor" stroke-width="2" />
+  <!-- Inner ring -->
+  <circle cx="50" cy="50" r="44" fill="none" stroke="currentColor" stroke-width="1.5" />
+
+  <!-- The Crown -->
+  <g transform="translate(25, 18) scale(0.5)">
+    <!-- Base band -->
+    <path d="M15,65 L85,65 L85,73 L15,73 Z" />
+    <path d="M10,76 L90,76 L90,81 L10,81 Z" />
+    <!-- Crown body -->
+    <path d="M20,60 L80,60 C85,40 92,30 95,25 C92,20 87,22 80,27 C75,10 65,5 50,18 C35,5 25,10 20,27 C13,22 8,20 5,25 C8,30 15,40 20,60 Z" />
+    <!-- Center Cross -->
+    <path d="M47,2 L53,2 L53,7 L58,7 L58,13 L53,13 L53,20 L47,20 L47,13 L42,13 L42,7 L47,7 Z" />
+    <!-- Left Cross -->
+    <path d="M18,12 L22,12 L22,16 L26,16 L26,20 L22,20 L22,25 L18,25 L18,20 L14,20 L14,16 L18,16 Z" />
+    <!-- Right Cross -->
+    <path d="M78,12 L82,12 L82,16 L86,16 L86,20 L82,20 L82,25 L78,25 L78,20 L74,20 L74,16 L78,16 Z" />
+    <!-- Jewels / Ovals -->
+    <ellipse cx="50" cy="50" rx="4" ry="6" fill="#000" />
+    <ellipse cx="32" cy="45" rx="3" ry="5" fill="#000" transform="rotate(-15 32 45)" />
+    <ellipse cx="68" cy="45" rx="3" ry="5" fill="#000" transform="rotate(15 68 45)" />
+  </g>
+
+  <!-- The Coffee Cup -->
+  <g transform="translate(29, 62) scale(0.42)">
+    <!-- Cup body -->
+    <path d="M5,0 L95,0 C95,30 85,60 50,60 C15,60 5,30 5,0 Z" />
+    <!-- Cup handle -->
+    <path d="M90,10 C110,10 120,20 120,30 C120,40 110,50 85,50 L85,40 C100,40 105,35 105,30 C105,25 100,20 90,20 Z" />
+    <!-- Saucer -->
+    <path d="M0,66 L100,66 L95,72 L5,72 Z" />
+  </g>
+</svg>
