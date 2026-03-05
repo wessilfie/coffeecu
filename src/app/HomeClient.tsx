@@ -282,7 +282,7 @@ function LoginGate({ meetingCount, heroImage }: { meetingCount: number; heroImag
           </div>
 
           {/* Right: Product Visual Mockup */}
-          <div style={{ position: 'relative', perspective: '1200px', display: 'flex', justifyContent: 'center', transformStyle: 'preserve-3d' }}>
+          <div className="hidden lg:flex relative perspective-[1200px] justify-center" style={{ transformStyle: 'preserve-3d' }}>
             <style>{`
               @keyframes float-bg-bottom {
                 0%, 100% { transform: translate3d(50px, -25px, -120px) rotateZ(8deg) rotateY(-10deg); }
@@ -406,8 +406,8 @@ function LoginGate({ meetingCount, heroImage }: { meetingCount: number; heroImag
                 </div>
               </div>
 
-              <div style={{ padding: '0.78rem 0.85rem 0.9rem', height: '7rem', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', flexWrap: 'wrap', minHeight: '1.5rem', marginBottom: '0.45rem' }}>
+              <div style={{ padding: '0.78rem 0.85rem 0.9rem', display: 'flex', flexDirection: 'column', gap: '0.5rem', overflow: 'hidden' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', flexWrap: 'wrap' }}>
                   <span style={{ background: '#D4DFF0', color: '#1A3060', fontFamily: 'var(--font-mono), monospace', fontSize: '0.6rem', fontWeight: 700, padding: '0.15rem 0.45rem', borderRadius: '2px' }}>
                     COLUMBIA BUSINESS SCHOOL
                   </span>
@@ -418,7 +418,7 @@ function LoginGate({ meetingCount, heroImage }: { meetingCount: number; heroImag
                     Year 2
                   </span>
                 </div>
-                <p style={{ fontFamily: 'var(--font-body), serif', fontSize: '0.82rem', color: '#2f2a24', lineHeight: 1.5, margin: 0, flex: 1 }}>
+                <p style={{ fontFamily: 'var(--font-body), serif', fontSize: '0.82rem', color: '#2f2a24', lineHeight: 1.5, margin: 0 }}>
                   “Chat with me about building consumer apps like Coffee@CU or about seeing a Broadway show”
                 </p>
               </div>
