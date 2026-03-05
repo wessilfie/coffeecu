@@ -14,9 +14,14 @@ Coffee@CU connects Columbia University students, faculty, and alumni for casual 
 
 The Beaux-Arts grandeur of Low Library, the warm limestone of Butler, the specific Columbia blue — rendered in a clean contemporary UI. Intentionally not startup-y, not AI-generated-looking, not Inter.
 
-- **Display:** Cormorant Garamond — the serif of university presses and law reviews
-- **Body:** Lora — warm, readable
-- **Labels/Meta:** Courier Prime — typewritten campus memo energy
+The interface features:
+- **Hero & Navigation:** Ambient glassmorphism accents layering perfectly over the Columbia Lion mural.
+- **Bento Profiles:** A dynamic masonry grid of student cards displaying rich info—majors, clubs, and third-person Q&A prompts.
+- **Profile Modal:** A spacious, fully responsive centered modal for deep-diving into profiles before connecting.
+- **Typography:** 
+  - **Display:** Cormorant Garamond — the serif of university presses and law reviews
+  - **Body:** Lora — warm, readable
+  - **Labels/Meta:** Courier Prime — typewritten campus memo energy
 - **Palette:** Limestone cream (`#F4F0E6`), Columbia blue (`#003F8A`), warm copper (`#7A4A1E`)
 
 ---
@@ -72,9 +77,10 @@ src/
 ├── components/
 │   ├── Nav.tsx                 # Sticky Columbia-blue header
 │   ├── Footer.tsx              # ADI + The Lion credit
-│   ├── ProfileCard.tsx         # Portrait tile (3:4, name + school tag + contact snippet)
-│   ├── ProfileDrawer.tsx       # Slide-in profile detail panel (Framer Motion)
-│   └── CoffeeRequestModal.tsx  # Coffee chat request modal with required message
+│   ├── ProfileCard.tsx         # Bento tile (name, badges, clubs row, Q&A responses)
+│   ├── ProfileDrawer.tsx       # Centered modal displaying rich profile details
+│   ├── ColumbiaCrown.tsx       # Vector accent graphic
+│   └── PromptDropdown.tsx      # Custom select menu for Q&A onboarding
 ├── lib/
 │   ├── supabase/
 │   │   ├── client.ts           # Browser Supabase singleton (anon key only)
