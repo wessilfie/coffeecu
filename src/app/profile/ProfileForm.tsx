@@ -7,8 +7,9 @@ import { z } from 'zod';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Upload, Plus, Trash2, ChevronDown } from 'lucide-react';
-import { SCHOOL_GROUPS, UNDERGRAD_SCHOOL_CODES, UNDERGRAD_YEARS, GRAD_YEARS, YEARS, DEGREE_GROUPS, MAJORS, PROFILE_QUESTIONS, COFFEE_QUESTION } from '@/lib/constants';
+import { SCHOOL_GROUPS, UNDERGRAD_SCHOOL_CODES, UNDERGRAD_YEARS, GRAD_YEARS, YEARS, DEGREE_GROUPS, MAJORS, CBS_CLUBS, PROFILE_QUESTIONS_GROUPED, PROFILE_QUESTIONS, COFFEE_QUESTION } from '@/lib/constants';
 import type { ProfileFormData, FullProfile, DraftProfile, School, ProfileResponse } from '@/types';
+import PromptDropdown from '@/components/PromptDropdown';
 
 // ============================================================
 // Validation schema — mirrors DB constraints
@@ -26,6 +27,7 @@ const schema = z.object({
   year: z.string(),
   degree: z.string(),
   major: z.array(z.string()).max(3, 'Select up to 3 majors'),
+  clubs: z.array(z.string()).max(10, 'Select up to 10 clubs'),
   pronouns: z.string().max(50, 'Max 50 characters'),
   responses: z.array(z.object({ question: z.string(), answer: z.string() })),
   twitter: urlSchema,
@@ -105,6 +107,7 @@ export default function ProfileForm({ userId, userEmail, existingProfile, existi
       year: source?.year ?? '',
       degree: source?.degree ?? '',
       major: source?.major ?? [],
+      clubs: source?.clubs ?? [],
       pronouns: source?.pronouns ?? '',
       responses: [],
       twitter: source?.twitter ?? '',
@@ -125,7 +128,7 @@ export default function ProfileForm({ userId, userEmail, existingProfile, existi
   const isUndergrad = UNDERGRAD_SCHOOL_CODES.has(selectedSchool);
   const yearOptions = isUndergrad ? UNDERGRAD_YEARS
     : selectedSchool ? GRAD_YEARS
-    : YEARS;
+      : YEARS;
 
   // ——— Auto-save (debounced, draft only) ———
   const allFormValues = watch();
@@ -208,7 +211,7 @@ export default function ProfileForm({ userId, userEmail, existingProfile, existi
         headers: { 'Content-Type': 'application/json' },
         body: payloadString,
         keepalive: true,
-      }).catch(() => {});
+      }).catch(() => { });
     };
 
     const onBeforeUnload = () => flushDraftSave();
@@ -500,6 +503,22 @@ export default function ProfileForm({ userId, userEmail, existingProfile, existi
             )}
           />
         </div>}
+
+        {/* Student Clubs — BUS only */}
+        {selectedSchool === 'BUS' && <div style={{ marginTop: '1rem' }}>
+          <label className="form-label">Student Clubs</label>
+          <Controller
+            name="clubs"
+            control={control}
+            render={({ field }) => (
+              <ClubPicker
+                value={field.value}
+                onChange={field.onChange}
+                max={10}
+              />
+            )}
+          />
+        </div>}
       </Section>
 
       <Divider />
@@ -538,7 +557,6 @@ export default function ProfileForm({ userId, userEmail, existingProfile, existi
                   background: '#fdfaf5',
                   border: '1px solid #e5ddd0',
                   borderRadius: '12px',
-                  overflow: 'hidden',
                 }}
               >
                 {/* Question selector row */}
@@ -552,42 +570,10 @@ export default function ProfileForm({ userId, userEmail, existingProfile, existi
                   }}
                 >
                   <div style={{ flex: 1, position: 'relative' }}>
-                    <select
+                    <PromptDropdown
                       value={slot.question}
-                      onChange={e => setOptionalResponses(prev => prev.map((r, j) => j === i ? { ...r, question: e.target.value } : r))}
-                      style={{
-                        width: '100%',
-                        appearance: 'none',
-                        WebkitAppearance: 'none',
-                        background: 'none',
-                        border: 'none',
-                        padding: '0.875rem 1.5rem 0.875rem 0',
-                        fontFamily: 'var(--font-body), Georgia, serif',
-                        fontStyle: 'italic',
-                        fontSize: '0.9375rem',
-                        color: 'var(--color-ink)',
-                        cursor: 'pointer',
-                        outline: 'none',
-                      }}
-                    >
-                      <option value="">Choose a prompt…</option>
-                      {PROFILE_QUESTIONS.filter(q => !usedQuestions.includes(q)).map(q => (
-                        <option key={q} value={q}>{q}</option>
-                      ))}
-                      {slot.question && !PROFILE_QUESTIONS.includes(slot.question as typeof PROFILE_QUESTIONS[number]) && (
-                        <option value={slot.question}>{slot.question}</option>
-                      )}
-                    </select>
-                    <ChevronDown
-                      size={13}
-                      style={{
-                        position: 'absolute',
-                        right: 0,
-                        top: '50%',
-                        transform: 'translateY(-50%)',
-                        pointerEvents: 'none',
-                        color: 'var(--color-text-muted)',
-                      }}
+                      onChange={(val) => setOptionalResponses(prev => prev.map((r, j) => j === i ? { ...r, question: val } : r))}
+                      otherSelected={usedQuestions}
                     />
                   </div>
                   {optionalResponses.length > 1 && (
@@ -671,7 +657,6 @@ export default function ProfileForm({ userId, userEmail, existingProfile, existi
                 color: 'var(--color-text-muted)',
                 fontFamily: 'var(--font-mono), monospace',
                 fontSize: '0.6875rem',
-                letterSpacing: '0.1em',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -897,8 +882,7 @@ export default function ProfileForm({ userId, userEmail, existingProfile, existi
               gap: '0.375rem',
               fontFamily: 'var(--font-mono), monospace',
               fontSize: '0.75rem',
-              letterSpacing: '0.08em',
-              textTransform: 'uppercase',
+              letterSpacing: '0.01em',
               color: 'var(--color-columbia)',
               textDecoration: 'none',
               fontWeight: 600,
@@ -941,4 +925,159 @@ function CharCount({ value, max }: { value: string; max: number }) {
   const len = (value ?? '').length;
   const cls = len >= max ? 'at-limit' : len >= max * 0.85 ? 'near-limit' : '';
   return <div className={`char-count ${cls}`}>{len}/{max}</div>;
+}
+
+function ClubPicker({ value, onChange, max }: { value: string[]; onChange: (v: string[]) => void; max: number }) {
+  const [query, setQuery] = useState('');
+  const [open, setOpen] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const suggestions = query.trim()
+    ? (CBS_CLUBS as readonly string[])
+      .filter(c => !value.includes(c) && c.toLowerCase().includes(query.toLowerCase()))
+      .slice(0, 8)
+    : [];
+
+  // Close on outside click
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
+  const add = (club: string) => {
+    if (value.length >= max) return;
+    onChange([...value, club]);
+    setQuery('');
+    inputRef.current?.focus();
+  };
+
+  const remove = (club: string) => {
+    onChange(value.filter(c => c !== club));
+  };
+
+  return (
+    <div ref={containerRef}>
+      {/* Search input */}
+      <div style={{ position: 'relative' }}>
+        <input
+          ref={inputRef}
+          type="text"
+          className="form-input"
+          placeholder={value.length >= max ? `Max ${max} clubs selected` : 'Search clubs…'}
+          value={query}
+          disabled={value.length >= max}
+          onChange={e => { setQuery(e.target.value); setOpen(true); }}
+          onFocus={() => { if (query.trim()) setOpen(true); }}
+          style={{ fontSize: '0.875rem' }}
+        />
+
+        {/* Dropdown */}
+        {open && suggestions.length > 0 && (
+          <ul
+            style={{
+              position: 'absolute',
+              top: 'calc(100% + 4px)',
+              left: 0,
+              right: 0,
+              background: '#ffffff',
+              border: '1px solid var(--color-mist)',
+              borderRadius: '6px',
+              boxShadow: '0 4px 20px rgba(26,20,16,0.12)',
+              listStyle: 'none',
+              margin: 0,
+              padding: '0.25rem 0',
+              zIndex: 50,
+              maxHeight: '240px',
+              overflowY: 'auto',
+            }}
+          >
+            {suggestions.map(club => (
+              <li
+                key={club}
+                onMouseDown={e => { e.preventDefault(); add(club); setOpen(false); }}
+                style={{
+                  padding: '0.5rem 0.875rem',
+                  fontFamily: 'var(--font-body), serif',
+                  fontSize: '0.875rem',
+                  color: 'var(--color-ink)',
+                  cursor: 'pointer',
+                  transition: 'background 100ms',
+                }}
+                onMouseEnter={e => (e.currentTarget.style.background = 'var(--color-limestone-dk, #ece8de)')}
+                onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+              >
+                {club}
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+
+      {/* Selected pills */}
+      {value.length > 0 && (
+        <div
+          style={{
+            display: 'flex',
+            flexWrap: 'wrap',
+            gap: '0.4rem',
+            marginTop: '0.625rem',
+          }}
+        >
+          {value.map(club => (
+            <span
+              key={club}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.3rem',
+                background: 'rgba(0,63,138,0.08)',
+                border: '1px solid rgba(0,63,138,0.2)',
+                borderRadius: '100px',
+                padding: '0.25rem 0.625rem 0.25rem 0.75rem',
+                fontFamily: 'var(--font-body), serif',
+                fontSize: '0.8125rem',
+                color: 'var(--color-columbia)',
+                lineHeight: 1.3,
+              }}
+            >
+              {club}
+              <button
+                type="button"
+                onClick={() => remove(club)}
+                aria-label={`Remove ${club}`}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  padding: 0,
+                  display: 'flex',
+                  alignItems: 'center',
+                  color: 'rgba(0,63,138,0.5)',
+                  fontSize: '0.9rem',
+                  lineHeight: 1,
+                  marginLeft: '0.1rem',
+                  transition: 'color 120ms',
+                }}
+                onMouseEnter={e => (e.currentTarget.style.color = 'var(--color-columbia)')}
+                onMouseLeave={e => (e.currentTarget.style.color = 'rgba(0,63,138,0.5)')}
+              >
+                ×
+              </button>
+            </span>
+          ))}
+        </div>
+      )}
+
+      {/* Count hint */}
+      <p className="label-mono" style={{ color: 'var(--color-text-muted)', marginTop: '0.375rem' }}>
+        {value.length}/{max} selected
+      </p>
+    </div>
+  );
 }

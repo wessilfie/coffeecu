@@ -23,7 +23,7 @@ export default async function HomePage({
           meetingCount={247}
           isLoggedIn={!isDevGuest}
           userId={isDevGuest ? null : DEV_USER.id}
-          sentRequestIds={[]}
+          sentRequests={[]}
           hasPublishedProfile={!isDevGuest}
         />
         <Footer />
@@ -36,7 +36,7 @@ export default async function HomePage({
   // Initial profiles (server-rendered for fast FCP + SEO)
   const { data: profiles } = await supabase
     .from('public_profiles')
-    .select('id, user_id, name, uni, university, school, year, degree, major, pronouns, responses, twitter, facebook, linkedin, instagram, youtube, tiktok, website, image_url, is_public, random_sort, created_at, updated_at')
+    .select('id, user_id, name, uni, university, school, year, degree, major, clubs, pronouns, responses, twitter, facebook, linkedin, instagram, youtube, tiktok, website, image_url, is_public, random_sort, created_at, updated_at')
     .order('random_sort', { ascending: true })
     .limit(12);
 
@@ -63,7 +63,7 @@ export default async function HomePage({
       const serviceClient = createSupabaseServiceClient();
       const { data: ownProfile } = await serviceClient
         .from('profiles')
-        .select('id, user_id, name, uni, university, school, year, degree, major, pronouns, responses, twitter, facebook, linkedin, instagram, youtube, tiktok, website, image_url, is_public, random_sort, created_at, updated_at')
+        .select('id, user_id, name, uni, university, school, year, degree, major, clubs, pronouns, responses, twitter, facebook, linkedin, instagram, youtube, tiktok, website, image_url, is_public, random_sort, created_at, updated_at')
         .eq('user_id', user.id)
         .eq('is_public', true)
         .eq('is_visible', true)
@@ -75,14 +75,17 @@ export default async function HomePage({
     }
   }
 
-  // IDs of profiles the current user has already requested (to prevent resends)
-  let sentRequestIds: string[] = [];
+  // Meetings the current user has already requested (to prevent resends and show dates)
+  let sentRequests: { id: string; date: string }[] = [];
   if (user) {
     const { data: sentMeetings } = await supabase
       .from('meetings')
-      .select('receiver_id')
+      .select('receiver_id, created_at')
       .eq('sender_id', user.id);
-    sentRequestIds = (sentMeetings ?? []).map((m: { receiver_id: string }) => m.receiver_id);
+    sentRequests = (sentMeetings ?? []).map((m: { receiver_id: string; created_at: string }) => ({
+      id: m.receiver_id,
+      date: m.created_at,
+    }));
   }
 
   return (
@@ -93,7 +96,7 @@ export default async function HomePage({
         meetingCount={meetingCount ?? 0}
         isLoggedIn={!!user}
         userId={user?.id ?? null}
-        sentRequestIds={sentRequestIds}
+        sentRequests={sentRequests}
         hasPublishedProfile={hasPublishedProfile}
       />
       <Footer />

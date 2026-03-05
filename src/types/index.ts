@@ -23,6 +23,7 @@ export interface Profile {
   year: string | null;
   degree: string | null;
   major: string[];
+  clubs: string[];
   pronouns: string | null;
   responses: ProfileResponse[];
   twitter: string | null;
@@ -59,6 +60,7 @@ export interface DraftProfile {
   year: string | null;
   degree: string | null;
   major: string[];
+  clubs: string[];
   pronouns: string | null;
   responses: ProfileResponse[];
   twitter: string | null;
@@ -119,6 +121,7 @@ export interface ProfileFormData {
   year: string;
   degree: string;
   major: string[];
+  clubs: string[];
   pronouns: string;
   responses: ProfileResponse[];
   twitter: string;
@@ -138,6 +141,7 @@ export interface ProfileFilters {
   year: string;
   school: string;
   major: string;
+  clubs: string;
 }
 
 // Admin user lookup result

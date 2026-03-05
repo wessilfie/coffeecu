@@ -128,6 +128,7 @@ export default function Nav() {
             style={{ borderRadius: '6px', border: '1px solid rgba(255,255,255,0.22)' }}
           />
           <span
+            className="hidden sm:inline"
             style={{
               fontFamily: 'var(--font-display), serif',
               fontSize: '1.25rem',
@@ -148,188 +149,187 @@ export default function Nav() {
               {user ? (
                 /* ——— Logged-in: communities dropdown + avatar + dropdown ——— */
                 <>
-                {/* Your Communities dropdown */}
-                <div ref={communitiesRef} style={{ position: 'relative' }}>
-                  <button
-                    onClick={() => setCommunitiesOpen(prev => !prev)}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '0.3rem',
-                      background: 'none',
-                      border: 'none',
-                      cursor: 'pointer',
-                      fontFamily: 'var(--font-body), serif',
-                      fontSize: '0.875rem',
-                      fontWeight: 500,
-                      color: communitiesOpen ? 'rgba(255,255,255,1)' : 'rgba(255,255,255,0.82)',
-                      padding: 0,
-                      transition: 'color 150ms ease',
-                    }}
-                    onMouseEnter={e => (e.currentTarget.style.color = 'rgba(255,255,255,1)')}
-                    onMouseLeave={e => { if (!communitiesOpen) e.currentTarget.style.color = 'rgba(255,255,255,0.82)'; }}
-                  >
-                    Your Communities
-                    <ChevronDown size={13} style={{ transition: 'transform 150ms ease', transform: communitiesOpen ? 'rotate(180deg)' : 'rotate(0deg)' }} />
-                  </button>
-
-                  {communitiesOpen && (
-                    <div
+                  {/* Your Communities dropdown */}
+                  <div ref={communitiesRef} style={{ position: 'relative' }}>
+                    <button
+                      onClick={() => setCommunitiesOpen(prev => !prev)}
                       style={{
-                        position: 'absolute',
-                        left: 0,
-                        top: 'calc(100% + 0.625rem)',
-                        background: '#ffffff',
-                        border: '1px solid #d4dfec',
-                        borderRadius: '8px',
-                        boxShadow: '0 8px 32px rgba(0,20,60,0.16)',
-                        minWidth: '210px',
-                        zIndex: 100,
-                        overflow: 'hidden',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.3rem',
+                        background: 'none',
+                        border: 'none',
+                        cursor: 'pointer',
+                        fontFamily: 'var(--font-body), serif',
+                        fontSize: '0.875rem',
+                        fontWeight: 500,
+                        color: communitiesOpen ? 'rgba(255,255,255,1)' : 'rgba(255,255,255,0.82)',
+                        padding: 0,
+                        transition: 'color 150ms ease',
                       }}
+                      onMouseEnter={e => (e.currentTarget.style.color = 'rgba(255,255,255,1)')}
+                      onMouseLeave={e => { if (!communitiesOpen) e.currentTarget.style.color = 'rgba(255,255,255,0.82)'; }}
                     >
-                      <p
+                      Your Communities
+                      <ChevronDown size={13} style={{ transition: 'transform 150ms ease', transform: communitiesOpen ? 'rotate(180deg)' : 'rotate(0deg)' }} />
+                    </button>
+
+                    {communitiesOpen && (
+                      <div
                         style={{
-                          fontFamily: 'var(--font-mono), monospace',
-                          fontSize: '0.65rem',
-                          letterSpacing: '0.1em',
-                          textTransform: 'uppercase',
-                          color: '#8a9bb0',
-                          padding: '0.625rem 1rem 0.25rem',
-                          margin: 0,
+                          position: 'absolute',
+                          left: 0,
+                          top: 'calc(100% + 0.625rem)',
+                          background: '#ffffff',
+                          border: '1px solid #d4dfec',
+                          borderRadius: '8px',
+                          boxShadow: '0 8px 32px rgba(0,20,60,0.16)',
+                          minWidth: '210px',
+                          zIndex: 100,
+                          overflow: 'hidden',
                         }}
                       >
-                        Your communities
-                      </p>
-                      <Link
-                        href="/"
-                        onClick={() => setCommunitiesOpen(false)}
-                        style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '0.5rem',
-                          padding: '0.625rem 1rem 0.75rem',
-                          fontFamily: 'var(--font-body), serif',
-                          fontSize: '0.875rem',
-                          fontWeight: 500,
-                          color: 'var(--color-ink)',
-                          textDecoration: 'none',
-                          transition: 'background 120ms ease',
-                        }}
-                        onMouseEnter={e => (e.currentTarget.style.background = '#f6f9fd')}
-                        onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
-                      >
-                        <span
+                        <p
                           style={{
-                            width: '8px',
-                            height: '8px',
-                            borderRadius: '50%',
-                            background: 'var(--color-columbia)',
-                            flexShrink: 0,
+                            fontFamily: 'var(--font-mono), monospace',
+                            fontSize: '0.65rem',
+                            letterSpacing: '0.04em',
+                            color: '#8a9bb0',
+                            padding: '0.625rem 1rem 0.25rem',
+                            margin: 0,
                           }}
-                        />
-                        Columbia University
-                      </Link>
-                    </div>
-                  )}
-                </div>
+                        >
+                          Your communities
+                        </p>
+                        <Link
+                          href="/"
+                          onClick={() => setCommunitiesOpen(false)}
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '0.5rem',
+                            padding: '0.625rem 1rem 0.75rem',
+                            fontFamily: 'var(--font-body), serif',
+                            fontSize: '0.875rem',
+                            fontWeight: 500,
+                            color: 'var(--color-ink)',
+                            textDecoration: 'none',
+                            transition: 'background 120ms ease',
+                          }}
+                          onMouseEnter={e => (e.currentTarget.style.background = '#F0F5FA')}
+                          onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+                        >
+                          <span
+                            style={{
+                              width: '8px',
+                              height: '8px',
+                              borderRadius: '50%',
+                              background: 'var(--color-columbia)',
+                              flexShrink: 0,
+                            }}
+                          />
+                          Columbia University
+                        </Link>
+                      </div>
+                    )}
+                  </div>
 
-                <div ref={dropdownRef} style={{ position: 'relative' }}>
-                  <button
-                    onClick={() => setDropdownOpen(prev => !prev)}
-                    aria-label="Account menu"
-                    aria-expanded={dropdownOpen}
-                    style={{
-                      width: '44px',
-                      height: '44px',
-                      borderRadius: '50%',
-                      border: dropdownOpen
-                        ? '2px solid rgba(255,255,255,0.95)'
-                        : '2px solid rgba(255,255,255,0.5)',
-                      overflow: 'hidden',
-                      cursor: 'pointer',
-                      background: profileImageUrl ? 'rgba(0,40,100,0.6)' : '#ffffff',
-                      padding: 0,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      transition: 'border-color 150ms ease',
-                      flexShrink: 0,
-                    }}
-                  >
-                    <Image
-                      src={profileImageUrl ?? LION_AVATAR}
-                      alt="Your profile"
-                      width={44}
-                      height={44}
+                  <div ref={dropdownRef} style={{ position: 'relative' }}>
+                    <button
+                      onClick={() => setDropdownOpen(prev => !prev)}
+                      aria-label="Account menu"
+                      aria-expanded={dropdownOpen}
                       style={{
-                        objectFit: profileImageUrl ? 'cover' : 'contain',
-                        padding: profileImageUrl ? 0 : '2px',
-                        width: '100%',
-                        height: '100%',
-                      }}
-                    />
-                  </button>
-
-                  {/* Dropdown */}
-                  {dropdownOpen && (
-                    <div
-                      style={{
-                        position: 'absolute',
-                        right: 0,
-                        top: 'calc(100% + 0.625rem)',
-                        background: '#ffffff',
-                        border: '1px solid #d4dfec',
-                        borderRadius: '8px',
-                        boxShadow: '0 8px 32px rgba(0,20,60,0.16)',
-                        minWidth: '170px',
-                        zIndex: 100,
+                        width: '44px',
+                        height: '44px',
+                        borderRadius: '50%',
+                        border: dropdownOpen
+                          ? '2px solid rgba(255,255,255,0.95)'
+                          : '2px solid rgba(255,255,255,0.5)',
                         overflow: 'hidden',
+                        cursor: 'pointer',
+                        background: profileImageUrl ? 'rgba(0,40,100,0.6)' : '#ffffff',
+                        padding: 0,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        transition: 'border-color 150ms ease',
+                        flexShrink: 0,
                       }}
                     >
-                      <Link
-                        href="/profile"
-                        onClick={() => setDropdownOpen(false)}
+                      <Image
+                        src={profileImageUrl ?? LION_AVATAR}
+                        alt="Your profile"
+                        width={44}
+                        height={44}
                         style={{
-                          display: 'block',
-                          padding: '0.75rem 1rem',
-                          fontFamily: 'var(--font-body), serif',
-                          fontSize: '0.875rem',
-                          fontWeight: 500,
-                          color: 'var(--color-ink)',
-                          textDecoration: 'none',
-                          borderBottom: '1px solid #edf3fa',
-                          transition: 'background 120ms ease',
-                        }}
-                        onMouseEnter={e => (e.currentTarget.style.background = '#f6f9fd')}
-                        onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
-                      >
-                        Edit Profile
-                      </Link>
-                      <button
-                        onClick={handleSignOut}
-                        style={{
-                          display: 'block',
+                          objectFit: profileImageUrl ? 'cover' : 'contain',
+                          padding: profileImageUrl ? 0 : '2px',
                           width: '100%',
-                          textAlign: 'left',
-                          padding: '0.75rem 1rem',
-                          fontFamily: 'var(--font-body), serif',
-                          fontSize: '0.875rem',
-                          fontWeight: 500,
-                          color: '#6b5e52',
-                          background: 'none',
-                          border: 'none',
-                          cursor: 'pointer',
-                          transition: 'background 120ms ease',
+                          height: '100%',
                         }}
-                        onMouseEnter={e => (e.currentTarget.style.background = '#f6f9fd')}
-                        onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+                      />
+                    </button>
+
+                    {/* Dropdown */}
+                    {dropdownOpen && (
+                      <div
+                        style={{
+                          position: 'absolute',
+                          right: 0,
+                          top: 'calc(100% + 0.625rem)',
+                          background: '#ffffff',
+                          border: '1px solid #d4dfec',
+                          borderRadius: '8px',
+                          boxShadow: '0 8px 32px rgba(0,20,60,0.16)',
+                          minWidth: '170px',
+                          zIndex: 100,
+                          overflow: 'hidden',
+                        }}
                       >
-                        Sign Out
-                      </button>
-                    </div>
-                  )}
-                </div>
+                        <Link
+                          href="/profile"
+                          onClick={() => setDropdownOpen(false)}
+                          style={{
+                            display: 'block',
+                            padding: '0.75rem 1rem',
+                            fontFamily: 'var(--font-body), serif',
+                            fontSize: '0.875rem',
+                            fontWeight: 500,
+                            color: 'var(--color-ink)',
+                            textDecoration: 'none',
+                            borderBottom: '1px solid #edf3fa',
+                            transition: 'background 120ms ease',
+                          }}
+                          onMouseEnter={e => (e.currentTarget.style.background = '#F0F5FA')}
+                          onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+                        >
+                          Edit Profile
+                        </Link>
+                        <button
+                          onClick={handleSignOut}
+                          style={{
+                            display: 'block',
+                            width: '100%',
+                            textAlign: 'left',
+                            padding: '0.75rem 1rem',
+                            fontFamily: 'var(--font-body), serif',
+                            fontSize: '0.875rem',
+                            fontWeight: 500,
+                            color: '#5A6B7D',
+                            background: 'none',
+                            border: 'none',
+                            cursor: 'pointer',
+                            transition: 'background 120ms ease',
+                          }}
+                          onMouseEnter={e => (e.currentTarget.style.background = '#F0F5FA')}
+                          onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+                        >
+                          Sign Out
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 </>
               ) : (
                 /* ——— Logged-out: how it works + sign in ——— */
@@ -359,8 +359,8 @@ export default function Nav() {
                       letterSpacing: '0.01em',
                       textTransform: 'none',
                       padding: '0.6rem 1.2rem',
-                      background: '#f2ebde',
-                      color: '#003f8a',
+                      background: '#F2F5F9',
+                      color: '#01285F',
                     }}
                   >
                     Sign In

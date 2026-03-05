@@ -2,6 +2,7 @@ import 'server-only';
 
 import { createSupabaseServerClient, createSupabaseServiceClient } from './supabase/server';
 import type { UserRole } from '@/types';
+import { DEV_BYPASS } from './dev-bypass';
 
 // ============================================================
 // Auth utilities — all server-only
@@ -35,6 +36,8 @@ export async function getUserRole(userId: string): Promise<UserRole | null> {
 }
 
 export async function hasRole(userId: string, requiredRole: UserRole): Promise<boolean> {
+  if (DEV_BYPASS) return true;
+
   const role = await getUserRole(userId);
   if (!role) return false;
   return ROLE_HIERARCHY[role] >= ROLE_HIERARCHY[requiredRole];

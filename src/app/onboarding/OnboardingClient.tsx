@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Upload, ChevronLeft, ChevronDown, Trash2, Plus } from 'lucide-react';
@@ -11,10 +11,12 @@ import {
   GRAD_YEARS,
   YEARS,
   DEGREE_GROUPS,
+  PROFILE_QUESTIONS_GROUPED,
   PROFILE_QUESTIONS,
   COFFEE_QUESTION,
 } from '@/lib/constants';
 import type { School, DraftProfile } from '@/types';
+import PromptDropdown from '@/components/PromptDropdown';
 
 interface Props {
   userId: string;
@@ -70,12 +72,12 @@ export default function OnboardingClient({ userId: _userId, userEmail: _userEmai
     savedProfileQs.length >= 2
       ? savedProfileQs.map(r => ({ question: r.question, answer: r.answer }))
       : [
-          ...savedProfileQs.map(r => ({ question: r.question, answer: r.answer })),
-          ...Array.from({ length: 2 - savedProfileQs.length }, (_, i) => ({
-            question: PROFILE_QUESTIONS[savedProfileQs.length + i] ?? '',
-            answer: '',
-          })),
-        ];
+        ...savedProfileQs.map(r => ({ question: r.question, answer: r.answer })),
+        ...Array.from({ length: 2 - savedProfileQs.length }, (_, i) => ({
+          question: PROFILE_QUESTIONS[savedProfileQs.length + i] ?? '',
+          answer: '',
+        })),
+      ];
 
   const [step, setStep] = useState(() => (draft ? inferInitialStep(draft) : 0));
   const [animKey, setAnimKey] = useState(0);
@@ -93,6 +95,16 @@ export default function OnboardingClient({ userId: _userId, userEmail: _userEmai
   const [degree, setDegree] = useState(draft?.degree ?? '');
   const [pronouns, setPronouns] = useState(draft?.pronouns ?? '');
   const [nameError, setNameError] = useState('');
+
+  // Handle Referral Pre-fill
+  useEffect(() => {
+    if (!school) { // only pre-fill if they haven't explicitly chosen or saved one
+      const storedSchool = sessionStorage.getItem('referral_school');
+      if (storedSchool) {
+        setSchool(storedSchool as School);
+      }
+    }
+  }, [school]);
 
   // Step 3 — About
   const [coffeeAnswer, setCoffeeAnswer] = useState(savedCoffeeAnswer);
@@ -138,7 +150,7 @@ export default function OnboardingClient({ userId: _userId, userEmail: _userEmai
       const newUrl = `${json.url}?t=${Date.now()}`;
       setPhotoUrl(newUrl);
       // Persist immediately so a refresh doesn't lose the uploaded photo
-      saveProgress(true, newUrl).catch(() => {});
+      saveProgress(true, newUrl).catch(() => { });
       return;
     } catch {
       setPhotoError('Upload failed. Please try again.');
@@ -308,21 +320,23 @@ export default function OnboardingClient({ userId: _userId, userEmail: _userEmai
               fontSize: 'clamp(2.5rem, 6vw, 3.75rem)',
               color: '#ffffff',
               marginBottom: '1.25rem',
+              lineHeight: 1.05,
+              letterSpacing: '-0.02em',
             }}
           >
             You&rsquo;re in! 🎉
           </h1>
           <p
             style={{
-              fontFamily: 'var(--font-body), Georgia, serif',
-              fontSize: '1.0625rem',
+              fontFamily: 'var(--font-body)',
+              fontSize: '1.125rem',
               color: 'rgba(255,255,255,0.78)',
               lineHeight: 1.65,
               marginBottom: '3rem',
             }}
           >
-            Welcome to Coffee@CU. Your profile takes about 3 minutes to set up.
-            Once it&rsquo;s live, other Columbians can find you and reach out.
+            Welcome to Coffee@CU. We'll help you get set up in just a few minutes,
+            and then you'll be live and have full access to the community.
           </p>
           <button
             onClick={() => {
@@ -380,6 +394,8 @@ export default function OnboardingClient({ userId: _userId, userEmail: _userEmai
               fontSize: 'clamp(2rem, 5vw, 3rem)',
               color: 'var(--color-ink)',
               marginBottom: '1rem',
+              lineHeight: 1.05,
+              letterSpacing: '-0.02em',
             }}
           >
             {isPublished ? 'Congrats! Your profile is live.' : 'Almost there.'}
@@ -387,8 +403,8 @@ export default function OnboardingClient({ userId: _userId, userEmail: _userEmai
 
           <p
             style={{
-              fontFamily: 'var(--font-body), Georgia, serif',
-              fontSize: '1rem',
+              fontFamily: 'var(--font-body)',
+              fontSize: '1.125rem',
               color: 'var(--color-text-muted)',
               lineHeight: 1.65,
               marginBottom: isPublished ? '1.75rem' : '2rem',
@@ -405,11 +421,11 @@ export default function OnboardingClient({ userId: _userId, userEmail: _userEmai
               <div
                 style={{
                   width: '180px',
-                  background: '#fdfbf6',
-                  border: '1px solid #d9e4f0',
-                  borderRadius: '8px',
+                  background: 'var(--color-white)',
+                  border: '1px solid var(--color-mist)',
+                  borderRadius: '16px',
                   overflow: 'hidden',
-                  boxShadow: '0 8px 24px rgba(0,40,85,0.1)',
+                  boxShadow: 'var(--shadow-card)',
                 }}
               >
                 <div style={{ position: 'relative', paddingBottom: '122%', overflow: 'hidden' }}>
@@ -476,10 +492,9 @@ export default function OnboardingClient({ userId: _userId, userEmail: _userEmai
           {isPublished && (
             <p
               style={{
-                fontFamily: 'var(--font-body), Georgia, serif',
-                fontSize: '0.9375rem',
-                fontStyle: 'italic',
-                color: 'var(--color-copper)',
+                fontFamily: 'var(--font-body)',
+                fontSize: '1rem',
+                color: 'var(--color-columbia)',
                 lineHeight: 1.55,
                 marginBottom: '1.75rem',
               }}
@@ -606,6 +621,8 @@ export default function OnboardingClient({ userId: _userId, userEmail: _userEmai
                   color: 'var(--color-ink)',
                   marginBottom: '0.5rem',
                   textAlign: 'center',
+                  lineHeight: 1.05,
+                  letterSpacing: '-0.02em',
                 }}
               >
                 Add a photo
@@ -732,20 +749,22 @@ export default function OnboardingClient({ userId: _userId, userEmail: _userEmai
                   fontSize: 'clamp(1.75rem, 4vw, 2.25rem)',
                   color: 'var(--color-ink)',
                   marginBottom: '0.5rem',
+                  lineHeight: 1.05,
+                  letterSpacing: '-0.02em',
                 }}
               >
-                The basics
+                The essentials
               </h1>
               <p
                 style={{
-                  fontFamily: 'var(--font-body), Georgia, serif',
-                  fontStyle: 'italic',
+                  fontFamily: 'var(--font-body)',
                   color: 'var(--color-text-muted)',
+                  fontSize: '1.0625rem',
                   marginBottom: '2.5rem',
                   lineHeight: 1.55,
                 }}
               >
-                Just enough to help people know who they&rsquo;re reaching out to.
+                Just the basics to help people get to know you before reaching out.
               </p>
 
               <div style={{ display: 'grid', gap: '1.25rem' }}>
@@ -768,9 +787,8 @@ export default function OnboardingClient({ userId: _userId, userEmail: _userEmai
                   />
                   {nameError && <p className="form-error">{nameError}</p>}
                   <div
-                    className={`char-count ${
-                      name.length >= 40 ? 'at-limit' : name.length >= 34 ? 'near-limit' : ''
-                    }`}
+                    className={`char-count ${name.length >= 40 ? 'at-limit' : name.length >= 34 ? 'near-limit' : ''
+                      }`}
                   >
                     {name.length}/40
                   </div>
@@ -879,16 +897,18 @@ export default function OnboardingClient({ userId: _userId, userEmail: _userEmai
                   fontSize: 'clamp(1.75rem, 4vw, 2.25rem)',
                   color: 'var(--color-ink)',
                   marginBottom: '0.5rem',
+                  lineHeight: 1.05,
+                  letterSpacing: '-0.02em',
                 }}
               >
-                Tell us about yourself (no really)
+                Tell us about yourself (no really!)
               </h1>
               <p
                 style={{
-                  fontFamily: 'var(--font-body), Georgia, serif',
-                  fontStyle: 'italic',
+                  fontFamily: 'var(--font-body)',
                   color: 'var(--color-text-muted)',
-                  marginBottom: '2rem',
+                  fontSize: '1.0625rem',
+                  marginBottom: '2.5rem',
                   lineHeight: 1.55,
                 }}
               >
@@ -908,10 +928,10 @@ export default function OnboardingClient({ userId: _userId, userEmail: _userEmai
                     <div
                       key={index}
                       style={{
-                        background: '#fdfaf5',
-                        border: '1px solid #e5ddd0',
-                        borderRadius: '12px',
-                        overflow: 'hidden',
+                        background: 'var(--color-white)',
+                        border: '1px solid var(--color-mist)',
+                        borderRadius: '16px',
+                        boxShadow: 'var(--shadow-card)',
                       }}
                     >
                       {/* Question selector row */}
@@ -925,38 +945,10 @@ export default function OnboardingClient({ userId: _userId, userEmail: _userEmai
                         }}
                       >
                         <div style={{ flex: 1, position: 'relative' }}>
-                          <select
+                          <PromptDropdown
                             value={response.question}
-                            onChange={e => updateResponse(index, 'question', e.target.value)}
-                            style={{
-                              width: '100%',
-                              appearance: 'none',
-                              WebkitAppearance: 'none',
-                              background: 'none',
-                              border: 'none',
-                              padding: '0.875rem 1.5rem 0.875rem 0',
-                              fontFamily: 'var(--font-body), Georgia, serif',
-                              fontStyle: 'italic',
-                              fontSize: '0.9375rem',
-                              color: 'var(--color-ink)',
-                              cursor: 'pointer',
-                              outline: 'none',
-                            }}
-                          >
-                            {PROFILE_QUESTIONS.filter(q => !otherSelected.includes(q) || q === response.question).map(q => (
-                              <option key={q} value={q}>{q}</option>
-                            ))}
-                          </select>
-                          <ChevronDown
-                            size={13}
-                            style={{
-                              position: 'absolute',
-                              right: 0,
-                              top: '50%',
-                              transform: 'translateY(-50%)',
-                              pointerEvents: 'none',
-                              color: 'var(--color-text-muted)',
-                            }}
+                            onChange={(val) => updateResponse(index, 'question', val)}
+                            otherSelected={otherSelected}
                           />
                         </div>
                         {profileResponses.length > 2 && (
@@ -995,9 +987,9 @@ export default function OnboardingClient({ userId: _userId, userEmail: _userEmai
                           border: 'none',
                           background: 'transparent',
                           resize: 'vertical',
-                          padding: '0.875rem 1.25rem',
-                          fontFamily: 'var(--font-body), Georgia, serif',
-                          fontSize: '0.9375rem',
+                          padding: '1rem 1.25rem',
+                          fontFamily: 'var(--font-body)',
+                          fontSize: '1rem',
                           color: 'var(--color-ink)',
                           lineHeight: 1.6,
                           outline: 'none',
@@ -1069,10 +1061,11 @@ export default function OnboardingClient({ userId: _userId, userEmail: _userEmai
                 {/* Availability card */}
                 <div
                   style={{
-                    background: '#fdfaf5',
-                    border: '1px solid #e5ddd0',
-                    borderRadius: '12px',
+                    background: 'var(--color-white)',
+                    border: '1px solid var(--color-mist)',
+                    borderRadius: '16px',
                     overflow: 'hidden',
+                    boxShadow: 'var(--shadow-card)',
                   }}
                 >
                   {/* Fixed question header */}
@@ -1084,9 +1077,9 @@ export default function OnboardingClient({ userId: _userId, userEmail: _userEmai
                   >
                     <span
                       style={{
-                        fontFamily: 'var(--font-body), Georgia, serif',
-                        fontStyle: 'italic',
-                        fontSize: '0.9375rem',
+                        fontFamily: 'var(--font-body)',
+                        fontSize: '1rem',
+                        fontWeight: 600,
                         color: 'var(--color-ink)',
                       }}
                     >
@@ -1148,15 +1141,17 @@ export default function OnboardingClient({ userId: _userId, userEmail: _userEmai
                   fontSize: 'clamp(1.75rem, 4vw, 2.25rem)',
                   color: 'var(--color-ink)',
                   marginBottom: '0.5rem',
+                  lineHeight: 1.05,
+                  letterSpacing: '-0.02em',
                 }}
               >
                 Link your socials
               </h1>
               <p
                 style={{
-                  fontFamily: 'var(--font-body), Georgia, serif',
-                  fontStyle: 'italic',
+                  fontFamily: 'var(--font-body)',
                   color: 'var(--color-text-muted)',
+                  fontSize: '1.0625rem',
                   marginBottom: '2.5rem',
                   lineHeight: 1.55,
                 }}
@@ -1334,8 +1329,8 @@ export default function OnboardingClient({ userId: _userId, userEmail: _userEmai
               {saving
                 ? 'Saving…'
                 : step === 4
-                ? 'Publish my profile →'
-                : 'Save and continue →'}
+                  ? 'Publish my profile →'
+                  : 'Save and continue →'}
             </button>
 
             {/* Skip photo (step 1 only) */}

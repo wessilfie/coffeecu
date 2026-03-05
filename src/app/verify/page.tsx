@@ -48,13 +48,13 @@ export default function VerifyPage() {
           One more step
         </p>
         <h1
+          className="heading-display"
           style={{
-            fontFamily: 'var(--font-display), serif',
-            fontSize: 'clamp(1.75rem, 5vw, 2.5rem)',
-            fontWeight: 400,
+            fontSize: 'clamp(2rem, 5vw, 2.75rem)',
             color: 'var(--color-ink)',
             margin: '0 0 1.25rem',
-            lineHeight: 1.15,
+            lineHeight: 1.05,
+            letterSpacing: '-0.02em'
           }}
         >
           Check your Columbia email
@@ -65,19 +65,19 @@ export default function VerifyPage() {
           style={{
             background: 'var(--color-white)',
             border: '1px solid var(--color-mist)',
-            borderRadius: '6px',
-            padding: '1.75rem 2rem',
-            boxShadow: '0 4px 24px rgba(26,20,16,0.06)',
+            borderRadius: '24px',
+            padding: '2rem',
+            boxShadow: 'var(--shadow-card)',
             textAlign: 'left',
             marginBottom: '1.5rem',
           }}
         >
           <p
             style={{
-              fontFamily: 'var(--font-body), serif',
-              fontSize: '0.9375rem',
+              fontFamily: 'var(--font-body)',
+              fontSize: '1rem',
               color: 'var(--color-ink)',
-              lineHeight: 1.65,
+              lineHeight: 1.6,
               margin: '0 0 1rem',
             }}
           >
@@ -122,10 +122,10 @@ export default function VerifyPage() {
                 </span>
                 <span
                   style={{
-                    fontFamily: 'var(--font-body), serif',
-                    fontSize: '0.875rem',
+                    fontFamily: 'var(--font-body)',
+                    fontSize: '0.9375rem',
                     color: 'var(--color-text-muted)',
-                    lineHeight: 1.55,
+                    lineHeight: 1.6,
                   }}
                 >
                   {tip}
@@ -137,8 +137,8 @@ export default function VerifyPage() {
 
         <p
           style={{
-            fontFamily: 'var(--font-body), serif',
-            fontSize: '0.875rem',
+            fontFamily: 'var(--font-body)',
+            fontSize: '0.9375rem',
             color: 'var(--color-text-muted)',
           }}
         >
@@ -154,6 +154,6 @@ export default function VerifyPage() {
           </Link>
         </p>
       </div>
-    </main>
+    </main >
   );
 }
