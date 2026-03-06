@@ -47,7 +47,7 @@ const schema = z.object({
   is_public: z.boolean().default(true),
   image_url: z.string().nullable().optional(),
   draft_only: z.boolean().default(false),
-  designation: z.enum(['faculty', 'staff']).nullable().optional().transform(v => v ?? null),
+  designation: z.enum(['student', 'faculty', 'staff']).optional().default('student'),
 });
 
 export async function POST(req: NextRequest) {
@@ -113,7 +113,7 @@ export async function POST(req: NextRequest) {
         name: publishName,
         school: data.school,
         year: data.year,
-        designation: data.designation ?? null,
+        designation: data.designation,
         degree: data.degree,
         major: data.major,
         clubs: data.clubs,
@@ -154,7 +154,7 @@ export async function POST(req: NextRequest) {
         name: data.name,
         school: data.school,
         year: data.year,
-        designation: data.designation ?? null,
+        designation: data.designation,
         degree: data.degree,
         major: data.major,
         clubs: data.clubs,

@@ -31,7 +31,35 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'Database error' }, { status: 500 });
     }
 
-    return NextResponse.json({ entries: data ?? [], total: count ?? 0 });
+    const entries = data ?? [];
+
+    // Collect unique user IDs to resolve names in one query
+    const userIds = new Set<string>();
+    for (const e of entries) {
+      if (e.actor_id) userIds.add(e.actor_id);
+      if (e.target_user_id) userIds.add(e.target_user_id);
+    }
+
+    let nameMap: Record<string, string> = {};
+    if (userIds.size > 0) {
+      const { data: profileRows } = await service
+        .from('profiles')
+        .select('user_id, name')
+        .in('user_id', [...userIds]);
+      if (profileRows) {
+        for (const row of profileRows) {
+          nameMap[row.user_id] = row.name;
+        }
+      }
+    }
+
+    const enriched = entries.map(e => ({
+      ...e,
+      actor_name: e.actor_id ? (nameMap[e.actor_id] ?? null) : null,
+      target_name: e.target_user_id ? (nameMap[e.target_user_id] ?? null) : null,
+    }));
+
+    return NextResponse.json({ entries: enriched, total: count ?? 0 });
   } catch (err) {
     console.error('[audit-log] Unexpected error:', err);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

@@ -193,7 +193,7 @@ export default function OnboardingClient({ userId: _userId, userEmail: _userEmai
       website: websiteUrl.trim().startsWith('https://') ? websiteUrl.trim() : '',
       phone: '',
       draft_only: draftOnly,
-      designation: roleType !== 'student' ? roleType : null,
+      designation: roleType,
     };
 
     const res = await fetch('/api/profile/save', {

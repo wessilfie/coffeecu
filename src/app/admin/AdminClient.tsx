@@ -27,8 +27,10 @@ type Tab = 'profiles' | 'flagged' | 'lookup' | 'roles' | 'audit';
 interface AuditEntry {
   id: string;
   actor_id: string;
+  actor_name: string | null;
   action: string;
   target_user_id: string | null;
+  target_name: string | null;
   target_table: string | null;
   metadata: Record<string, unknown>;
   created_at: string;
@@ -57,6 +59,7 @@ export default function AdminClient({
   const [searchQuery, setSearchQuery] = useState('');
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [message, setMessage] = useState('');
+  const [messageType, setMessageType] = useState<'success' | 'error'>('success');
   const [selectedProfile, setSelectedProfile] = useState<FullProfile | null>(null);
 
   // User lookup state
@@ -78,8 +81,9 @@ export default function AdminClient({
     p.clubs.some(c => c.toLowerCase().includes(q))
   );
 
-  const showMessage = (msg: string) => {
+  const showMessage = (msg: string, type: 'success' | 'error' = 'success') => {
     setMessage(msg);
+    setMessageType(type);
     setTimeout(() => setMessage(''), 4000);
   };
 
@@ -100,7 +104,7 @@ export default function AdminClient({
       }
       showMessage(`${profile.name}'s profile ${profile.is_visible ? 'hidden' : 'restored'}.`);
     } else {
-      showMessage('Action failed. Please try again.');
+      showMessage('Action failed. Please try again.', 'error');
     }
     setActionLoading(null);
   };
@@ -119,7 +123,7 @@ export default function AdminClient({
       if (selectedProfile?.id === profile.id) setSelectedProfile(null);
       showMessage(`${profile.name}'s profile removed.`);
     } else {
-      showMessage('Remove failed. Please try again.');
+      showMessage('Remove failed. Please try again.', 'error');
     }
     setActionLoading(null);
   };
@@ -138,7 +142,7 @@ export default function AdminClient({
       if (selectedProfile?.id === profile.id) setSelectedProfile(null);
       showMessage(`${profile.name}'s account has been deleted.`);
     } else {
-      showMessage('Delete failed. Please try again.');
+      showMessage('Delete failed. Please try again.', 'error');
     }
     setActionLoading(null);
   };
@@ -158,7 +162,7 @@ export default function AdminClient({
       if (selectedProfile?.id === profile.id) setSelectedProfile(null);
       showMessage(`${profile.name} has been banned.`);
     } else {
-      showMessage('Ban failed. Please try again.');
+      showMessage('Ban failed. Please try again.', 'error');
     }
     setActionLoading(null);
   };
@@ -179,7 +183,7 @@ export default function AdminClient({
       setSuspendedUserIds(prev => [...prev, profile.user_id]);
       showMessage(`${profile.name} suspended.`);
     } else {
-      showMessage('Suspend failed.');
+      showMessage('Suspend failed.', 'error');
     }
     setActionLoading(null);
   };
@@ -195,12 +199,12 @@ export default function AdminClient({
       setSuspendedUserIds(prev => prev.filter(id => id !== profile.user_id));
       showMessage(`${profile.name}'s suspension lifted.`);
     } else {
-      showMessage('Lift suspension failed.');
+      showMessage('Lift suspension failed.', 'error');
     }
     setActionLoading(null);
   };
 
-  const handleDesignationChange = async (profile: FullProfile, designation: 'faculty' | 'staff' | null) => {
+  const handleDesignationChange = async (profile: FullProfile, designation: 'student' | 'faculty' | 'staff') => {
     const res = await fetch('/api/admin/profile/set-designation', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -213,9 +217,9 @@ export default function AdminClient({
       if (selectedProfile?.id === profile.id) {
         setSelectedProfile(prev => prev ? { ...prev, designation } : null);
       }
-      showMessage(`${profile.name} set to ${designation ?? 'student (auto)'}.`);
+      showMessage(`${profile.name} set to ${designation}.`);
     } else {
-      showMessage('Failed to update designation.');
+      showMessage('Failed to update designation.', 'error');
     }
   };
 
@@ -235,7 +239,7 @@ export default function AdminClient({
       setFlaggedProfiles(prev => prev.filter(f => f.profile.id !== fp.profile.id));
       showMessage(verdict === 'dismissed' ? `Flag dismissed for ${fp.profile.name}.` : `Flag marked as actioned for ${fp.profile.name}.`);
     } else {
-      showMessage('Could not save review. Please try again.');
+      showMessage('Could not save review. Please try again.', 'error');
     }
     setActionLoading(null);
   };
@@ -305,7 +309,7 @@ export default function AdminClient({
       </div>
 
       {message && (
-        <div className="status-banner status-published" style={{ marginBottom: '1.5rem' }}>
+        <div className={`status-banner ${messageType === 'error' ? 'status-removed' : 'status-published'}`} style={{ marginBottom: '1.5rem' }}>
           {message}
         </div>
       )}
@@ -673,7 +677,7 @@ export default function AdminClient({
 
       {/* ——— AUDIT LOG (super admin only) ——— */}
       {activeTab === 'audit' && isSuperAdmin && (
-        <AuditLogViewer />
+        <AuditLogViewer profiles={profiles} onSelectProfile={setSelectedProfile} />
       )}
 
       {/* ——— PROFILE DETAIL MODAL ——— */}
@@ -746,7 +750,7 @@ function ProfileDetailModal({
   onRemove: (p: FullProfile) => void;
   onBan: (p: FullProfile) => void;
   onDeleteAccount: (p: FullProfile) => void;
-  onDesignationChange: (p: FullProfile, designation: 'faculty' | 'staff' | null) => void;
+  onDesignationChange: (p: FullProfile, designation: 'student' | 'faculty' | 'staff') => void;
 }) {
   const [suspensionStatus, setSuspensionStatus] = useState<SuspensionStatus | null>(null);
 
@@ -914,15 +918,15 @@ function ProfileDetailModal({
             <p className="label-mono" style={{ color: 'var(--color-text-muted)', margin: 0 }}>DESIGNATION</p>
             <select
               className="form-input"
-              value={profile.designation ?? ''}
-              onChange={e => onDesignationChange(profile, (e.target.value as 'faculty' | 'staff') || null)}
+              value={profile.designation}
+              onChange={e => onDesignationChange(profile, e.target.value as 'student' | 'faculty' | 'staff')}
               style={{ fontSize: '0.8rem', padding: '0.25rem 0.5rem', width: 'auto', cursor: 'pointer' }}
             >
-              <option value="">Student (auto-derived)</option>
+              <option value="student">Student</option>
               <option value="faculty">Faculty</option>
               <option value="staff">Staff</option>
             </select>
-            {profile.designation && (
+            {profile.designation !== 'student' && (
               <span className="label-mono" style={{ color: 'var(--color-text-muted)', fontSize: '0.7rem' }}>
                 Overrides graduation year display
               </span>
@@ -1080,12 +1084,14 @@ function RoleManagement({ currentUserId }: { currentUserId: string }) {
   );
 }
 
-function AuditLogViewer() {
+function AuditLogViewer({ profiles, onSelectProfile }: { profiles: FullProfile[]; onSelectProfile: (p: FullProfile) => void }) {
   const [entries, setEntries] = useState<AuditEntry[]>([]);
   const [total, setTotal] = useState(0);
   const [offset, setOffset] = useState(0);
   const [loading, setLoading] = useState(false);
   const limit = 50;
+
+  const profileByUserId = Object.fromEntries(profiles.map(p => [p.user_id, p]));
 
   const fetchEntries = async (newOffset: number) => {
     setLoading(true);
@@ -1130,8 +1136,17 @@ function AuditLogViewer() {
                     <td style={{ padding: '0.5rem 0.75rem', whiteSpace: 'nowrap', color: 'var(--color-text-muted)' }}>
                       {new Date(entry.created_at).toLocaleString()}
                     </td>
-                    <td style={{ padding: '0.5rem 0.75rem', color: 'var(--color-ink)' }}>
-                      {entry.actor_id.slice(0, 8)}…
+                    <td style={{ padding: '0.5rem 0.75rem' }}>
+                      {profileByUserId[entry.actor_id] ? (
+                        <button
+                          onClick={() => onSelectProfile(profileByUserId[entry.actor_id])}
+                          style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', color: 'var(--color-columbia)', fontFamily: 'inherit', fontSize: 'inherit', textDecoration: 'underline' }}
+                        >
+                          {entry.actor_name ?? entry.actor_id.slice(0, 8) + '…'}
+                        </button>
+                      ) : (
+                        <span style={{ color: 'var(--color-ink)' }}>{entry.actor_name ?? entry.actor_id.slice(0, 8) + '…'}</span>
+                      )}
                     </td>
                     <td style={{ padding: '0.5rem 0.75rem' }}>
                       <span style={{
@@ -1144,8 +1159,19 @@ function AuditLogViewer() {
                         {entry.action}
                       </span>
                     </td>
-                    <td style={{ padding: '0.5rem 0.75rem', color: 'var(--color-text-muted)' }}>
-                      {entry.target_user_id ? entry.target_user_id.slice(0, 8) + '…' : '—'}
+                    <td style={{ padding: '0.5rem 0.75rem' }}>
+                      {entry.target_user_id ? (
+                        profileByUserId[entry.target_user_id] ? (
+                          <button
+                            onClick={() => onSelectProfile(profileByUserId[entry.target_user_id!])}
+                            style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', color: 'var(--color-columbia)', fontFamily: 'inherit', fontSize: 'inherit', textDecoration: 'underline' }}
+                          >
+                            {entry.target_name ?? entry.target_user_id.slice(0, 8) + '…'}
+                          </button>
+                        ) : (
+                          <span style={{ color: 'var(--color-text-muted)' }}>{entry.target_name ?? entry.target_user_id.slice(0, 8) + '…'}</span>
+                        )
+                      ) : '—'}
                     </td>
                     <td style={{ padding: '0.5rem 0.75rem', color: 'var(--color-text-muted)', maxWidth: '240px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       {Object.keys(entry.metadata).length > 0
