@@ -168,6 +168,73 @@ function EmailSignupInput({ darkBackground = false }: { darkBackground?: boolean
   );
 }
 
+// ——— Curated conversation data for hero mockup ———
+const CONVOS = [
+  {
+    sender:   { name: 'Edon',   school: 'SEAS', year: '26', color: '#1D4ED8', initials: 'E', interest: 'Music tech & royalty infrastructure',    photo: '/img/sample-profile-images/profile-edon.png' },
+    receiver: { name: 'Taylor', school: 'CC',   year: '28', color: '#0F766E', initials: 'T', interest: 'Data science & interdisciplinary research', photo: '/img/sample-profile-images/profile-taylor.png' },
+    messages: [
+      { from: 'sender',   text: 'Taylor — saw you\'re doing data research. I\'m building a royalty-tracking tool for indie musicians and your background could actually be really useful.' },
+      { from: 'receiver', text: 'Ha, not the collab I expected but I\'m genuinely curious. What kind of data problems are you running into?' },
+      { from: 'sender',   text: 'Too many to list over text. Coffee?' },
+    ],
+  },
+  {
+    sender:   { name: 'Ilan',   school: 'SEAS', year: '27', color: '#047857', initials: 'I', interest: 'Biotech ventures & early-stage startups', photo: '/img/sample-profile-images/profile-ilan.png' },
+    receiver: { name: 'Daniel', school: 'CC',   year: '27', color: '#B45309', initials: 'D', interest: 'Creative tech & interdisciplinary projects', photo: '/img/sample-profile-images/profile-daniel.png' },
+    messages: [
+      { from: 'sender',   text: 'Daniel — heard you\'re working on a startup concept. I\'m deep in biotech and feel like we\'re probably solving adjacent problems.' },
+      { from: 'receiver', text: 'Probably. What\'s your thing?' },
+      { from: 'sender',   text: 'Easier over coffee. You free this week?' },
+    ],
+  },
+  {
+    sender:   { name: 'Will', school: 'EMBA', year: '26', color: '#1E3A8A', initials: 'W', interest: 'Fintech & financial inclusion', photo: '/img/sample-profile-images/profile-will.png' },
+    receiver: { name: 'Tony', school: 'MBA',  year: '26', color: '#6B21A8', initials: 'T', interest: 'Consumer products & brand strategy', photo: '/img/sample-profile-images/profile-tony.png' },
+    messages: [
+      { from: 'sender',   text: 'Tony — we\'re in the same Friday cohort and I don\'t think we\'ve actually talked yet. That feels wrong.' },
+      { from: 'receiver', text: 'Ha, fully agree. What are you working on outside of class?' },
+      { from: 'sender',   text: 'Fintech for underbanked communities. Buy you a coffee and I\'ll pitch you properly.' },
+    ],
+  },
+  {
+    sender:   { name: 'Octavia', school: 'Law',  year: '26', color: '#86198F', initials: 'O', interest: 'Public interest law & policy',         photo: '/img/sample-profile-images/profile-octavia.png' },
+    receiver: { name: 'Deborah', school: 'EMBA', year: '26', color: '#9F1239', initials: 'D', interest: 'Cross-sector strategy & community impact', photo: '/img/sample-profile-images/profile-deborah.png' },
+    messages: [
+      { from: 'sender',   text: 'Deborah — I keep running into you at every cross-school event. Pretty sure we\'re supposed to meet.' },
+      { from: 'receiver', text: 'Ha I was thinking the same thing. Law meets business — there\'s definitely something there.' },
+      { from: 'sender',   text: 'Tea Magic on 112th? My treat.' },
+    ],
+  },
+  {
+    sender:   { name: 'Elvins', school: 'MBA',  year: '26', color: '#065F46', initials: 'E', interest: 'CPG & West African food culture', photo: '/img/sample-profile-images/profile-elvins.png' },
+    receiver: { name: 'Anshula', school: 'EMBA', year: '26', color: '#7C3AED', initials: 'A', interest: 'Scaling consumer brands & SaaS',   photo: '/img/sample-profile-images/profile-anshula.png' },
+    messages: [
+      { from: 'sender',   text: 'Anshula — I\'m launching a West African snack brand and heard you\'ve been through the scaling process. Need your brain.' },
+      { from: 'receiver', text: 'CPG is my favorite thing to talk about. What\'s the product?' },
+      { from: 'sender',   text: 'Scotch bonnet meets trail mix. Coffee this week?' },
+    ],
+  },
+  {
+    sender:   { name: 'Elvins', school: 'EMBA', year: '26', color: '#065F46', initials: 'E', interest: 'Real estate investing & multifamily deals', photo: '/img/sample-profile-images/profile-elvins.png' },
+    receiver: { name: 'Will',   school: 'EMBA', year: '26', color: '#1E3A8A', initials: 'W', interest: 'Real estate & alternative investments',     photo: '/img/sample-profile-images/profile-will.png' },
+    messages: [
+      { from: 'sender',   text: 'Hey Will, saw you\'ve been thinking about real estate investing. I\'ve been underwriting deals on the side while in the program and haven\'t found many people here who are actually in the weeds on it.' },
+      { from: 'receiver', text: 'Seriously, feels like everyone talks about it theoretically. What asset class are you looking at?' },
+      { from: 'sender',   text: 'Mostly multifamily in secondary markets. Trying to close my first deal before graduation. Let\'s talk — coffee this week?' },
+    ],
+  },
+  {
+    sender:   { name: 'Tony', school: 'MD/MBA', year: '26', color: '#6B21A8', initials: 'T', interest: 'Clinical trial access & health equity', photo: '/img/sample-profile-images/profile-tony.png' },
+    receiver: { name: 'Will', school: 'MBA',    year: '26', color: '#1E3A8A', initials: 'W', interest: 'Early-stage startups & user growth',    photo: '/img/sample-profile-images/profile-will.png' },
+    messages: [
+      { from: 'sender',   text: 'Hey Will, saw you\'re building Coffee@CU. I\'ve been working on a side project of my own — would love to pick your brain on getting early users.' },
+      { from: 'receiver', text: 'Always down to talk about this. What are you building?' },
+      { from: 'sender',   text: 'A platform to help patients navigate clinical trials. The MD side gives me the problem, the MBA side is helping me figure out the business. Early but gaining traction.' },
+    ],
+  },
+];
+
 // ——— Login gate / landing page for unauthenticated visitors ———
 function LoginGate({ meetingCount, heroImage }: { meetingCount: number; heroImage: string }) {
   const testimonials = [
@@ -193,6 +260,13 @@ function LoginGate({ meetingCount, heroImage }: { meetingCount: number; heroImag
     }
   ];
 
+  const [convoIdx, setConvoIdx] = useState(0);
+  useEffect(() => {
+    setConvoIdx(Math.floor(Math.random() * CONVOS.length));
+  }, []);
+  const convo = CONVOS[convoIdx];
+
+
   return (
     <main style={{ flex: 1, background: 'var(--color-limestone)' }}>
       {/* ————————————————————————————————————————
@@ -210,8 +284,8 @@ function LoginGate({ meetingCount, heroImage }: { meetingCount: number; heroImag
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           backgroundBlendMode: 'normal',
-          paddingTop: '2rem',
-          paddingBottom: '2rem',
+          paddingTop: '1rem',
+          paddingBottom: '1rem',
         }}
       >
         <div style={{
@@ -231,7 +305,7 @@ function LoginGate({ meetingCount, heroImage }: { meetingCount: number; heroImag
             background: 'rgba(255, 255, 255, 0.85)',
             backdropFilter: 'blur(20px)',
             borderRadius: '24px',
-            padding: '2.5rem',
+            padding: '1.75rem',
             boxShadow: '0 20px 40px -10px rgba(0,0,0,0.05), inset 0 0 0 1px rgba(255,255,255,0.4)',
             border: '1px solid rgba(255, 255, 255, 0.8)',
             maxWidth: '100%'
@@ -277,153 +351,75 @@ function LoginGate({ meetingCount, heroImage }: { meetingCount: number; heroImag
                 maxWidth: '650px'
               }}
             >
-              Coffee@CU helps students, alumni, and faculty across every school meet each other. Real conversations. No anonymous reach-outs.
+              Your cohort is just the beginning. Coffee@CU is how you find the rest of Columbia.
             </p>
           </div>
 
-          {/* Right: Product Visual Mockup */}
-          <div className="hidden lg:flex relative perspective-[1200px] justify-center" style={{ transformStyle: 'preserve-3d' }}>
+          {/* Right: Conversation Mockup — desktop only */}
+          <div className="hidden lg:flex justify-center items-center">
             <style>{`
-              @keyframes float-bg-bottom {
-                0%, 100% { transform: translate3d(50px, -25px, -120px) rotateZ(8deg) rotateY(-10deg); }
-                50% { transform: translate3d(50px, -15px, -120px) rotateZ(8deg) rotateY(-10deg); }
+              @keyframes bubble-in {
+                from { opacity: 0; transform: translateY(6px); }
+                to   { opacity: 1; transform: translateY(0); }
               }
-              @keyframes float-bg-mid {
-                0%, 100% { transform: translate3d(-40px, -15px, -60px) rotateZ(-5deg) rotateY(-12deg); }
-                50% { transform: translate3d(-40px, -25px, -60px) rotateZ(-5deg) rotateY(-12deg); }
-              }
-              @keyframes float-main {
-                0%, 100% { transform: translateY(0px); box-shadow: 0 24px 48px -12px rgba(0,20,60,0.15); }
-                50% { transform: translateY(-8px); box-shadow: 0 32px 56px -12px rgba(0,20,60,0.2); }
-              }
+              .bubble { opacity: 0; }
+              .bubble-1 { animation: bubble-in 0.35s ease forwards 0.2s; }
+              .bubble-2 { animation: bubble-in 0.35s ease forwards 0.8s; }
+              .bubble-3 { animation: bubble-in 0.35s ease forwards 1.4s; }
             `}</style>
+            <div
+              key={convoIdx}
+              className="convo-card"
+              style={{
+                background: 'rgba(255, 255, 255, 0.85)',
+                backdropFilter: 'blur(20px)',
+                border: '1px solid rgba(255, 255, 255, 0.8)',
+                borderRadius: '24px',
+                boxShadow: '0 20px 40px -10px rgba(0,0,0,0.05), inset 0 0 0 1px rgba(255,255,255,0.4)',
+                padding: '1.5rem',
+                width: '100%',
+                maxWidth: '400px',
+              }}
+            >
+              {/* Profile header */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginBottom: '1.25rem', paddingBottom: '1rem', borderBottom: '1px solid rgba(0,0,0,0.06)' }}>
+                {[convo.sender, convo.receiver].map((person, i) => (
+                  <div key={i} style={{ display: 'flex', gap: '0.6rem', alignItems: 'flex-start' }}>
+                    <img src={person.photo} alt={person.name} style={{ width: '28px', height: '28px', borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />
+                    <div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                        <span style={{ fontFamily: 'var(--font-body)', fontSize: '0.8rem', fontWeight: 600, color: 'var(--color-ink)' }}>{person.name}</span>
+                        <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.58rem', background: '#E8EEF6', color: '#2A4A70', padding: '0.1rem 0.4rem', borderRadius: '2px', fontWeight: 700, letterSpacing: '0.03em' }}>{person.school} · {person.year}</span>
+                      </div>
+                      <p style={{ fontFamily: 'var(--font-mono)', fontSize: '0.65rem', color: 'var(--color-text-muted)', margin: '0.15rem 0 0', lineHeight: 1.3 }}>{person.interest}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
 
-            {/* Stacked Card 2 (Bottom Layer) */}
-            <div style={{
-              position: 'absolute',
-              width: '100%',
-              maxWidth: '320px',
-              background: '#fdfbf6',
-              border: '1px solid #d9e4f0',
-              borderRadius: '8px',
-              transformOrigin: 'center center',
-              transform: 'translate3d(50px, -25px, -120px) rotateZ(8deg) rotateY(-10deg)',
-              opacity: 0.6,
-              zIndex: 0,
-              boxShadow: '0 20px 40px -10px rgba(0,20,60,0.1)',
-              overflow: 'hidden',
-              display: 'flex',
-              flexDirection: 'column',
-              animation: 'float-bg-bottom 8s ease-in-out infinite'
-            }}>
-              <div style={{ position: 'relative', paddingBottom: '122%', overflow: 'hidden', background: 'rgba(0,0,0,0.05)' }}>
-                <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: '42%', background: 'linear-gradient(to top, rgba(0,42,90,0.2) 0%, transparent 100%)' }} />
-                <div style={{ position: 'absolute', bottom: '0.75rem', left: '0.85rem' }}>
-                  <div style={{ height: '28px', width: '140px', background: 'rgba(255,255,255,0.4)', borderRadius: '4px' }} />
-                </div>
+              {/* Chat bubbles */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                {convo.messages.map((msg, i) => {
+                  const person = msg.from === 'sender' ? convo.sender : convo.receiver;
+                  const isReceiver = msg.from === 'receiver';
+                  return (
+                    <div
+                      key={i}
+                      className={`bubble bubble-${i + 1}`}
+                      style={{ display: 'flex', gap: '0.5rem', alignItems: 'flex-start', flexDirection: isReceiver ? 'row-reverse' : 'row' }}
+                    >
+                      <img src={person.photo} alt={person.name} style={{ width: '22px', height: '22px', borderRadius: '50%', objectFit: 'cover', flexShrink: 0, marginTop: '2px' }} />
+                      <div style={{ background: isReceiver ? '#f0f0f0' : 'var(--color-columbia-pale, #E8EEF9)', borderRadius: isReceiver ? '12px 0 12px 12px' : '0 12px 12px 12px', padding: '0.55rem 0.8rem', maxWidth: '85%' }}>
+                        <p style={{ fontFamily: 'var(--font-body)', fontSize: '0.8rem', color: 'var(--color-ink)', lineHeight: 1.5, margin: 0 }}>{msg.text}</p>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
-              <div style={{ padding: '0.78rem 0.85rem 0.9rem', height: '7rem', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                <div style={{ display: 'flex', gap: '0.4rem' }}>
-                  <div style={{ height: '18px', width: '120px', background: 'var(--color-ink)', opacity: 0.1, borderRadius: '2px' }} />
-                  <div style={{ height: '18px', width: '40px', background: 'var(--color-ink)', opacity: 0.1, borderRadius: '2px' }} />
-                </div>
-                <div style={{ height: '12px', width: '40px', background: 'var(--color-text-muted)', opacity: 0.1, borderRadius: '2px', marginTop: '4px' }} />
-                <div style={{ height: '14px', width: '90%', background: 'var(--color-ink)', opacity: 0.15, borderRadius: '2px', marginTop: 'auto' }} />
-                <div style={{ height: '14px', width: '70%', background: 'var(--color-ink)', opacity: 0.15, borderRadius: '2px' }} />
-              </div>
+
+              {/* Footer */}
+              <p style={{ fontFamily: 'var(--font-mono)', fontSize: '0.62rem', color: 'var(--color-text-muted)', textAlign: 'center', marginTop: '1rem', paddingTop: '0.75rem', borderTop: '1px solid rgba(0,0,0,0.06)', letterSpacing: '0.03em' }}>Sample conversations happening on Coffee@CU</p>
             </div>
-
-            {/* Stacked Card 1 (Middle Layer) */}
-            <div style={{
-              position: 'absolute',
-              width: '100%',
-              maxWidth: '320px',
-              background: '#fdfbf6',
-              border: '1px solid #d9e4f0',
-              borderRadius: '8px',
-              transformOrigin: 'center center',
-              transform: 'translate3d(-40px, -15px, -60px) rotateZ(-5deg) rotateY(-12deg)',
-              opacity: 0.8,
-              zIndex: 1,
-              boxShadow: '0 30px 60px -15px rgba(0,30,80,0.1)',
-              overflow: 'hidden',
-              display: 'flex',
-              flexDirection: 'column',
-              animation: 'float-bg-mid 7s ease-in-out infinite'
-            }}>
-              <div style={{ position: 'relative', paddingBottom: '122%', overflow: 'hidden', background: 'rgba(0,0,0,0.08)' }}>
-                <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: '42%', background: 'linear-gradient(to top, rgba(0,42,90,0.3) 0%, transparent 100%)' }} />
-                <div style={{ position: 'absolute', bottom: '0.75rem', left: '0.85rem' }}>
-                  <div style={{ height: '28px', width: '180px', background: 'rgba(255,255,255,0.5)', borderRadius: '4px' }} />
-                </div>
-              </div>
-              <div style={{ padding: '0.78rem 0.85rem 0.9rem', height: '7rem', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                <div style={{ display: 'flex', gap: '0.4rem' }}>
-                  <div style={{ height: '18px', width: '140px', background: 'var(--color-ink)', opacity: 0.15, borderRadius: '2px' }} />
-                  <div style={{ height: '18px', width: '50px', background: 'var(--color-ink)', opacity: 0.15, borderRadius: '2px' }} />
-                </div>
-                <div style={{ height: '12px', width: '45px', background: 'var(--color-text-muted)', opacity: 0.15, borderRadius: '2px', marginTop: '4px' }} />
-                <div style={{ height: '14px', width: '95%', background: 'var(--color-ink)', opacity: 0.2, borderRadius: '2px', marginTop: 'auto' }} />
-                <div style={{ height: '14px', width: '80%', background: 'var(--color-ink)', opacity: 0.2, borderRadius: '2px' }} />
-              </div>
-            </div>
-
-            {/* Main Profile Card (Top Layer) */}
-            <div style={{
-              position: 'relative',
-              zIndex: 2,
-              width: '100%',
-              maxWidth: '320px',
-              background: '#fdfbf6',
-              border: '1px solid #d9e4f0',
-              borderRadius: '8px',
-              boxShadow: '0 24px 48px -12px rgba(0,20,60,0.15)',
-              overflow: 'hidden',
-              display: 'flex',
-              flexDirection: 'column',
-              animation: 'float-main 6s ease-in-out infinite'
-            }}>
-              <div style={{ position: 'relative', paddingBottom: '122%', overflow: 'hidden' }}>
-                <img
-                  src="https://hpgieevpapwqitlsegqg.supabase.co/storage/v1/object/public/profile-photos/profiles/5b83ec3f-19ae-4189-9585-2f89601c5120/avatar.png?t=1771944923246"
-                  alt="Will Essilfie"
-                  style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
-                />
-                <div
-                  style={{
-                    position: 'absolute',
-                    bottom: 0,
-                    left: 0,
-                    right: 0,
-                    height: '42%',
-                    background: 'linear-gradient(to top, rgba(0,42,90,0.72) 0%, transparent 100%)',
-                  }}
-                />
-                <div style={{ position: 'absolute', bottom: '0.75rem', left: '0.85rem', right: '0.85rem' }}>
-                  <h3 style={{ fontFamily: 'var(--font-display), serif', fontSize: '1.3rem', fontWeight: 600, color: 'white', letterSpacing: '0.01em', lineHeight: 1.2, margin: 0 }}>
-                    Will
-                  </h3>
-                </div>
-              </div>
-
-              <div style={{ padding: '0.78rem 0.85rem 0.9rem', display: 'flex', flexDirection: 'column', gap: '0.5rem', overflow: 'hidden' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', flexWrap: 'wrap' }}>
-                  <span style={{ background: '#D4DFF0', color: '#1A3060', fontFamily: 'var(--font-mono), monospace', fontSize: '0.6rem', fontWeight: 700, padding: '0.15rem 0.45rem', borderRadius: '2px' }}>
-                    COLUMBIA BUSINESS SCHOOL
-                  </span>
-                  <span style={{ fontFamily: 'var(--font-mono), monospace', fontSize: '0.6rem', fontWeight: 700, padding: '0.15rem 0.45rem', borderRadius: '2px', background: '#E8EEF6', color: '#2A4A70' }}>
-                    EMBA
-                  </span>
-                  <span style={{ fontFamily: 'var(--font-mono), monospace', fontSize: '0.6rem', letterSpacing: '0.06em', color: 'var(--color-text-muted)', width: '100%', marginTop: '0.3rem' }}>
-                    Year 2
-                  </span>
-                </div>
-                <p style={{ fontFamily: 'var(--font-body), serif', fontSize: '0.82rem', color: '#2f2a24', lineHeight: 1.5, margin: 0 }}>
-                  “Chat with me about building consumer apps like Coffee@CU or about seeing a Broadway show”
-                </p>
-              </div>
-            </div>
-
           </div>
         </div>
       </section>
@@ -447,7 +443,11 @@ function LoginGate({ meetingCount, heroImage }: { meetingCount: number; heroImag
             from { transform: translateX(0); }
             to   { transform: translateX(-50%); }
           }
-          .marquee-hover:hover .marquee-track {
+          .marquee-track {
+            animation: cu-marquee 90s linear infinite;
+          }
+          .marquee-hover:hover .marquee-track,
+          .marquee-track:has(.school-pill:hover) {
             animation-play-state: paused;
           }
           .school-pill {
@@ -500,7 +500,7 @@ function LoginGate({ meetingCount, heroImage }: { meetingCount: number; heroImag
         `}</style>
 
         <div className="marquee-hover" style={{ display: 'flex' }}>
-          <div className="marquee-track" style={{ display: 'inline-flex', animation: 'cu-marquee 90s linear infinite' }}>
+          <div className="marquee-track" style={{ display: 'inline-flex' }}>
             {[...SCHOOLS, ...SCHOOLS, ...SCHOOLS].map((school, i) => (
               <Link
                 key={`${school.value}-${i}`}
@@ -579,15 +579,76 @@ function LoginGate({ meetingCount, heroImage }: { meetingCount: number; heroImag
               <p className="text-[0.9375rem] text-[var(--color-text-muted)] leading-relaxed" style={{ fontFamily: 'var(--font-body)' }}>Search by school, major, interests, or availability to find exactly who you're looking for.</p>
             </div>
 
-            {/* Bento Item 4: Wide */}
-            <div className="col-span-1 md:col-span-8 rounded-[24px] border border-[var(--color-mist)] p-8 lg:p-10" style={{ background: 'var(--color-limestone)' }}>
-              <h3 className="mb-6 text-[2rem] text-[var(--color-ink)]" style={{ fontFamily: 'var(--font-display)' }}>Every year. Every path.</h3>
-              <div className="flex flex-wrap gap-2">
-                {['First-Years', 'Seniors', 'MBA Candidates', 'Law Students', 'PhD Researchers', 'Faculty', 'Alumni', 'Journalism Masters'].map(tag => (
-                  <span key={tag} className="rounded-full border border-mist bg-white px-4 py-2 text-sm font-medium shadow-sm transition hover:bg-slate-50" style={{ fontFamily: 'var(--font-mono)' }}>
-                    {tag}
-                  </span>
-                ))}
+            {/* Bento Item 4: Wide — Will card + pills */}
+            <div className="col-span-1 md:col-span-8 rounded-[24px] border border-[var(--color-mist)] overflow-hidden" style={{ background: 'var(--color-limestone)' }}>
+              <style>{`
+                .will-card .will-quote {
+                  max-height: 0;
+                  opacity: 0;
+                  overflow: hidden;
+                  padding-top: 0;
+                  transition: all 0.35s ease;
+                }
+                .will-card:hover .will-quote {
+                  max-height: 180px;
+                  opacity: 1;
+                  padding-top: 0.5rem;
+                }
+                .will-card .will-hint {
+                  transition: opacity 0.25s ease;
+                }
+                .will-card:hover .will-hint {
+                  opacity: 0;
+                }
+                @media (max-width: 767px) {
+                  .will-card .will-quote {
+                    max-height: 180px !important;
+                    opacity: 1 !important;
+                    padding-top: 0.5rem !important;
+                  }
+                  .will-card .will-hint { display: none; }
+                }
+              `}</style>
+              <div className="flex flex-col md:flex-row" style={{ minHeight: '260px' }}>
+                {/* Left: Will card */}
+                <div className="will-card relative md:w-[38%] w-full" style={{ minHeight: '260px', cursor: 'default', overflow: 'hidden' }}>
+                  <img
+                    src="https://hpgieevpapwqitlsegqg.supabase.co/storage/v1/object/public/profile-photos/profiles/5b83ec3f-19ae-4189-9585-2f89601c5120/avatar.png?t=1771944923246"
+                    alt="Will"
+                    style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
+                  />
+                  <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,42,90,0.78) 0%, rgba(0,42,90,0.1) 55%, transparent 100%)' }} />
+                  <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '1rem 1.1rem' }}>
+                    <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap', marginBottom: '0.3rem' }}>
+                      <span style={{ background: '#D4DFF0', color: '#1A3060', fontFamily: 'var(--font-mono)', fontSize: '0.58rem', fontWeight: 700, padding: '0.12rem 0.4rem', borderRadius: '2px' }}>CBS</span>
+                      <span style={{ background: '#E8EEF6', color: '#2A4A70', fontFamily: 'var(--font-mono)', fontSize: '0.58rem', fontWeight: 700, padding: '0.12rem 0.4rem', borderRadius: '2px' }}>EMBA</span>
+                      <span style={{ background: 'rgba(255,255,255,0.15)', color: 'rgba(255,255,255,0.85)', fontFamily: 'var(--font-mono)', fontSize: '0.58rem', letterSpacing: '0.04em', padding: '0.12rem 0.4rem', borderRadius: '2px' }}>Year 2</span>
+                    </div>
+                    <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '1.4rem', fontWeight: 600, color: 'white', margin: 0, letterSpacing: '0.01em' }}>Will</h3>
+                    <div className="will-quote">
+                      <p style={{ fontFamily: 'var(--font-body)', fontSize: '0.8rem', color: 'rgba(255,255,255,0.9)', lineHeight: 1.5, margin: 0 }}>
+                        "Chat with me about building consumer apps like Coffee@CU or about seeing a Broadway show"
+                      </p>
+                    </div>
+                    <p className="will-hint" style={{ fontFamily: 'var(--font-mono)', fontSize: '0.6rem', color: 'rgba(255,255,255,0.5)', margin: '0.4rem 0 0', letterSpacing: '0.03em' }}>Hover to see more</p>
+                  </div>
+                </div>
+
+                {/* Right: Pills + headline */}
+                <div className="flex-1 p-8 lg:p-10 flex flex-col justify-center">
+                  <h3 className="mb-6 text-[2rem] text-[var(--color-ink)]" style={{ fontFamily: 'var(--font-display)' }}>Connect around careers, interests, and more.</h3>
+                  <div className="flex flex-wrap gap-2">
+                    {[
+                      'MBA Candidates', 'Future Founders', 'PhD Researchers',
+                      'Law Students', 'VC-Curious', 'Alumni',
+                      'Climate Tech Builders', 'SIPA Fellows', 'First-Gen Professionals',
+                    ].map(tag => (
+                      <span key={tag} className="rounded-full border border-mist bg-white px-4 py-2 text-sm font-medium shadow-sm transition hover:bg-slate-50" style={{ fontFamily: 'var(--font-mono)' }}>
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -871,6 +932,17 @@ function AuthenticatedHome({ initialProfiles, meetingCount, userId, sentRequests
   const [activeSentRequests, setActiveSentRequests] = useState<{ id: string; date: string }[]>(sentRequests);
 
   const supabase = getSupabaseClient();
+
+  // Open Will's profile when ?open=will is in the URL
+  useEffect(() => {
+    if (searchParams.get('open') !== 'will') return;
+    supabase
+      .from('profiles')
+      .select('*')
+      .eq('user_id', 'b7a68980-c29c-4aed-9de2-daf5d4db5bed')
+      .single()
+      .then(({ data }: { data: Profile | null }) => { if (data) setSelectedProfile(data); });
+  }, []);
   const searchTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Random parallax image — fixed on server, randomized after hydration

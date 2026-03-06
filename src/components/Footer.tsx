@@ -15,10 +15,6 @@ export default function Footer() {
     });
   }, []);
 
-  const contactHref = isLoggedIn
-    ? 'mailto:wessilfie26@gsb.columbia.edu'
-    : 'mailto:hi@coffeeatcu.com';
-
   return (
     <footer
       style={{
@@ -29,27 +25,16 @@ export default function Footer() {
         background: 'linear-gradient(to bottom, #f7f3eb, #f2ecdf)',
       }}
     >
-      <nav
-        style={{
-          display: 'flex',
-          justifyContent: 'center',
-          gap: '2rem',
-          marginBottom: '1rem',
-          flexWrap: 'wrap',
-        }}
-      >
-        <a
-          href={contactHref}
+      {!isLoggedIn && (
+        <nav
           style={{
-            fontFamily: 'var(--font-body), serif',
-            fontSize: '0.875rem',
-            color: 'var(--color-columbia)',
-            textDecoration: 'none',
+            display: 'flex',
+            justifyContent: 'center',
+            gap: '2rem',
+            marginBottom: '1rem',
+            flexWrap: 'wrap',
           }}
         >
-          Contact
-        </a>
-        {!isLoggedIn && (
           <a
             href="/#how-it-works"
             style={{
@@ -61,8 +46,8 @@ export default function Footer() {
           >
             How it works
           </a>
-        )}
-      </nav>
+        </nav>
+      )}
       <p
         style={{
           fontFamily: 'var(--font-mono), monospace',
@@ -73,9 +58,7 @@ export default function Footer() {
       >
         Built for the Columbia community. Maintained by{' '}
         <a
-          href="https://essilfie.com"
-          target="_blank"
-          rel="noopener noreferrer"
+          href="/?open=will"
           style={{ color: 'var(--color-columbia)', textDecoration: 'none' }}
         >
           Will Essilfie
