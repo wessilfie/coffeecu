@@ -7,10 +7,17 @@ export const contentType = 'image/png';
 
 // ============================================================
 // OG Image — auto-used by Next.js for og:image meta tag
-// Shown when sharing links on WhatsApp, LinkedIn, iMessage, etc.
+// Shown when sharing links on Facebook, LinkedIn, Instagram,
+// WhatsApp, iMessage, Slack, etc.
 // ============================================================
 
-export default function OGImage() {
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'https://coffeeatcu.com';
+
+export default async function OGImage() {
+  const logoData = await fetch(`${APP_URL}/img/logo.png`).then((r) =>
+    r.arrayBuffer()
+  );
+
   return new ImageResponse(
     (
       <div
@@ -54,47 +61,31 @@ export default function OGImage() {
           C
         </div>
 
-        {/* Main content */}
+        {/* Main text content */}
         <div
           style={{
             display: 'flex',
             flexDirection: 'column',
             justifyContent: 'center',
-            padding: '0 84px',
+            padding: '0 60px 0 84px',
             flex: 1,
             position: 'relative',
           }}
         >
-          {/* Brand mark */}
+          {/* Brand name */}
           <div
             style={{
               display: 'flex',
               alignItems: 'center',
-              gap: '14px',
-              marginBottom: '44px',
+              marginBottom: '36px',
             }}
           >
-            <div
-              style={{
-                width: '52px',
-                height: '52px',
-                background: 'rgba(255,255,255,0.13)',
-                border: '1.5px solid rgba(255,255,255,0.3)',
-                borderRadius: '10px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: '28px',
-              }}
-            >
-              ☕
-            </div>
             <span
               style={{
                 fontFamily: 'serif',
-                fontSize: '1.625rem',
+                fontSize: '1.75rem',
                 fontWeight: 600,
-                color: 'rgba(255,255,255,0.96)',
+                color: 'rgba(255,255,255,0.92)',
                 letterSpacing: '0.02em',
               }}
             >
@@ -102,17 +93,17 @@ export default function OGImage() {
             </span>
           </div>
 
-          {/* Headline */}
+          {/* Headline / tagline */}
           <h1
             style={{
               fontFamily: 'serif',
-              fontSize: '3.5rem',
+              fontSize: '3.25rem',
               fontWeight: 600,
               fontStyle: 'italic',
               color: '#ffffff',
               lineHeight: 1.12,
-              margin: '0 0 28px',
-              maxWidth: '840px',
+              margin: '0 0 24px',
+              maxWidth: '660px',
             }}
           >
             Meet the Columbia community, one coffee at a time.
@@ -122,11 +113,11 @@ export default function OGImage() {
           <p
             style={{
               fontFamily: 'serif',
-              fontSize: '1.3125rem',
+              fontSize: '1.1875rem',
               color: 'rgba(215,232,252,0.8)',
-              margin: '0 0 48px',
+              margin: '0 0 40px',
               lineHeight: 1.5,
-              maxWidth: '740px',
+              maxWidth: '620px',
             }}
           >
             Connect with students, faculty & alumni across every Columbia school.
@@ -157,6 +148,39 @@ export default function OGImage() {
               coffeeatcu.com
             </span>
           </div>
+        </div>
+
+        {/* Right side — Coffee cup with crown logo */}
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: '340px',
+            padding: '50px',
+            flexShrink: 0,
+            position: 'relative',
+          }}
+        >
+          {/* Subtle glow behind logo */}
+          <div
+            style={{
+              position: 'absolute',
+              width: '260px',
+              height: '260px',
+              borderRadius: '50%',
+              background: 'radial-gradient(circle, rgba(255,255,255,0.08) 0%, transparent 70%)',
+              display: 'flex',
+            }}
+          />
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={logoData as unknown as string}
+            alt="Coffee@CU logo"
+            width={220}
+            height={220}
+            style={{ objectFit: 'contain', opacity: 0.96 }}
+          />
         </div>
       </div>
     ),
