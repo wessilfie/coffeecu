@@ -225,7 +225,7 @@ export default function ProfilePageClient({ profile, currentUserId }: Props) {
                 <SocialLink href={profile.instagram} icon={<Instagram width={16} height={16} />} label="Instagram" />
               )}
               {profile.twitter && (
-                <SocialLink href={profile.twitter} icon={<Twitter width={16} height={16} />} label="Twitter" />
+                <SocialLink href={profile.twitter} icon={<Twitter width={16} height={16} />} label="X / Twitter" />
               )}
               {profile.youtube && (
                 <SocialLink href={profile.youtube} icon={<Youtube width={16} height={16} />} label="YouTube" />
