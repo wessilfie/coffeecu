@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createSupabaseServerClient, createSupabaseServiceClient } from '@/lib/supabase/server';
 import { sendCoffeeRequestEmail } from '@/lib/email';
 import { sendCoffeeRequestSMS } from '@/lib/sms';
+import { sendAPNsPush } from '@/lib/apns';
 import { DAILY_REQUEST_LIMIT } from '@/lib/constants';
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'https://coffeecu.com';
@@ -134,6 +135,36 @@ export async function POST(req: NextRequest) {
         senderName: senderRes.data.name,
         senderSchool: senderRes.data.school,
       }).catch(console.error); // non-fatal
+    }
+
+    // 7. iOS push notification via APNs (non-fatal)
+    // Look up the receiver's APNs device token, then dispatch the push.
+    const { data: tokenRow } = await serviceClient
+      .from('device_tokens')
+      .select('token')
+      .eq('user_id', receiverId)
+      .eq('platform', 'ios')
+      .maybeSingle();
+
+    if (tokenRow?.token) {
+      // Fetch the meeting ID that was just inserted so the iOS app can deep-link directly
+      const { data: meeting } = await serviceClient
+        .from('meetings')
+        .select('id')
+        .eq('sender_id', user.id)
+        .eq('receiver_id', receiverId)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      sendAPNsPush(tokenRow.token, {
+        meetingId:   meeting?.id ?? '',
+        senderId:    user.id,
+        senderName:  senderRes.data.name,
+        senderEmail: senderRes.data.email ?? email,
+      }, receiverRes.data.name).catch((err) =>
+        console.error('[coffee-request] APNs push failed:', err)
+      );
     }
 
     return NextResponse.json({ ok: true });

@@ -1,0 +1,76 @@
+name: CoffeeAtCU
+
+options:
+  bundleIdPrefix: edu.columbia
+  deploymentTarget:
+    iOS: "26.0"
+  xcodeVersion: "16.0"
+  createIntermediateGroups: true
+  defaultConfig: Debug
+
+packages:
+  Supabase:
+    url: https://github.com/supabase/supabase-swift
+    from: "2.5.0"
+
+settings:
+  base:
+    SWIFT_VERSION: "5.10"
+    ENABLE_PREVIEWS: YES
+
+targets:
+  CoffeeAtCU:
+    type: application
+    platform: iOS
+
+    sources:
+      - path: CoffeeAtCU
+        createIntermediateGroups: true
+
+    info:
+      path: CoffeeAtCU/Info.plist
+      properties:
+        CFBundleDisplayName: "Coffee@CU"
+        CFBundleShortVersionString: "1.0"
+        CFBundleVersion: "1"
+        UILaunchScreen: {}
+        NSPhotoLibraryUsageDescription: "Used to upload your profile photo."
+        NSCameraUsageDescription: "Used to take your profile photo."
+        UIBackgroundModes:
+          - remote-notification
+        LSApplicationQueriesSchemes:
+          - mailto
+          - googlegmail
+          - ms-outlook
+
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: edu.columbia.coffeeatcu
+        IPHONEOS_DEPLOYMENT_TARGET: "26.0"
+        MARKETING_VERSION: "1.0"
+        CURRENT_PROJECT_VERSION: "1"
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        TARGETED_DEVICE_FAMILY: "1"  # iPhone only initially
+
+    dependencies:
+      - package: Supabase
+        product: Supabase
+
+    entitlements:
+      path: CoffeeAtCU/CoffeeAtCU.entitlements
+      properties:
+        aps-environment: development
+        com.apple.developer.associated-domains:
+          - applinks:coffeeatcu.app
+
+    scheme:
+      testTargets:
+        - CoffeeAtCUTests
+
+  CoffeeAtCUTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - CoffeeAtCUTests
+    dependencies:
+      - target: CoffeeAtCU
