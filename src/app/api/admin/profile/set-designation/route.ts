@@ -5,7 +5,7 @@ import { createSupabaseServiceClient } from '@/lib/supabase/server';
 
 const BodySchema = z.object({
   userId: z.string().uuid(),
-  designation: z.enum(['faculty', 'staff']).nullable(),
+  designation: z.enum(['student', 'faculty', 'staff']),
 });
 
 export async function POST(req: NextRequest) {

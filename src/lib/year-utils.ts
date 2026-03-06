@@ -15,7 +15,7 @@ import { UNDERGRAD_SCHOOL_CODES } from './constants';
 export function deriveYearLabel(
   year: string | null,
   school: string | null,
-  designation?: string | null,
+  designation?: string,
 ): string | null {
   if (designation === 'faculty') return 'Faculty';
   if (designation === 'staff') return 'Staff';

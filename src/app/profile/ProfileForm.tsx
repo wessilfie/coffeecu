@@ -148,8 +148,7 @@ export default function ProfileForm({ userId, userEmail, existingProfile, existi
       ...optionalResponses.filter(r => r.question && r.answer.trim()),
       ...(coffeeAnswer.trim() ? [{ question: COFFEE_QUESTION, answer: coffeeAnswer.trim() }] : []),
     ];
-    const designation = roleType !== 'student' ? roleType : null;
-    return { ...values, responses, image_url: imageUrl || null, draft_only: true, designation };
+    return { ...values, responses, image_url: imageUrl || null, draft_only: true, designation: roleType };
   }, [getValues, optionalResponses, coffeeAnswer, imageUrl]);
 
   const runAutoSave = useCallback(async (keepalive = false) => {
@@ -306,7 +305,7 @@ export default function ProfileForm({ userId, userEmail, existingProfile, existi
         ...data,
         responses,
         image_url: imageUrl || null,
-        designation: roleType !== 'student' ? roleType : null,
+        designation: roleType,
         // uni and email are set server-side from verified email
       };
 
