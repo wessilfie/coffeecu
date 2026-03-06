@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation';
 import { createSupabaseServerClient, createSupabaseServiceClient } from '@/lib/supabase/server';
 import { hasRole } from '@/lib/auth';
+import { scanProfile } from '@/lib/content-flags';
 import AdminClient from './AdminClient';
 import Nav from '@/components/Nav';
 import Footer from '@/components/Footer';
@@ -29,6 +30,36 @@ export default async function AdminPage() {
     .select('*')
     .order('created_at', { ascending: false });
 
+  // Fetch actively suspended user IDs
+  const now = new Date().toISOString();
+  const { data: suspensionRows } = await serviceClient
+    .from('suspensions')
+    .select('user_id')
+    .is('lifted_at', null)
+    .or(`suspended_until.is.null,suspended_until.gt.${now}`);
+
+  const suspendedUserIds = [...new Set((suspensionRows ?? []).map(r => r.user_id))];
+
+  // Fetch banned user IDs
+  const { data: blacklistRows } = await serviceClient
+    .from('blacklist')
+    .select('user_id');
+
+  const bannedUserIds = (blacklistRows ?? []).map(r => r.user_id);
+
+  // Fetch already-reviewed profile user IDs (dismissed or actioned — don't re-surface)
+  const { data: reviewedRows } = await serviceClient
+    .from('moderation_reviews')
+    .select('profile_user_id');
+
+  const reviewedUserIds = new Set((reviewedRows ?? []).map(r => r.profile_user_id));
+
+  // Scan profiles for flagged content (server-side, excluded already-reviewed)
+  const flaggedProfiles = (profiles ?? [])
+    .filter(p => !reviewedUserIds.has(p.user_id))
+    .map(p => ({ profile: p, flags: scanProfile(p as FullProfile) }))
+    .filter(fp => fp.flags.length > 0);
+
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       <Nav />
@@ -47,6 +78,9 @@ export default async function AdminPage() {
           profiles={(profiles ?? []) as FullProfile[]}
           isAdmin={isAdmin}
           isSuperAdmin={isSuperAdmin}
+          suspendedUserIds={suspendedUserIds}
+          bannedUserIds={bannedUserIds}
+          flaggedProfiles={flaggedProfiles}
         />
       </main>
       <Footer />

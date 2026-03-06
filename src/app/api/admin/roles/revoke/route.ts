@@ -4,7 +4,7 @@ import { requireRole, logAuditAction } from '@/lib/auth';
 import { createSupabaseServiceClient } from '@/lib/supabase/server';
 
 const BodySchema = z.object({
-  userId: z.string().uuid(),
+  email: z.string().email(),
 });
 
 export async function POST(req: NextRequest) {
@@ -34,30 +34,48 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const { userId } = parsed.data;
-
-  // Prevent revoking own role
-  if (userId === actor.id) {
-    return NextResponse.json(
-      { error: 'You cannot revoke your own role.' },
-      { status: 400 },
-    );
-  }
+  const { email } = parsed.data;
 
   try {
     const service = createSupabaseServiceClient();
+
+    // Look up user by email
+    const { data: usersData, error: usersError } = await service.auth.admin.listUsers();
+    if (usersError) {
+      console.error('[roles/revoke] listUsers error:', usersError);
+      return NextResponse.json({ error: 'Could not look up user' }, { status: 500 });
+    }
+
+    const targetUser = usersData.users.find(
+      (u) => u.email?.toLowerCase() === email.toLowerCase(),
+    );
+
+    if (!targetUser) {
+      return NextResponse.json(
+        { error: 'No user found with that email.' },
+        { status: 404 },
+      );
+    }
+
+    // Prevent revoking own role
+    if (targetUser.id === actor.id) {
+      return NextResponse.json(
+        { error: 'You cannot revoke your own role.' },
+        { status: 400 },
+      );
+    }
 
     // Get current role for audit log
     const { data: existing } = await service
       .from('user_roles')
       .select('role')
-      .eq('user_id', userId)
+      .eq('user_id', targetUser.id)
       .single();
 
     const { error: deleteError } = await service
       .from('user_roles')
       .delete()
-      .eq('user_id', userId);
+      .eq('user_id', targetUser.id);
 
     if (deleteError) {
       console.error('[roles/revoke] delete error:', deleteError);
@@ -67,9 +85,9 @@ export async function POST(req: NextRequest) {
     await logAuditAction({
       actorId: actor.id,
       action: 'revoke_role',
-      targetUserId: userId,
+      targetUserId: targetUser.id,
       targetTable: 'user_roles',
-      metadata: { previousRole: existing?.role ?? null },
+      metadata: { previousRole: existing?.role ?? null, email },
     });
 
     return NextResponse.json({ ok: true });

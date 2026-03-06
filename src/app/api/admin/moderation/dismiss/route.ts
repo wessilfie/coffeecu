@@ -4,10 +4,10 @@ import { requireRole, logAuditAction } from '@/lib/auth';
 import { createSupabaseServiceClient } from '@/lib/supabase/server';
 
 const BodySchema = z.object({
-  userId: z.string().uuid(),
-  // ISO 8601 string or null — null means indefinite suspension
-  suspendedUntil: z.string().datetime({ offset: true }).nullable().optional(),
-  reason: z.string().min(1).max(1000),
+  profileUserId: z.string().uuid(),
+  verdict: z.enum(['dismissed', 'actioned']),
+  flaggedTerms: z.array(z.string()),
+  flaggedFields: z.array(z.string()),
 });
 
 export async function POST(req: NextRequest) {
@@ -37,42 +37,35 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const { userId, suspendedUntil, reason } = parsed.data;
-  const suspensionType = suspendedUntil ? 'temporary' : 'indefinite';
-
-  if (userId === actor.id) {
-    return NextResponse.json({ error: 'You cannot suspend yourself.' }, { status: 400 });
-  }
+  const { profileUserId, verdict, flaggedTerms, flaggedFields } = parsed.data;
 
   try {
     const service = createSupabaseServiceClient();
 
-    const { error: suspendError } = await service
-      .from('suspensions')
-      .insert({
-        user_id: userId,
-        suspension_type: suspensionType,
-        suspended_until: suspendedUntil ?? null,
-        reason,
-        suspended_by: actor.id,
-      });
+    const { error } = await service.from('moderation_reviews').insert({
+      profile_user_id: profileUserId,
+      reviewed_by: actor.id,
+      verdict,
+      flagged_terms: flaggedTerms,
+      flagged_fields: flaggedFields,
+    });
 
-    if (suspendError) {
-      console.error('[suspend] suspensions insert error:', suspendError);
-      return NextResponse.json({ error: 'Database error inserting suspension' }, { status: 500 });
+    if (error) {
+      console.error('[moderation/dismiss] insert error:', error);
+      return NextResponse.json({ error: 'Database error' }, { status: 500 });
     }
 
     await logAuditAction({
       actorId: actor.id,
-      action: 'suspend_user',
-      targetUserId: userId,
-      targetTable: 'suspensions',
-      metadata: { suspensionType, suspendedUntil: suspendedUntil ?? null, reason },
+      action: verdict === 'dismissed' ? 'dismiss_flag' : 'action_flag',
+      targetUserId: profileUserId,
+      targetTable: 'moderation_reviews',
+      metadata: { flaggedTerms, flaggedFields },
     });
 
     return NextResponse.json({ ok: true });
   } catch (err) {
-    console.error('[suspend] Unexpected error:', err);
+    console.error('[moderation/dismiss] Unexpected error:', err);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

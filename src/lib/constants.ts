@@ -47,35 +47,8 @@ export const SCHOOLS: { value: string; label: string }[] = SCHOOL_GROUPS.flatMap
 // Set of undergrad school codes — used to show context-aware year options
 export const UNDERGRAD_SCHOOL_CODES = new Set(['CC', 'SEAS', 'GS', 'BC']);
 
-export const UNDERGRAD_YEARS = [
-  "First Year",
-  "Sophomore",
-  "Junior",
-  "Senior",
-  "Alumnus",
-  "Faculty/Professor",
-] as const;
-
-export const GRAD_YEARS = [
-  "Year 1",
-  "Year 2",
-  "Year 3+",
-  "Alumnus",
-  "Faculty/Professor",
-] as const;
-
-// Full list used for the home filter (covers all possible values)
-export const YEARS = [
-  "First Year",
-  "Sophomore",
-  "Junior",
-  "Senior",
-  "Year 1",
-  "Year 2",
-  "Year 3+",
-  "Alumnus",
-  "Faculty/Professor",
-] as const;
+// Year/standing options are now derived from graduation year via deriveYearLabel() in year-utils.ts.
+// Static year lists removed — profiles store a numeric graduation year (e.g. "2026").
 
 // Degree programs grouped by level
 export const DEGREE_GROUPS = [

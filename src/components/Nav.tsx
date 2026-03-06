@@ -15,6 +15,7 @@ export default function Nav() {
   const [loading, setLoading] = useState(!DEV_BYPASS);
   const [profileImageUrl, setProfileImageUrl] = useState<string | null>(null);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [userRole, setUserRole] = useState<string | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const communitiesRef = useRef<HTMLDivElement>(null);
   const [communitiesOpen, setCommunitiesOpen] = useState(false);
@@ -53,6 +54,16 @@ export default function Nav() {
       setProfileImageUrl(profile?.image_url ?? null);
     })();
   }, [user, supabase]);
+
+  // Fetch user role to conditionally show admin link
+  useEffect(() => {
+    if (!user) { setUserRole(null); return; }
+    if (DEV_BYPASS) { setUserRole('super_admin'); return; }
+    fetch('/api/me/role')
+      .then(r => r.json())
+      .then(data => setUserRole(data.role ?? null))
+      .catch(() => setUserRole(null));
+  }, [user]);
 
   // Sync nav avatar when profile form uploads a new photo
   useEffect(() => {
@@ -306,6 +317,27 @@ export default function Nav() {
                         >
                           Edit Profile
                         </Link>
+                        {userRole && (
+                          <Link
+                            href="/admin"
+                            onClick={() => setDropdownOpen(false)}
+                            style={{
+                              display: 'block',
+                              padding: '0.75rem 1rem',
+                              fontFamily: 'var(--font-body), serif',
+                              fontSize: '0.875rem',
+                              fontWeight: 500,
+                              color: 'var(--color-ink)',
+                              textDecoration: 'none',
+                              borderBottom: '1px solid #edf3fa',
+                              transition: 'background 120ms ease',
+                            }}
+                            onMouseEnter={e => (e.currentTarget.style.background = '#F0F5FA')}
+                            onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+                          >
+                            Admin Board
+                          </Link>
+                        )}
                         <button
                           onClick={handleSignOut}
                           style={{

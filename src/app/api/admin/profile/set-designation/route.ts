@@ -5,6 +5,7 @@ import { createSupabaseServiceClient } from '@/lib/supabase/server';
 
 const BodySchema = z.object({
   userId: z.string().uuid(),
+  designation: z.enum(['faculty', 'staff']).nullable(),
 });
 
 export async function POST(req: NextRequest) {
@@ -34,49 +35,32 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const { userId } = parsed.data;
-
-  if (userId === actor.id) {
-    return NextResponse.json({ error: 'You cannot delete your own account.' }, { status: 400 });
-  }
+  const { userId, designation } = parsed.data;
 
   try {
     const service = createSupabaseServiceClient();
 
-    // 1. Delete all storage files for this user
-    const { data: storageFiles } = await service.storage
-      .from('profile-photos')
-      .list(`profiles/${userId}`);
+    const { error } = await service
+      .from('profiles')
+      .update({ designation })
+      .eq('user_id', userId);
 
-    if (storageFiles && storageFiles.length > 0) {
-      const paths = storageFiles.map(f => `profiles/${userId}/${f.name}`);
-      const { error: storageError } = await service.storage
-        .from('profile-photos')
-        .remove(paths);
-      if (storageError) {
-        console.error('[delete-account] Storage delete error:', storageError);
-        // Non-fatal — proceed with account deletion
-      }
-    }
-
-    // 2. Delete auth user — cascades to profiles, draft_profiles, meetings via ON DELETE CASCADE
-    const { error: authError } = await service.auth.admin.deleteUser(userId);
-    if (authError) {
-      console.error('[delete-account] auth.admin.deleteUser error:', authError);
-      return NextResponse.json({ error: 'Failed to delete user account' }, { status: 500 });
+    if (error) {
+      console.error('[set-designation] update error:', error);
+      return NextResponse.json({ error: 'Database error' }, { status: 500 });
     }
 
     await logAuditAction({
       actorId: actor.id,
-      action: 'delete_account',
+      action: 'set_designation',
       targetUserId: userId,
-      targetTable: 'auth.users',
-      metadata: {},
+      targetTable: 'profiles',
+      metadata: { designation },
     });
 
     return NextResponse.json({ ok: true });
   } catch (err) {
-    console.error('[delete-account] Unexpected error:', err);
+    console.error('[set-designation] Unexpected error:', err);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

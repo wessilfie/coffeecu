@@ -10,7 +10,7 @@ const BodySchema = z.object({
 export async function POST(req: NextRequest) {
   let actor;
   try {
-    actor = await requireRole('admin');
+    actor = await requireRole('moderator');
   } catch (err) {
     const msg = err instanceof Error ? err.message : '';
     if (msg === 'UNAUTHORIZED') {
@@ -36,47 +36,31 @@ export async function POST(req: NextRequest) {
 
   const { userId } = parsed.data;
 
-  if (userId === actor.id) {
-    return NextResponse.json({ error: 'You cannot delete your own account.' }, { status: 400 });
-  }
-
   try {
     const service = createSupabaseServiceClient();
 
-    // 1. Delete all storage files for this user
-    const { data: storageFiles } = await service.storage
-      .from('profile-photos')
-      .list(`profiles/${userId}`);
+    const { error: liftError } = await service
+      .from('suspensions')
+      .update({ lifted_at: new Date().toISOString(), lifted_by: actor.id })
+      .eq('user_id', userId)
+      .is('lifted_at', null);
 
-    if (storageFiles && storageFiles.length > 0) {
-      const paths = storageFiles.map(f => `profiles/${userId}/${f.name}`);
-      const { error: storageError } = await service.storage
-        .from('profile-photos')
-        .remove(paths);
-      if (storageError) {
-        console.error('[delete-account] Storage delete error:', storageError);
-        // Non-fatal — proceed with account deletion
-      }
-    }
-
-    // 2. Delete auth user — cascades to profiles, draft_profiles, meetings via ON DELETE CASCADE
-    const { error: authError } = await service.auth.admin.deleteUser(userId);
-    if (authError) {
-      console.error('[delete-account] auth.admin.deleteUser error:', authError);
-      return NextResponse.json({ error: 'Failed to delete user account' }, { status: 500 });
+    if (liftError) {
+      console.error('[suspensions/lift] update error:', liftError);
+      return NextResponse.json({ error: 'Database error lifting suspension' }, { status: 500 });
     }
 
     await logAuditAction({
       actorId: actor.id,
-      action: 'delete_account',
+      action: 'lift_suspension',
       targetUserId: userId,
-      targetTable: 'auth.users',
+      targetTable: 'suspensions',
       metadata: {},
     });
 
     return NextResponse.json({ ok: true });
   } catch (err) {
-    console.error('[delete-account] Unexpected error:', err);
+    console.error('[suspensions/lift] Unexpected error:', err);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

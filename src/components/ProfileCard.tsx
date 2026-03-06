@@ -2,6 +2,7 @@
 
 import Image from 'next/image';
 import { SCHOOLS, PROFILE_QUESTIONS_GROUPED } from '@/lib/constants';
+import { deriveYearLabel } from '@/lib/year-utils';
 import type { Profile, School } from '@/types';
 
 const BADGE_STYLES: Partial<Record<School, { bg: string; color: string }>> = {
@@ -206,7 +207,7 @@ export default function ProfileCard({ profile, onClick, isOwn = false }: Props) 
                 {profile.degree}
               </span>
             )}
-            {profile.year && (
+            {deriveYearLabel(profile.year, profile.school, profile.designation) && (
               <span
                 style={{
                   fontFamily: 'var(--font-mono), monospace',
@@ -215,7 +216,7 @@ export default function ProfileCard({ profile, onClick, isOwn = false }: Props) 
                   color: 'var(--color-text-muted)',
                 }}
               >
-                {profile.year}
+                {deriveYearLabel(profile.year, profile.school, profile.designation)}
               </span>
             )}
           </div>
