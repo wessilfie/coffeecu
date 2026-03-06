@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, Coffee, Send } from 'lucide-react';
 import { Twitter, Linkedin, Facebook, Instagram, Youtube, Tiktok, Globe } from 'iconoir-react';
 import { SCHOOLS } from '@/lib/constants';
+import { deriveYearLabel } from '@/lib/year-utils';
 import type { Profile, School } from '@/types';
 
 // Conversation starters — designed to surface personality, not LinkedIn bullets
@@ -245,7 +246,7 @@ export default function ProfileDrawer({ profile, onClose, onCoffeeSuccess, isLog
                         {profile.degree}
                       </span>
                     )}
-                    {profile.year && (
+                    {deriveYearLabel(profile.year, profile.school, profile.designation) && (
                       <span
                         style={{
                           fontFamily: 'var(--font-mono), monospace',
@@ -255,7 +256,7 @@ export default function ProfileDrawer({ profile, onClose, onCoffeeSuccess, isLog
                           alignItems: 'center',
                         }}
                       >
-                        {profile.year}
+                        {deriveYearLabel(profile.year, profile.school, profile.designation)}
                       </span>
                     )}
                   </div>

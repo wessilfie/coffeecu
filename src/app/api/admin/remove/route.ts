@@ -36,6 +36,10 @@ export async function POST(req: NextRequest) {
 
   const { userId } = parsed.data;
 
+  if (userId === actor.id) {
+    return NextResponse.json({ error: 'You cannot remove your own profile.' }, { status: 400 });
+  }
+
   try {
     const service = createSupabaseServiceClient();
 

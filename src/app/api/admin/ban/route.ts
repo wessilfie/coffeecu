@@ -37,6 +37,10 @@ export async function POST(req: NextRequest) {
 
   const { userId, reason } = parsed.data;
 
+  if (userId === actor.id) {
+    return NextResponse.json({ error: 'You cannot ban yourself.' }, { status: 400 });
+  }
+
   try {
     const service = createSupabaseServiceClient();
 

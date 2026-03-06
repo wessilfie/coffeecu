@@ -7,7 +7,8 @@ import { z } from 'zod';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Upload, Plus, Trash2, ChevronDown } from 'lucide-react';
-import { SCHOOL_GROUPS, UNDERGRAD_SCHOOL_CODES, UNDERGRAD_YEARS, GRAD_YEARS, YEARS, DEGREE_GROUPS, MAJORS, CBS_CLUBS, PROFILE_QUESTIONS_GROUPED, PROFILE_QUESTIONS, COFFEE_QUESTION } from '@/lib/constants';
+import { SCHOOL_GROUPS, UNDERGRAD_SCHOOL_CODES, DEGREE_GROUPS, MAJORS, CBS_CLUBS, PROFILE_QUESTIONS_GROUPED, PROFILE_QUESTIONS, COFFEE_QUESTION } from '@/lib/constants';
+import { deriveYearLabel, generateGradYears } from '@/lib/year-utils';
 import type { ProfileFormData, FullProfile, DraftProfile, School, ProfileResponse } from '@/types';
 import PromptDropdown from '@/components/PromptDropdown';
 
@@ -73,7 +74,17 @@ export default function ProfileForm({ userId, userEmail, existingProfile, existi
   const existingCoffeeEntry = existingResponses.find(r => r.question === COFFEE_QUESTION);
   const existingOptional = existingResponses.filter(r => r.question !== COFFEE_QUESTION);
 
-  const [imageUrl, setImageUrl] = useState(source?.image_url ?? '');
+  // Prefer draft image if set, otherwise fall back to published profile image.
+  // Drafts created before a photo was uploaded won't have image_url, but the
+  // published profile will — don't let an old draft override the real photo.
+  const [imageUrl, setImageUrl] = useState(
+    existingDraft?.image_url || existingProfile?.image_url || ''
+  );
+  const [roleType, setRoleType] = useState<'student' | 'faculty' | 'staff'>(
+    source?.designation === 'faculty' ? 'faculty'
+      : source?.designation === 'staff' ? 'staff'
+      : 'student'
+  );
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [photoError, setPhotoError] = useState('');
   const [saving, setSaving] = useState(false);
@@ -99,7 +110,7 @@ export default function ProfileForm({ userId, userEmail, existingProfile, existi
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const { register, control, handleSubmit, watch, getValues, formState: { errors } } = useForm<ProfileFormData>({
+  const { register, control, handleSubmit, watch, getValues, setValue, formState: { errors } } = useForm<ProfileFormData>({
     resolver: zodResolver(schema),
     defaultValues: {
       name: source?.name ?? '',
@@ -126,9 +137,7 @@ export default function ProfileForm({ userId, userEmail, existingProfile, existi
   const watchedValues = watch(['name', 'pronouns']);
   const selectedSchool = watch('school');
   const isUndergrad = UNDERGRAD_SCHOOL_CODES.has(selectedSchool);
-  const yearOptions = isUndergrad ? UNDERGRAD_YEARS
-    : selectedSchool ? GRAD_YEARS
-      : YEARS;
+  const gradYears = generateGradYears();
 
   // ——— Auto-save (debounced, draft only) ———
   const allFormValues = watch();
@@ -139,7 +148,8 @@ export default function ProfileForm({ userId, userEmail, existingProfile, existi
       ...optionalResponses.filter(r => r.question && r.answer.trim()),
       ...(coffeeAnswer.trim() ? [{ question: COFFEE_QUESTION, answer: coffeeAnswer.trim() }] : []),
     ];
-    return { ...values, responses, image_url: imageUrl || null, draft_only: true };
+    const designation = roleType !== 'student' ? roleType : null;
+    return { ...values, responses, image_url: imageUrl || null, draft_only: true, designation };
   }, [getValues, optionalResponses, coffeeAnswer, imageUrl]);
 
   const runAutoSave = useCallback(async (keepalive = false) => {
@@ -296,6 +306,7 @@ export default function ProfileForm({ userId, userEmail, existingProfile, existi
         ...data,
         responses,
         image_url: imageUrl || null,
+        designation: roleType !== 'student' ? roleType : null,
         // uni and email are set server-side from verified email
       };
 
@@ -321,6 +332,25 @@ export default function ProfileForm({ userId, userEmail, existingProfile, existi
     } finally {
       setSaving(false);
     }
+  };
+
+  // ——— Social link normalization ———
+  const SOCIAL_BASES: Partial<Record<string, string>> = {
+    instagram: 'https://instagram.com/',
+    twitter: 'https://x.com/',
+    linkedin: 'https://linkedin.com/in/',
+    youtube: 'https://youtube.com/@',
+    tiktok: 'https://tiktok.com/@',
+    facebook: 'https://facebook.com/',
+  };
+
+  const normalizeSocialOnBlur = (field: 'linkedin' | 'instagram' | 'twitter' | 'youtube' | 'tiktok' | 'facebook' | 'website') => (e: React.FocusEvent<HTMLInputElement>) => {
+    const raw = e.target.value.trim();
+    if (!raw || raw.startsWith('https://') || raw.startsWith('http://')) return;
+    const base = SOCIAL_BASES[field];
+    if (!base) return;
+    const username = raw.startsWith('@') ? raw.slice(1) : raw;
+    setValue(field, base + username, { shouldValidate: true });
   };
 
   return (
@@ -441,14 +471,51 @@ export default function ProfileForm({ userId, userEmail, existingProfile, existi
           </div>
 
           <div>
-            <label className="form-label" htmlFor="year">Year / Stage</label>
+            <label className="form-label">Role</label>
+            <div style={{ display: 'flex', gap: '0.5rem' }}>
+              {(['student', 'faculty', 'staff'] as const).map(role => (
+                <button
+                  key={role}
+                  type="button"
+                  onClick={() => setRoleType(role)}
+                  style={{
+                    flex: 1,
+                    padding: '0.5rem',
+                    border: '1px solid',
+                    borderRadius: 'var(--radius, 3px)',
+                    cursor: 'pointer',
+                    fontFamily: 'inherit',
+                    fontSize: '0.875rem',
+                    fontWeight: roleType === role ? 600 : 400,
+                    borderColor: roleType === role ? 'var(--color-columbia)' : '#d1d5db',
+                    background: roleType === role ? 'var(--color-columbia)' : 'transparent',
+                    color: roleType === role ? '#fff' : 'inherit',
+                    transition: 'all 0.15s',
+                    textTransform: 'capitalize',
+                  }}
+                >
+                  {role}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {roleType === 'student' && (
+          <div>
+            <label className="form-label" htmlFor="year">Graduation Year</label>
             <select id="year" className="form-input" {...register('year')} style={{ cursor: 'pointer' }}>
               <option value="">Select year</option>
-              {yearOptions.map(y => (
-                <option key={y} value={y}>{y}</option>
-              ))}
+              {gradYears.map(y => {
+                const label = deriveYearLabel(String(y), selectedSchool || null);
+                return (
+                  <option key={y} value={String(y)}>
+                    {y}{label ? ` — ${label}` : ''}
+                  </option>
+                );
+              })}
             </select>
           </div>
+          )}
 
           <div>
             <label className="form-label" htmlFor="degree">Degree Program</label>
@@ -755,23 +822,30 @@ export default function ProfileForm({ userId, userEmail, existingProfile, existi
             marginBottom: '1rem',
           }}
         >
-          All links must start with https://
+          Enter a username or full URL — we&rsquo;ll build the link for you.
         </p>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-          {(['linkedin', 'instagram', 'twitter', 'youtube', 'tiktok', 'facebook', 'website'] as const).map(field => (
-            <div key={field}>
-              <label className="form-label" htmlFor={field}>
-                {field.charAt(0).toUpperCase() + field.slice(1)}
-              </label>
-              <input
-                id={field}
-                className="form-input"
-                {...register(field)}
-                placeholder={`https://${field === 'website' ? 'yoursite.com' : `${field}.com/username`}`}
-              />
-              {errors[field] && <p className="form-error">{errors[field]?.message}</p>}
-            </div>
-          ))}
+          {(['linkedin', 'instagram', 'twitter', 'youtube', 'tiktok', 'facebook', 'website'] as const).map(field => {
+            const fieldProps = register(field);
+            return (
+              <div key={field}>
+                <label className="form-label" htmlFor={field}>
+                  {field === 'twitter' ? 'X / Twitter' : field.charAt(0).toUpperCase() + field.slice(1)}
+                </label>
+                <input
+                  id={field}
+                  className="form-input"
+                  {...fieldProps}
+                  onBlur={(e) => {
+                    normalizeSocialOnBlur(field)(e);
+                    fieldProps.onBlur(e);
+                  }}
+                  placeholder={field === 'website' ? 'https://yoursite.com' : field === 'linkedin' ? 'username or full URL' : 'username or full URL'}
+                />
+                {errors[field] && <p className="form-error">{errors[field]?.message}</p>}
+              </div>
+            );
+          })}
         </div>
       </Section>
 

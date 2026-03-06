@@ -7,14 +7,12 @@ import { Upload, ChevronLeft, ChevronDown, Trash2, Plus } from 'lucide-react';
 import {
   SCHOOL_GROUPS,
   UNDERGRAD_SCHOOL_CODES,
-  UNDERGRAD_YEARS,
-  GRAD_YEARS,
-  YEARS,
   DEGREE_GROUPS,
   PROFILE_QUESTIONS_GROUPED,
   PROFILE_QUESTIONS,
   COFFEE_QUESTION,
 } from '@/lib/constants';
+import { deriveYearLabel, generateGradYears } from '@/lib/year-utils';
 import type { School, DraftProfile } from '@/types';
 import PromptDropdown from '@/components/PromptDropdown';
 
@@ -95,6 +93,11 @@ export default function OnboardingClient({ userId: _userId, userEmail: _userEmai
   const [degree, setDegree] = useState(draft?.degree ?? '');
   const [pronouns, setPronouns] = useState(draft?.pronouns ?? '');
   const [nameError, setNameError] = useState('');
+  const [roleType, setRoleType] = useState<'student' | 'faculty' | 'staff'>(
+    draft?.designation === 'faculty' ? 'faculty'
+      : draft?.designation === 'staff' ? 'staff'
+      : 'student'
+  );
 
   // Handle Referral Pre-fill
   useEffect(() => {
@@ -124,7 +127,7 @@ export default function OnboardingClient({ userId: _userId, userEmail: _userEmai
   const [publishStatus, setPublishStatus] = useState<'published' | 'draft' | null>(null);
 
   const isUndergrad = UNDERGRAD_SCHOOL_CODES.has(school);
-  const yearOptions = isUndergrad ? UNDERGRAD_YEARS : school ? GRAD_YEARS : YEARS;
+  const gradYears = generateGradYears();
 
   // ——— Photo upload ———
   const handlePhotoUpload = async (file: File) => {
@@ -190,6 +193,7 @@ export default function OnboardingClient({ userId: _userId, userEmail: _userEmai
       website: websiteUrl.trim().startsWith('https://') ? websiteUrl.trim() : '',
       phone: '',
       draft_only: draftOnly,
+      designation: roleType !== 'student' ? roleType : null,
     };
 
     const res = await fetch('/api/profile/save', {
@@ -794,8 +798,39 @@ export default function OnboardingClient({ userId: _userId, userEmail: _userEmai
                   </div>
                 </div>
 
+                {/* Role selector */}
+                <div>
+                  <label className="form-label">Role</label>
+                  <div style={{ display: 'flex', gap: '0.5rem' }}>
+                    {(['student', 'faculty', 'staff'] as const).map(role => (
+                      <button
+                        key={role}
+                        type="button"
+                        onClick={() => setRoleType(role)}
+                        style={{
+                          flex: 1,
+                          padding: '0.5rem',
+                          border: '1px solid',
+                          borderRadius: 'var(--radius, 3px)',
+                          cursor: 'pointer',
+                          fontFamily: 'inherit',
+                          fontSize: '0.875rem',
+                          fontWeight: roleType === role ? 600 : 400,
+                          borderColor: roleType === role ? 'var(--color-columbia)' : '#d1d5db',
+                          background: roleType === role ? 'var(--color-columbia)' : 'transparent',
+                          color: roleType === role ? '#fff' : 'inherit',
+                          transition: 'all 0.15s',
+                          textTransform: 'capitalize',
+                        }}
+                      >
+                        {role}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
                 {/* School + Year */}
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: roleType === 'student' ? '1fr 1fr' : '1fr', gap: '1rem' }}>
                   <div>
                     <label className="form-label" htmlFor="ob-school">
                       School
@@ -823,9 +858,10 @@ export default function OnboardingClient({ userId: _userId, userEmail: _userEmai
                     </select>
                   </div>
 
+                  {roleType === 'student' && (
                   <div>
                     <label className="form-label" htmlFor="ob-year">
-                      Year
+                      Graduation Year
                     </label>
                     <select
                       id="ob-year"
@@ -835,13 +871,17 @@ export default function OnboardingClient({ userId: _userId, userEmail: _userEmai
                       style={{ cursor: 'pointer' }}
                     >
                       <option value="">Select year</option>
-                      {yearOptions.map(y => (
-                        <option key={y} value={y}>
-                          {y}
-                        </option>
-                      ))}
+                      {gradYears.map(y => {
+                        const label = deriveYearLabel(String(y), school || null);
+                        return (
+                          <option key={y} value={String(y)}>
+                            {y}{label ? ` — ${label}` : ''}
+                          </option>
+                        );
+                      })}
                     </select>
                   </div>
+                  )}
                 </div>
 
                 {/* Degree + Pronouns */}

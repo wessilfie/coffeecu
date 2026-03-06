@@ -7,6 +7,7 @@ import { Coffee, ArrowLeft } from 'lucide-react';
 import { Twitter, Linkedin, Facebook, Instagram, Youtube, Tiktok, Globe } from 'iconoir-react';
 import CoffeeRequestModal from '@/components/CoffeeRequestModal';
 import { SCHOOLS } from '@/lib/constants';
+import { deriveYearLabel } from '@/lib/year-utils';
 import type { Profile } from '@/types';
 
 interface Props {
@@ -19,7 +20,7 @@ export default function ProfilePageClient({ profile, currentUserId }: Props) {
   const [successMessage, setSuccessMessage] = useState('');
 
   const schoolLabel = (SCHOOLS as Array<{ value: string; label: string }>).find(s => s.value === profile.school)?.label ?? profile.school;
-  const metaParts = [schoolLabel, profile.year, profile.degree].filter(Boolean);
+  const metaParts = [schoolLabel, deriveYearLabel(profile.year, profile.school, profile.designation), profile.degree].filter(Boolean);
   const isOwn = currentUserId === profile.user_id;
 
   return (

@@ -21,6 +21,7 @@ export interface Profile {
   university: string;
   school: School | null;
   year: string | null;
+  designation: 'faculty' | 'staff' | null;
   degree: string | null;
   major: string[];
   clubs: string[];
@@ -58,6 +59,7 @@ export interface DraftProfile {
   phone: string | null;
   school: School | null;
   year: string | null;
+  designation: 'faculty' | 'staff' | null;
   degree: string | null;
   major: string[];
   clubs: string[];
