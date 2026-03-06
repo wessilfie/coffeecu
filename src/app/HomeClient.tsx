@@ -941,7 +941,7 @@ function AuthenticatedHome({ initialProfiles, meetingCount, userId, sentRequests
       .select('*')
       .eq('user_id', 'b7a68980-c29c-4aed-9de2-daf5d4db5bed')
       .single()
-      .then(({ data }) => { if (data) setSelectedProfile(data as Profile); });
+      .then(({ data }: { data: Profile | null }) => { if (data) setSelectedProfile(data); });
   }, []);
   const searchTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
