@@ -107,7 +107,7 @@ export default async function LoginPage({
               boxShadow: 'var(--shadow-card)',
             }}
           >
-            {DEV_BYPASS ? (
+            {DEV_BYPASS && (
               <div style={{ textAlign: 'center', padding: '1rem 0' }}>
                 <p
                   style={{ color: 'var(--color-text-muted)', marginBottom: '1.25rem', fontSize: '0.75rem', fontFamily: 'var(--font-mono)' }}
@@ -128,15 +128,21 @@ export default async function LoginPage({
                 >
                   Go to Profile
                 </a>
+
+                <div style={{ display: 'flex', alignItems: 'center', margin: '2rem 0', gap: '1rem' }}>
+                  <div style={{ flex: 1, height: '1px', background: 'var(--color-mist)' }} />
+                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.7rem', color: 'var(--color-text-muted)' }}>OR TRY REAL ACCOUNT</span>
+                  <div style={{ flex: 1, height: '1px', background: 'var(--color-mist)' }} />
+                </div>
               </div>
-            ) : (
-              <Suspense fallback={null}>
-                <LoginForm
-                  initialEmail={params.email}
-                  initialMode={params.mode === 'signup' ? 'sign_up' : undefined}
-                />
-              </Suspense>
             )}
+
+            <Suspense fallback={null}>
+              <LoginForm
+                initialEmail={params.email}
+                initialMode={params.mode === 'signup' ? 'sign_up' : undefined}
+              />
+            </Suspense>
           </div>
 
           {/* Footer note */}
