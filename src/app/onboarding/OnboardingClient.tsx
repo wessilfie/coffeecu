@@ -11,6 +11,8 @@ import {
   PROFILE_QUESTIONS_GROUPED,
   PROFILE_QUESTIONS,
   COFFEE_QUESTION,
+  MAJORS,
+  CBS_CLUBS,
 } from '@/lib/constants';
 import { deriveYearLabel } from '@/lib/year-utils';
 import type { School, DraftProfile } from '@/types';
@@ -98,6 +100,8 @@ export default function OnboardingClient({ userId: _userId, userEmail: _userEmai
       : draft?.designation === 'staff' ? 'staff'
         : 'student'
   );
+  const [major, setMajor] = useState<string[]>(draft?.major ?? []);
+  const [clubs, setClubs] = useState<string[]>(draft?.clubs ?? []);
 
   // Handle Referral Pre-fill
   useEffect(() => {
@@ -178,7 +182,8 @@ export default function OnboardingClient({ userId: _userId, userEmail: _userEmai
       school: school,
       year: year,
       degree: degree,
-      major: isUndergrad ? [] : [], // NOTE: Currently onboard form has no major picker anyway
+      major: isUndergrad ? major : [],
+      clubs: school === 'BUS' ? clubs : [],
       pronouns: pronouns.trim(),
       responses,
       image_url: effectivePhotoUrl || null,
@@ -924,6 +929,22 @@ export default function OnboardingClient({ userId: _userId, userEmail: _userEmai
                     />
                   </div>
                 </div>
+
+                {/* Majors — undergrad only */}
+                {isUndergrad && (
+                  <div style={{ marginTop: '0.5rem' }}>
+                    <label className="form-label">Major(s) — select up to 3</label>
+                    <MajorPicker value={major} onChange={setMajor} max={3} />
+                  </div>
+                )}
+
+                {/* Student Clubs — BUS only */}
+                {school === 'BUS' && (
+                  <div style={{ marginTop: '0.5rem' }}>
+                    <label className="form-label">Student Clubs — select up to 10</label>
+                    <ClubPicker value={clubs} onChange={setClubs} max={10} />
+                  </div>
+                )}
               </div>
             </>
           )}
@@ -1437,6 +1458,186 @@ export default function OnboardingClient({ userId: _userId, userEmail: _userEmai
           )}
         </div>
       </main>
+    </div>
+  );
+}
+
+// ——— Shared Components ———
+
+function MajorPicker({ value, onChange, max }: { value: string[]; onChange: (v: string[]) => void; max: number }) {
+  return (
+    <div style={{ position: 'relative' }}>
+      <select
+        className="form-input"
+        multiple
+        value={value}
+        onChange={e => {
+          const selected = Array.from(e.target.selectedOptions, o => o.value);
+          if (selected.length <= max) onChange(selected);
+        }}
+        size={5}
+        style={{ height: 'auto', minHeight: '120px', fontSize: '0.875rem' }}
+      >
+        {MAJORS.map(m => (
+          <option key={m} value={m}>
+            {m}
+          </option>
+        ))}
+      </select>
+      {value.length > 0 && (
+        <p className="label-mono" style={{ marginTop: '0.375rem', color: 'var(--color-text-muted)', fontSize: '0.65rem' }}>
+          Selected: {value.join(' · ')}
+        </p>
+      )}
+      <p className="label-mono" style={{ color: 'var(--color-text-muted)', marginTop: '0.25rem', fontSize: '0.6rem' }}>
+        {value.length}/{max} selected
+      </p>
+    </div>
+  );
+}
+
+function ClubPicker({ value, onChange, max }: { value: string[]; onChange: (v: string[]) => void; max: number }) {
+  const [query, setQuery] = useState('');
+  const [open, setOpen] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const suggestions = query.trim()
+    ? (CBS_CLUBS as readonly string[])
+      .filter(c => !value.includes(c) && c.toLowerCase().includes(query.toLowerCase()))
+      .slice(0, 8)
+    : [];
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
+  const add = (club: string) => {
+    if (value.length >= max) return;
+    onChange([...value, club]);
+    setQuery('');
+    inputRef.current?.focus();
+  };
+
+  const remove = (club: string) => {
+    onChange(value.filter(c => c !== club));
+  };
+
+  return (
+    <div ref={containerRef}>
+      <div style={{ position: 'relative' }}>
+        <input
+          ref={inputRef}
+          type="text"
+          className="form-input"
+          placeholder={value.length >= max ? `Max ${max} clubs selected` : 'Search clubs…'}
+          value={query}
+          disabled={value.length >= max}
+          onChange={e => {
+            setQuery(e.target.value);
+            setOpen(true);
+          }}
+          onFocus={() => {
+            if (query.trim()) setOpen(true);
+          }}
+          style={{ fontSize: '0.875rem' }}
+        />
+
+        {open && suggestions.length > 0 && (
+          <ul
+            style={{
+              position: 'absolute',
+              top: 'calc(100% + 4px)',
+              left: 0,
+              right: 0,
+              background: '#ffffff',
+              border: '1px solid var(--color-mist)',
+              borderRadius: '6px',
+              boxShadow: '0 4px 20px rgba(26,20,16,0.12)',
+              listStyle: 'none',
+              margin: 0,
+              padding: '0.25rem 0',
+              zIndex: 50,
+              maxHeight: '200px',
+              overflowY: 'auto',
+            }}
+          >
+            {suggestions.map(club => (
+              <li
+                key={club}
+                onMouseDown={e => {
+                  e.preventDefault();
+                  add(club);
+                  setOpen(false);
+                }}
+                style={{
+                  padding: '0.5rem 0.875rem',
+                  fontFamily: 'var(--font-body), serif',
+                  fontSize: '0.875rem',
+                  color: 'var(--color-ink)',
+                  cursor: 'pointer',
+                  transition: 'background 100ms',
+                }}
+                onMouseEnter={e => (e.currentTarget.style.background = 'var(--color-limestone-dk, #ece8de)')}
+                onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+              >
+                {club}
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+
+      {value.length > 0 && (
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem', marginTop: '0.625rem' }}>
+          {value.map(club => (
+            <span
+              key={club}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.3rem',
+                background: 'rgba(0,63,138,0.08)',
+                border: '1px solid rgba(0,63,138,0.2)',
+                borderRadius: '100px',
+                padding: '0.2rem 0.625rem 0.2rem 0.75rem',
+                fontFamily: 'var(--font-body), serif',
+                fontSize: '0.75rem',
+                color: 'var(--color-columbia)',
+                lineHeight: 1.3,
+              }}
+            >
+              {club}
+              <button
+                type="button"
+                onClick={() => remove(club)}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  padding: 0,
+                  display: 'flex',
+                  alignItems: 'center',
+                  color: 'rgba(0,63,138,0.5)',
+                  fontSize: '0.9rem',
+                  marginLeft: '0.1rem',
+                }}
+              >
+                ×
+              </button>
+            </span>
+          ))}
+        </div>
+      )}
+      <p className="label-mono" style={{ color: 'var(--color-text-muted)', marginTop: '0.375rem', fontSize: '0.6rem' }}>
+        {value.length}/{max} selected
+      </p>
     </div>
   );
 }

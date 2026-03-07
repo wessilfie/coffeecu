@@ -8,11 +8,19 @@ export default function Footer() {
   const [isLoggedIn, setIsLoggedIn] = useState(DEV_BYPASS);
 
   useEffect(() => {
-    if (DEV_BYPASS) return;
     const supabase = getSupabaseClient();
-    void supabase.auth.getUser().then((res: { data: { user: unknown } }) => {
-      setIsLoggedIn(!!res.data.user);
+
+    // Initial check
+    void supabase.auth.getUser().then((res: { data: { user: any } }) => {
+      setIsLoggedIn(!!res.data.user || (DEV_BYPASS && !res.data.user));
     });
+
+    // Listen for changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event: any, session: any) => {
+      setIsLoggedIn(!!session?.user || DEV_BYPASS);
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
   return (
@@ -25,29 +33,6 @@ export default function Footer() {
         background: 'linear-gradient(to bottom, #f7f3eb, #f2ecdf)',
       }}
     >
-      {!isLoggedIn && (
-        <nav
-          style={{
-            display: 'flex',
-            justifyContent: 'center',
-            gap: '2rem',
-            marginBottom: '1rem',
-            flexWrap: 'wrap',
-          }}
-        >
-          <a
-            href="/#how-it-works"
-            style={{
-              fontFamily: 'var(--font-body), serif',
-              fontSize: '0.875rem',
-              color: 'var(--color-columbia)',
-              textDecoration: 'none',
-            }}
-          >
-            How it works
-          </a>
-        </nav>
-      )}
       <p
         style={{
           fontFamily: 'var(--font-mono), monospace',
@@ -58,7 +43,9 @@ export default function Footer() {
       >
         Built for the Columbia community. Maintained by{' '}
         <a
-          href="/?open=will"
+          href={isLoggedIn ? "/?open=will" : "https://essilfie.com"}
+          target={isLoggedIn ? undefined : "_blank"}
+          rel={isLoggedIn ? undefined : "noopener noreferrer"}
           style={{ color: 'var(--color-columbia)', textDecoration: 'none' }}
         >
           Will Essilfie

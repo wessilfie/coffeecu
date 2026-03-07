@@ -35,7 +35,7 @@ export default function PromptDropdown({ value, onChange, otherSelected }: Props
                     color: value ? 'var(--color-ink)' : 'var(--color-text-muted)',
                 }}
             >
-                <span className="truncate pr-4 block w-full">{value || 'Choose a prompt…'}</span>
+                <span className="pr-4 block w-full">{value || 'Choose a prompt…'}</span>
                 <ChevronDown
                     size={16}
                     className={`absolute right-0 text-gray-400 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
@@ -69,8 +69,8 @@ export default function PromptDropdown({ value, onChange, otherSelected }: Props
                                                     setIsOpen(false);
                                                 }}
                                                 className={`w-full text-left px-3 py-2.5 rounded-lg text-sm transition-colors flex items-start gap-2.5 ${value === q
-                                                        ? 'bg-[#f0f4f8] text-[var(--color-columbia)] font-medium'
-                                                        : 'text-[#2f2a24] hover:bg-[#f9f7f4]'
+                                                    ? 'bg-[#f0f4f8] text-[var(--color-columbia)] font-medium'
+                                                    : 'text-[#2f2a24] hover:bg-[#f9f7f4]'
                                                     }`}
                                                 style={{ fontFamily: 'var(--font-body)', lineHeight: 1.4 }}
                                             >
