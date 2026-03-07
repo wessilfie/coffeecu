@@ -18,7 +18,8 @@ export default function AuthCallbackClient() {
       // entirely and send them straight in.
       const { data: { session: existingSession } } = await supabase.auth.getSession();
       if (existingSession) {
-        window.location.href = '/profile';
+        const next = searchParams.get('next');
+        window.location.href = next || '/';
         return;
       }
 
@@ -74,12 +75,13 @@ export default function AuthCallbackClient() {
       }
 
       // Profile page handles new-user → /onboarding redirect.
-      // Use full reload so the server receives fresh cookies on the first /profile request.
-      window.location.href = '/profile';
+      // Use full reload so the server receives fresh cookies on the first request.
+      const next = searchParams.get('next');
+      window.location.href = next || '/';
     }
 
     handleAuth();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (

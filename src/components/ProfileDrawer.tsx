@@ -25,9 +25,10 @@ interface Props {
   isLoggedIn: boolean;
   userId: string | null;
   sentRequests: { id: string; date: string }[];
+  receivedRequests: { id: string; date: string }[];
 }
 
-export default function ProfileDrawer({ profile, onClose, onCoffeeSuccess, isLoggedIn, userId, sentRequests }: Props) {
+export default function ProfileDrawer({ profile, onClose, onCoffeeSuccess, isLoggedIn, userId, sentRequests, receivedRequests }: Props) {
   const closeRef = useRef<HTMLButtonElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [showCoffeeForm, setShowCoffeeForm] = useState(false);
@@ -350,62 +351,65 @@ export default function ProfileDrawer({ profile, onClose, onCoffeeSuccess, isLog
                 )}
 
                 {/* Inline coffee request form — unfurls in place */}
-                {isLoggedIn && profile.user_id !== userId && !sentRequests?.find(r => r.id === profile.user_id) && (
-                  <div style={{ marginTop: showCoffeeForm ? '1.5rem' : 0, paddingTop: showCoffeeForm ? '1.5rem' : 0, borderTop: showCoffeeForm ? '1px solid var(--color-mist)' : 'none', transition: 'all 0.2s ease' }}>
-                    <AnimatePresence>
-                      {showCoffeeForm && (
-                        <motion.div
-                          initial={{ opacity: 0, height: 0 }}
-                          animate={{ opacity: 1, height: 'auto' }}
-                          exit={{ opacity: 0, height: 0 }}
-                          transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-                          style={{ overflow: 'hidden' }}
-                        >
-                          <form id="coffee-form" onSubmit={handleSubmit}>
-                            {/* Header */}
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem' }}>
-                              <Coffee size={16} color="var(--color-copper)" />
-                              <p className="label-mono" style={{ color: 'var(--color-copper)', margin: 0 }}>
-                                Coffee Chat with {profile.name.split(' ')[0]}
-                              </p>
-                            </div>
-
-                            <p
-                              style={{
-                                fontFamily: 'var(--font-body), serif',
-                                fontSize: '0.8125rem',
-                                color: 'var(--color-text-muted)',
-                                lineHeight: 1.55,
-                                marginBottom: '1rem',
-                              }}
-                            >
-                              Your message goes straight to {profile.name.split(' ')[0]}&rsquo;s email
-                              with your contact info so you can find a time.
-                            </p>
-
-                            <div style={{ marginBottom: '0.5rem' }}>
-                              <textarea
-                                ref={textareaRef}
-                                className="form-input"
-                                placeholder={currentPrompt}
-                                value={message}
-                                onChange={e => setMessage(e.target.value.slice(0, MAX_LENGTH))}
-                                required
-                                rows={4}
-                                style={{ resize: 'vertical', minHeight: '100px', fontSize: '0.875rem' }}
-                              />
-                              <div
-                                className={`char-count ${message.length >= MAX_LENGTH ? 'at-limit' : message.length >= MAX_LENGTH * 0.85 ? 'near-limit' : ''}`}
-                              >
-                                {message.length}/{MAX_LENGTH}
+                {isLoggedIn &&
+                  profile.user_id !== userId &&
+                  !sentRequests?.find(r => r.id === profile.user_id) &&
+                  !receivedRequests?.find(r => r.id === profile.user_id) && (
+                    <div style={{ marginTop: showCoffeeForm ? '1.5rem' : 0, paddingTop: showCoffeeForm ? '1.5rem' : 0, borderTop: showCoffeeForm ? '1px solid var(--color-mist)' : 'none', transition: 'all 0.2s ease' }}>
+                      <AnimatePresence>
+                        {showCoffeeForm && (
+                          <motion.div
+                            initial={{ opacity: 0, height: 0 }}
+                            animate={{ opacity: 1, height: 'auto' }}
+                            exit={{ opacity: 0, height: 0 }}
+                            transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+                            style={{ overflow: 'hidden' }}
+                          >
+                            <form id="coffee-form" onSubmit={handleSubmit}>
+                              {/* Header */}
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem' }}>
+                                <Coffee size={16} color="var(--color-copper)" />
+                                <p className="label-mono" style={{ color: 'var(--color-copper)', margin: 0 }}>
+                                  Coffee Chat with {profile.name.split(' ')[0]}
+                                </p>
                               </div>
-                            </div>
-                          </form>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </div>
-                )}
+
+                              <p
+                                style={{
+                                  fontFamily: 'var(--font-body), serif',
+                                  fontSize: '0.8125rem',
+                                  color: 'var(--color-text-muted)',
+                                  lineHeight: 1.55,
+                                  marginBottom: '1rem',
+                                }}
+                              >
+                                Your message goes straight to {profile.name.split(' ')[0]}&rsquo;s email
+                                with your contact info so you can find a time.
+                              </p>
+
+                              <div style={{ marginBottom: '0.5rem' }}>
+                                <textarea
+                                  ref={textareaRef}
+                                  className="form-input"
+                                  placeholder={currentPrompt}
+                                  value={message}
+                                  onChange={e => setMessage(e.target.value.slice(0, MAX_LENGTH))}
+                                  required
+                                  rows={4}
+                                  style={{ resize: 'none', height: '120px', fontSize: '0.875rem' }}
+                                />
+                                <div
+                                  className={`char-count ${message.length >= MAX_LENGTH ? 'at-limit' : message.length >= MAX_LENGTH * 0.85 ? 'near-limit' : ''}`}
+                                >
+                                  {message.length}/{MAX_LENGTH}
+                                </div>
+                              </div>
+                            </form>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </div>
+                  )}
               </div>{/* end padding div */}
 
             </div>{/* end scrollable body */}
@@ -420,11 +424,10 @@ export default function ProfileDrawer({ profile, onClose, onCoffeeSuccess, isLog
               }}
             >
               {(() => {
-                if (isLoggedIn && profile.user_id === userId) return null;
+                const existingSentRequest = sentRequests?.find(r => r.id === profile.user_id);
+                const existingReceivedRequest = receivedRequests?.find(r => r.id === profile.user_id);
 
-                const existingRequest = sentRequests?.find(r => r.id === profile.user_id);
-
-                if (isLoggedIn && existingRequest) {
+                if (isLoggedIn && existingSentRequest) {
                   return (
                     <div
                       style={{
@@ -443,7 +446,7 @@ export default function ProfileDrawer({ profile, onClose, onCoffeeSuccess, isLog
                           fontSize: '0.75rem'
                         }}
                       >
-                        Request sent on {new Date(existingRequest.date).toLocaleDateString()} ✓
+                        Request sent on {new Date(existingSentRequest.date).toLocaleDateString()} ✓
                       </p>
                       <p
                         style={{
@@ -455,6 +458,42 @@ export default function ProfileDrawer({ profile, onClose, onCoffeeSuccess, isLog
                         }}
                       >
                         Check your email to follow up with {profile.name.split(' ')[0]}.
+                      </p>
+                    </div>
+                  );
+                }
+
+                if (isLoggedIn && existingReceivedRequest) {
+                  return (
+                    <div
+                      style={{
+                        padding: '1rem',
+                        background: 'rgba(165,110,65,0.06)', // Copper-ish background
+                        border: '1px solid rgba(165,110,65,0.15)',
+                        borderRadius: '6px',
+                        textAlign: 'center',
+                      }}
+                    >
+                      <p
+                        className="label-mono"
+                        style={{
+                          color: 'var(--color-copper)',
+                          marginBottom: '0.5rem',
+                          fontSize: '0.75rem'
+                        }}
+                      >
+                        Received request on {new Date(existingReceivedRequest.date).toLocaleDateString()}
+                      </p>
+                      <p
+                        style={{
+                          fontFamily: 'var(--font-body), serif',
+                          fontSize: '0.875rem',
+                          color: 'var(--color-ink-soft)',
+                          margin: 0,
+                          lineHeight: 1.4
+                        }}
+                      >
+                        Check your email to reply to {profile.name.split(' ')[0]}.
                       </p>
                     </div>
                   );

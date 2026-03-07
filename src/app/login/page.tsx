@@ -14,7 +14,7 @@ export const metadata = {
 export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ email?: string; mode?: string }>;
+  searchParams: Promise<{ email?: string; mode?: string; redirect?: string }>;
 }) {
   const params = await searchParams;
 
@@ -141,6 +141,7 @@ export default async function LoginPage({
               <LoginForm
                 initialEmail={params.email}
                 initialMode={params.mode === 'signup' ? 'sign_up' : undefined}
+                initialRedirect={params.redirect}
               />
             </Suspense>
           </div>

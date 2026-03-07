@@ -20,9 +20,11 @@ const DOMAIN_ERRORS: Record<string, string> = {
 export default function LoginForm({
   initialEmail,
   initialMode,
+  initialRedirect,
 }: {
   initialEmail?: string;
   initialMode?: 'sign_in' | 'sign_up';
+  initialRedirect?: string;
 }) {
   const searchParams = useSearchParams();
   const errorParam = searchParams.get('error');
@@ -77,7 +79,9 @@ export default function LoginForm({
         email,
         password,
         options: {
-          emailRedirectTo: `${window.location.origin}/auth/callback`,
+          emailRedirectTo: initialRedirect
+            ? `${window.location.origin}/auth/callback?next=${encodeURIComponent(initialRedirect)}`
+            : `${window.location.origin}/auth/callback`,
         },
       });
       if (error) {
@@ -108,7 +112,7 @@ export default function LoginForm({
             : error.message,
         );
       } else {
-        window.location.href = '/profile';
+        window.location.href = initialRedirect || '/';
       }
     }
   };

@@ -21,10 +21,11 @@ interface Props {
   isLoggedIn: boolean;
   userId: string | null;
   sentRequests: { id: string; date: string }[];
+  receivedRequests: { id: string; date: string }[];
   hasPublishedProfile: boolean;
 }
 
-export default function HomeClient({ initialProfiles, meetingCount, isLoggedIn, userId, sentRequests, hasPublishedProfile }: Props) {
+export default function HomeClient({ initialProfiles, meetingCount, isLoggedIn, userId, sentRequests, receivedRequests, hasPublishedProfile }: Props) {
   // Supabase redirects both successful tokens and errors to the Site URL (homepage) as a hash.
   // Detect either case and forward to /auth/callback which handles both correctly.
   const [redirecting, setRedirecting] = useState(() => {
@@ -53,7 +54,7 @@ export default function HomeClient({ initialProfiles, meetingCount, isLoggedIn, 
     return <ProfileGate />;
   }
 
-  return <AuthenticatedHome initialProfiles={initialProfiles} meetingCount={meetingCount} userId={userId} sentRequests={sentRequests} />;
+  return <AuthenticatedHome initialProfiles={initialProfiles} meetingCount={meetingCount} userId={userId} sentRequests={sentRequests} receivedRequests={receivedRequests} />;
 }
 
 // ——— Gate for logged-in users who haven't published yet ———
@@ -913,7 +914,7 @@ function MainSearchTypeahead({
 }
 
 // ——— The actual home page for authenticated users ———
-function AuthenticatedHome({ initialProfiles, meetingCount, userId, sentRequests }: { initialProfiles: Profile[]; meetingCount: number; userId: string | null; sentRequests: { id: string; date: string }[] }) {
+function AuthenticatedHome({ initialProfiles, meetingCount, userId, sentRequests, receivedRequests }: { initialProfiles: Profile[]; meetingCount: number; userId: string | null; sentRequests: { id: string; date: string }[]; receivedRequests: { id: string; date: string }[] }) {
   const searchParams = useSearchParams();
   const initSearch = searchParams.get('search') ?? '';
 
@@ -1296,6 +1297,7 @@ function AuthenticatedHome({ initialProfiles, meetingCount, userId, sentRequests
         isLoggedIn={true}
         userId={userId}
         sentRequests={activeSentRequests}
+        receivedRequests={receivedRequests}
       />
     </main>
   );
