@@ -5,7 +5,7 @@ import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Coffee, Send } from 'lucide-react';
 import { Twitter, Linkedin, Facebook, Instagram, Youtube, Tiktok, Globe } from 'iconoir-react';
-import { SCHOOLS } from '@/lib/constants';
+import { SCHOOLS, UNDERGRAD_SCHOOL_CODES } from '@/lib/constants';
 import { deriveYearLabel } from '@/lib/year-utils';
 import type { Profile, School } from '@/types';
 
@@ -280,8 +280,8 @@ export default function ProfileDrawer({ profile, onClose, onCoffeeSuccess, isLog
               <hr style={{ border: 'none', borderTop: '1px solid var(--color-mist)', margin: '0 1.5rem 1.25rem' }} />
 
               <div style={{ padding: '0 1.5rem 1.5rem', paddingTop: 0 }}>
-                {/* Major */}
-                {profile.major && profile.major.length > 0 && (
+                {/* Major — undergrad only */}
+                {profile.major && profile.major.length > 0 && profile.school && UNDERGRAD_SCHOOL_CODES.has(profile.school as School) && (
                   <Section label="Studying">
                     <p style={{ fontFamily: 'var(--font-body), serif', fontSize: '0.9375rem', color: 'var(--color-ink)', margin: 0 }}>
                       {profile.major.join(' · ')}
