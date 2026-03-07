@@ -148,7 +148,7 @@ export default function ProfileForm({ userId, userEmail, existingProfile, existi
     ];
     return {
       ...values,
-      major: isUndergrad ? values.major : [],
+      major: (isUndergrad || values.major.length > 0) ? values.major : [],
       responses,
       image_url: imageUrl || null,
       draft_only: true,
@@ -308,7 +308,7 @@ export default function ProfileForm({ userId, userEmail, existingProfile, existi
     try {
       const payload = {
         ...data,
-        major: isUndergrad ? data.major : [],
+        major: (isUndergrad || data.major.length > 0) ? data.major : [],
         responses,
         image_url: imageUrl || null,
         designation: roleType,
@@ -550,8 +550,8 @@ export default function ProfileForm({ userId, userEmail, existingProfile, existi
           </div>
         </div>
 
-        {/* Majors — undergrad only */}
-        {isUndergrad && <div style={{ marginTop: '1rem' }}>
+        {/* Majors — undergrad only (or if major already set) */}
+        {(isUndergrad || watch('major').length > 0) && <div style={{ marginTop: '1rem' }}>
           <label className="form-label">Major(s) — select up to 3</label>
           <Controller
             name="major"
