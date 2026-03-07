@@ -14,7 +14,12 @@ export default async function HomePage({
   const params = await searchParams;
   const isDevGuest = params.guest === '1';
 
-  if (DEV_BYPASS) {
+  const supabase = await createSupabaseServerClient();
+
+  // Auth state (for "Grab Coffee" button gating)
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user && DEV_BYPASS) {
     return (
       <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
         <Nav />
@@ -31,8 +36,6 @@ export default async function HomePage({
     );
   }
 
-  const supabase = await createSupabaseServerClient();
-
   // Initial profiles (server-rendered for fast FCP + SEO)
   const { data: profiles } = await supabase
     .from('public_profiles')
@@ -47,9 +50,6 @@ export default async function HomePage({
   const { count: meetingCount } = await serviceClient
     .from('meetings')
     .select('*', { count: 'exact', head: true });
-
-  // Auth state (for "Grab Coffee" button gating)
-  const { data: { user } } = await supabase.auth.getUser();
 
   // Ensure current user's own profile is always shown, even if random_sort pushes it off page 1
   // Also derive hasPublishedProfile to gate the community grid for draft-only users

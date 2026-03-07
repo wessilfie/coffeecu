@@ -10,25 +10,18 @@ import type { FullProfile, DraftProfile } from '@/types';
 export default async function ProfilePage() {
   let userId: string;
   let userEmail: string;
-  let draft: DraftProfile | null;
-  let profile: FullProfile | null;
+  let draft: DraftProfile | null = null;
+  let profile: FullProfile | null = null;
 
-  if (DEV_BYPASS) {
-    userId = DEV_USER.id;
-    userEmail = DEV_USER.email;
-    profile = DEV_MOCK_FULL_PROFILE;
-    draft = DEV_MOCK_DRAFT;
-  } else {
-    const supabase = await createSupabaseServerClient();
-    const { data: { user } } = await supabase.auth.getUser();
+  const supabase = await createSupabaseServerClient();
+  const { data: { user } } = await supabase.auth.getUser();
 
-    if (!user) redirect('/login?redirect=/profile');
-
+  if (user) {
+    // Real user exists, don't use dev bypass mock
     userId = user.id;
     userEmail = user.email ?? '';
 
     const serviceClient = createSupabaseServiceClient();
-
     const [draftRes, profileRes] = await Promise.all([
       serviceClient.from('draft_profiles').select('*').eq('user_id', user.id).single(),
       serviceClient.from('profiles').select('*').eq('user_id', user.id).single(),
@@ -36,12 +29,20 @@ export default async function ProfilePage() {
 
     draft = draftRes.data as DraftProfile | null;
     profile = profileRes.data as FullProfile | null;
+  } else if (DEV_BYPASS) {
+    // Fall back to dev bypass
+    userId = DEV_USER.id;
+    userEmail = DEV_USER.email;
+    profile = DEV_MOCK_FULL_PROFILE;
+    draft = DEV_MOCK_DRAFT;
+  } else {
+    redirect('/login?redirect=/profile');
   }
 
   // Determine profile status
   const status = profile ? 'published'
     : draft ? 'draft'
-    : 'new';
+      : 'new';
 
   // First-time users who navigate directly to /profile should go through onboarding
   if (status === 'new') redirect('/onboarding');
@@ -85,8 +86,8 @@ export default async function ProfilePage() {
               {draft?.image_url && draft?.name
                 ? "Your profile is ready to publish. Click 'Publish Profile' below to go live."
                 : draft?.image_url
-                ? "You have a photo. Fill in your name below, then click 'Publish Profile'."
-                : 'Your profile is saved as a draft. Add a photo below to publish it to the community.'}
+                  ? "You have a photo. Fill in your name below, then click 'Publish Profile'."
+                  : 'Your profile is saved as a draft. Add a photo below to publish it to the community.'}
             </span>
           </div>
         )}
