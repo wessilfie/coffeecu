@@ -17,9 +17,12 @@ export async function POST(req: NextRequest) {
   }
 
   // Now we accept metadata instead of the file itself to bypass Vercel limits
-  const { contentType, extension } = await req.json().catch(() => ({}));
+  const body = await req.json().catch(() => ({}));
+  const { contentType, extension } = body;
+  console.log('[upload-photo] Request body:', body);
 
   if (!contentType || !ALLOWED_TYPES.includes(contentType)) {
+    console.warn('[upload-photo] Invalid content type:', contentType);
     return NextResponse.json(
       { error: 'Please provide a valid image type (JPEG, PNG, WebP, or GIF).' },
       { status: 400 }
@@ -28,18 +31,20 @@ export async function POST(req: NextRequest) {
 
   const safeExt = (extension || 'jpg').replace(/[^a-z0-9]/gi, '').slice(0, 5);
   const path = `profiles/${user.id}/avatar.${safeExt}`;
+  console.log('[upload-photo] Path:', path);
 
   const serviceClient = createSupabaseServiceClient();
 
   // Generate a signed upload URL (valid for 60 seconds)
+  // upsert: true allows replacing existing files
   const { data, error } = await serviceClient.storage
     .from('profile-photos')
-    .createSignedUploadUrl(path);
+    .createSignedUploadUrl(path, { upsert: true });
 
   if (error || !data) {
     console.error('[upload-photo] Error generating signed URL:', error);
     return NextResponse.json(
-      { error: 'Failed to prepare upload. Please try again.' },
+      { error: `Failed to prepare upload: ${error?.message || 'Unknown error'}` },
       { status: 500 }
     );
   }
