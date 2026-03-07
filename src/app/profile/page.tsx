@@ -23,8 +23,8 @@ export default async function ProfilePage() {
 
     const serviceClient = createSupabaseServiceClient();
     const [draftRes, profileRes] = await Promise.all([
-      serviceClient.from('draft_profiles').select('*').eq('user_id', user.id).single(),
-      serviceClient.from('profiles').select('*').eq('user_id', user.id).single(),
+      serviceClient.from('draft_profiles').select('*').eq('user_id', user.id).maybeSingle(),
+      serviceClient.from('profiles').select('*').eq('user_id', user.id).maybeSingle(),
     ]);
 
     draft = draftRes.data as DraftProfile | null;
