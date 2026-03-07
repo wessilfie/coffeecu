@@ -519,7 +519,7 @@ function LoginGate({ meetingCount, heroImage }: { meetingCount: number; heroImag
       {/* ————————————————————————————————————————
           BENTO BOX FEATURES
       ———————————————————————————————————————— */}
-      <section id="how-it-works" style={{ padding: 'clamp(1.5rem, 3.5vw, 3rem) 1.5rem', background: 'var(--color-white)' }}>
+      <section id="how-it-works" style={{ padding: 'clamp(1rem, 2vw, 1.5rem) 1.5rem', background: 'var(--color-white)' }}>
         <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
           <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
             <h2

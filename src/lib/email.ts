@@ -232,7 +232,7 @@ export async function sendCoffeeRequestEmail(params: {
 
   const text = `Hi ${safeReceiverName},
 
-${safeSenderName} sent you a request to start a conversation on Coffee@CU.
+${safeSenderName} sent you a request to start a conversation on Coffee@CU:
 
 ${safeMessage}
 
@@ -369,6 +369,147 @@ One conversation at a time,
     from: FROM,
     to: params.email,
     subject: 'Welcome to Coffee@CU',
+    html,
+    text,
+  });
+}
+
+export async function sendVerificationEmail(params: {
+  name: string;
+  email: string;
+  verificationLink: string;
+}) {
+  const safeName = escapeHtml(params.name.slice(0, 40));
+  const firstName = safeName.split(' ')[0];
+
+  const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Confirm your email - Coffee@CU</title>
+  <style>
+    @media only screen and (max-width: 480px) {
+      .card-td { padding: 32px 24px !important; }
+      .header-h1 { font-size: 30px !important; }
+      .main-h2 { font-size: 22px !important; }
+      .btn-link { padding: 14px 24px !important; width: 100% !important; text-align: center !important; box-sizing: border-box !important; }
+    }
+  </style>
+</head>
+<body style="margin:0;padding:0;background-color:#F9F5EE;font-family:Georgia,'Times New Roman',serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#F9F5EE;padding:40px 16px;">
+    <tr>
+      <td align="center">
+        <table width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;width:100%;background-color:#ffffff;border:1px solid #E6E0D4;border-radius:16px;box-shadow:0 12px 40px rgba(26,20,16,0.06);overflow:hidden;">
+          
+          <!-- Blue Header (No Logo) -->
+          <tr>
+            <td align="center" style="background-color:#003478;padding:32px 32px;">
+              <h1 class="header-h1" style="margin:0;font-family:Georgia,'Times New Roman',serif;font-size:32px;font-weight:700;color:#ffffff;line-height:1;letter-spacing:-0.02em;">Coffee@CU</h1>
+              <p style="margin:12px 0 0;font-family:Georgia,serif;font-size:16px;color:rgba(255,255,255,0.9);letter-spacing:0.01em;">A new connection is brewing</p>
+            </td>
+          </tr>
+
+          <!-- Main Content -->
+          <tr>
+            <td class="card-td" style="padding:40px 48px;">
+
+              <h2 class="main-h2" style="margin:0 0 8px;font-family:Georgia,serif;font-size:28px;font-weight:700;color:#1A1410;line-height:1.2;">
+                ${escapeHtml(firstName)},
+              </h2>
+              <p style="margin:0 0 32px;font-family:Georgia,serif;font-size:16px;color:#4A4540;line-height:1.5;">
+                Get started on Coffee@CU by confirming your email now:
+              </p>
+
+              <!-- CTA button -->
+              <table cellpadding="0" cellspacing="0" border="0" style="margin-bottom:24px;width:100%;">
+                <tr>
+                  <td align="left">
+                    <table cellpadding="0" cellspacing="0" border="0" style="background-color:#003478;border-radius:8px;">
+                      <tr>
+                        <td>
+                          <a href="${params.verificationLink}" class="btn-link" 
+                             style="display:inline-block;padding:16px 36px;font-family:Georgia,serif;font-size:15px;font-weight:700;color:#ffffff;text-decoration:none;letter-spacing:0.02em;">
+                            Confirm email &rarr;
+                          </a>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+
+              <p style="margin:0 0 40px;font-family:Helvetica,Arial,sans-serif;font-size:13px;color:#8a8078;line-height:1.5;">
+                If that link doesn't work, click this link:<br>
+                <a href="${params.verificationLink}" style="color:#003478;word-break:break-all;">${params.verificationLink}</a>
+              </p>
+
+              <!-- Founder Message Section -->
+              <table width="100%" cellpadding="0" cellspacing="0" border="0" style="padding-top:32px;border-top:1px solid #F0EBE0;">
+                <tr>
+                  <td width="48" valign="top" style="padding-right:16px;">
+                    <img src="https://hpgieevpapwqitlsegqg.supabase.co/storage/v1/object/public/profile-photos/profiles/5b83ec3f-19ae-4189-9585-2f89601c5120/avatar.png?t=1771944923246" 
+                         width="48" height="48" style="border-radius:12px;display:block;object-fit:cover;" alt="Will" />
+                  </td>
+                  <td valign="top">
+                    <p style="margin:0 0 12px;font-family:Georgia,serif;font-size:15px;color:#4A4540;line-height:1.6;font-style:italic;">
+                      "I built Coffee@CU because Columbia is full of incredible people &mdash; some you've never met, some you pass every day but have never really talked to. Take a chance, meet someone new, and see what's possible."
+                    </p>
+                    <p style="margin:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:13px;color:#1A1410;font-weight:600;">
+                      &mdash; Will, CBS '26
+                    </p>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- Footer Section -->
+              <table width="100%" cellpadding="0" cellspacing="0" border="0" style="padding-top:40px;">
+                <tr>
+                  <td align="center">
+                    <p style="margin:0 0 8px;font-family:Georgia,serif;font-size:16px;color:#1A1410;text-align:center;font-style:italic;font-weight:600;">
+                      Wishing you a great coffee (or tea!)
+                    </p>
+                    <p style="margin:0 0 32px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:14px;color:#6b7280;text-align:center;">
+                      &mdash; The Coffee@CU Team
+                    </p>
+
+                    <div style="height:1px;background-color:#E6E0D4;width:60px;margin:0 auto 24px;"></div>
+                    
+                    <p style="margin:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:12px;color:#B0A898;text-align:center;">
+                      <a href="${APP_URL}" style="color:#003478;text-decoration:none;font-weight:600;">What is Coffee@CU?</a> &bull; <a href="${APP_URL}" style="color:#003478;text-decoration:none;font-weight:600;">coffeeatcu.com</a>
+                    </p>
+                  </td>
+                </tr>
+              </table>
+
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
+
+  const text = `Hi ${params.name},
+
+Get started on Coffee@CU by confirming your email now:
+
+Confirm email: ${params.verificationLink}
+
+---
+
+"I built Coffee@CU because Columbia is full of incredible people — some you've never met, some you pass every day but have never really talked to. Take a chance, meet someone new, and see what's possible."
+— Will, CBS '26
+
+Wishing you a great coffee (or tea!)
+— The Coffee@CU Team`;
+
+  return getResend().emails.send({
+    from: FROM,
+    to: params.email,
+    subject: 'Confirm your email - Coffee@CU',
     html,
     text,
   });
