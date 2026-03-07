@@ -519,9 +519,9 @@ function LoginGate({ meetingCount, heroImage }: { meetingCount: number; heroImag
       {/* ————————————————————————————————————————
           BENTO BOX FEATURES
       ———————————————————————————————————————— */}
-      <section id="how-it-works" style={{ padding: 'clamp(5rem, 8vw, 7rem) 1.5rem', background: 'var(--color-white)' }}>
+      <section id="how-it-works" style={{ padding: 'clamp(1.5rem, 3.5vw, 3rem) 1.5rem', background: 'var(--color-white)' }}>
         <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-          <div style={{ textAlign: 'center', marginBottom: '4rem' }}>
+          <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
             <h2
               style={{
                 fontFamily: 'var(--font-display)',
@@ -720,7 +720,7 @@ function LoginGate({ meetingCount, heroImage }: { meetingCount: number; heroImag
               lineHeight: 1.6,
             }}
           >
-            Sign up with your @columbia.edu or @barnard.edu email. Two minutes to set up your profile, then start meeting people who'll change how you see your time at Columbia.
+            Sign up now and start meeting Columbia students, staff, and faculty you wouldn't have found otherwise.
           </p>
           <EmailSignupInput darkBackground />
         </div>

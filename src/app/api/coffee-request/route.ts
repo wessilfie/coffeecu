@@ -88,7 +88,7 @@ export async function POST(req: NextRequest) {
     if (outcome !== 'ok') {
       const status = outcome === 'rate_limited' ? 429
         : outcome === 'blacklisted' || outcome === 'suspended' ? 403
-        : 409;
+          : 409;
       return NextResponse.json(
         { error: ERROR_MESSAGES[outcome] ?? ERROR_MESSAGES.error },
         { status }
@@ -97,8 +97,8 @@ export async function POST(req: NextRequest) {
 
     // 5. Fetch sender + receiver profiles for email (server-side — no client exposure)
     const [senderRes, receiverRes] = await Promise.all([
-      serviceClient.from('profiles').select('name, email, school, year, degree, responses').eq('user_id', user.id).single(),
-      serviceClient.from('profiles').select('name, email, phone').eq('user_id', receiverId).single(),
+      serviceClient.from('profiles').select('name, email, school, year, degree, responses, image_url, clubs').eq('user_id', user.id).single(),
+      serviceClient.from('profiles').select('name, email, school, year, degree, responses, image_url, phone, clubs').eq('user_id', receiverId).single(),
     ]);
 
     if (!senderRes.data || !receiverRes.data) {
@@ -108,22 +108,35 @@ export async function POST(req: NextRequest) {
     }
 
     // Extract first Q&A response for email context
-    const responsesRaw = senderRes.data.responses;
-    const responses = Array.isArray(responsesRaw) ? responsesRaw as Array<{ question: string; answer: string }> : [];
-    const firstResponse = responses.length > 0 ? responses[0] : undefined;
+    const sResponsesRaw = senderRes.data.responses;
+    const sResponses = Array.isArray(sResponsesRaw) ? sResponsesRaw as Array<{ question: string; answer: string }> : [];
+    const sFirstResponse = sResponses.length > 0 ? sResponses[0] : undefined;
+
+    const rResponsesRaw = receiverRes.data.responses;
+    const rResponses = Array.isArray(rResponsesRaw) ? rResponsesRaw as Array<{ question: string; answer: string }> : [];
+    const rFirstResponse = rResponses.length > 0 ? rResponses[0] : undefined;
 
     // 6. Send email via Resend
     await sendCoffeeRequestEmail({
       senderName: senderRes.data.name,
       senderEmail: senderRes.data.email ?? email,
+      senderPhotoUrl: senderRes.data.image_url,
       receiverName: receiverRes.data.name,
       receiverEmail: receiverRes.data.email ?? '',
+      receiverPhotoUrl: receiverRes.data.image_url,
       message: message.trim(),
       senderSchool: senderRes.data.school ?? undefined,
       senderYear: senderRes.data.year ?? undefined,
       senderDegree: senderRes.data.degree ?? undefined,
-      senderFirstResponse: firstResponse,
+      senderFirstResponse: sFirstResponse,
+      senderClubs: senderRes.data.clubs || [],
+      receiverSchool: receiverRes.data.school ?? undefined,
+      receiverYear: receiverRes.data.year ?? undefined,
+      receiverDegree: receiverRes.data.degree ?? undefined,
+      receiverFirstResponse: rFirstResponse,
+      receiverClubs: receiverRes.data.clubs || [],
       senderProfileUrl: `${APP_URL}/columbia/${user.id}`,
+      receiverProfileUrl: `${APP_URL}/columbia/${receiverId}`,
     });
 
     // SMS notification if receiver has opted in with a phone number

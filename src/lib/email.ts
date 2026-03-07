@@ -29,59 +29,77 @@ function nl2br(str: string): string {
 export async function sendCoffeeRequestEmail(params: {
   senderName: string;
   senderEmail: string;
+  senderPhotoUrl?: string;
   receiverName: string;
   receiverEmail: string;
+  receiverPhotoUrl?: string;
   message: string;
   senderSchool?: string;
   senderYear?: string;
   senderDegree?: string;
   senderFirstResponse?: { question: string; answer: string };
+  senderClubs?: string[];
+  receiverSchool?: string;
+  receiverYear?: string;
+  receiverDegree?: string;
+  receiverFirstResponse?: { question: string; answer: string };
+  receiverClubs?: string[];
   senderProfileUrl?: string;
+  receiverProfileUrl?: string;
 }) {
   const {
-    senderName, senderEmail, receiverName, receiverEmail, message,
-    senderSchool, senderYear, senderDegree, senderFirstResponse, senderProfileUrl,
+    senderName, senderEmail, senderPhotoUrl,
+    receiverName, receiverEmail, receiverPhotoUrl,
+    message,
+    senderSchool, senderYear, senderDegree, senderFirstResponse, senderClubs,
+    receiverSchool, receiverYear, receiverDegree, receiverFirstResponse, receiverClubs,
+    senderProfileUrl, receiverProfileUrl,
   } = params;
 
   const safeMessage = message.trim().slice(0, 1000);
   const safeSenderName = senderName.slice(0, 40);
   const safeReceiverName = receiverName.slice(0, 40);
   const senderFirstName = safeSenderName.split(' ')[0];
+  const receiverFirstName = safeReceiverName.split(' ')[0];
 
-  const metaParts = [senderSchool, senderYear, senderDegree].filter(Boolean);
-  const metaLine = metaParts.length > 0 ? metaParts.join(' · ') : null;
+  const sMetaParts = [senderSchool, senderYear, senderDegree].filter(Boolean);
+  const sMetaLine = sMetaParts.length > 0 ? sMetaParts.join(' · ') : null;
 
-  // ── Conditional HTML blocks ──────────────────────────────
+  const rMetaParts = [receiverSchool, receiverYear, receiverDegree].filter(Boolean);
+  const rMetaLine = rMetaParts.length > 0 ? rMetaParts.join(' · ') : null;
 
-  const metaHtml = metaLine
-    ? `<p style="margin:0 0 20px;font-family:'Courier New',monospace;font-size:11px;letter-spacing:0.08em;color:#8a8078;text-transform:uppercase;">${escapeHtml(metaLine)}</p>`
-    : '';
+  // Add clubs
+  const sClubsLine = senderClubs && senderClubs.length > 0 ? senderClubs.slice(0, 2).join(', ') : '';
+  const rClubsLine = receiverClubs && receiverClubs.length > 0 ? receiverClubs.slice(0, 2).join(', ') : '';
 
-  const responseHtml = senderFirstResponse
-    ? `<table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:32px;">
+  // ── Profile Card Component ───────────────────────────────
+  const renderProfileCard = (
+    name: string,
+    photo: string | undefined,
+    meta: string | null,
+    clubs: string,
+    profileUrl: string | undefined
+  ) => {
+    const photoUrl = photo || `${APP_URL}/img/default-avatar.png`;
+    const actionUrl = profileUrl || APP_URL;
+    return `
+      <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#F9FAFB;border:1px solid #E5E7EB;border-radius:12px;padding:24px;">
         <tr>
-          <td style="padding:18px 20px;background-color:#F2F6FA;border:1px solid #D4DFEC;border-radius:8px;">
-            <p style="margin:0 0 8px;font-family:'Courier New',monospace;font-size:10px;letter-spacing:0.12em;color:#003478;text-transform:uppercase;font-weight:700;">${escapeHtml(senderFirstResponse.question.slice(0, 100))}</p>
-            <p style="margin:0;font-family:Georgia,serif;font-size:15px;color:#1A1410;line-height:1.6;">${nl2br(senderFirstResponse.answer.trim().slice(0, 200))}</p>
+          <td align="center" style="padding-bottom:16px;">
+            <img src="${escapeHtml(photoUrl)}" width="64" height="64" style="border-radius:50%;object-fit:cover;display:block;" alt="${escapeHtml(name)}" />
+            <h4 style="margin:12px 0 4px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:18px;font-weight:700;color:#1A1410;">${escapeHtml(name)}</h4>
+            ${meta ? `<p style="margin:0 0 12px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:13px;color:#4B5563;font-weight:500;">${escapeHtml(meta)}</p>` : ''}
+            ${clubs ? `<p style="margin:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:13px;color:#6b7280;line-height:1.4;">${escapeHtml(clubs)}</p>` : ''}
           </td>
         </tr>
-      </table>`
-    : '';
-
-  const profileButtonHtml = senderProfileUrl
-    ? `<table cellpadding="0" cellspacing="0" border="0" style="margin-bottom:32px;">
         <tr>
-          <td style="background-color:#003478;border-radius:8px;">
-            <a href="${escapeHtml(senderProfileUrl)}"
-              style="display:inline-block;padding:16px 36px;font-family:Georgia,serif;font-size:15px;font-weight:700;color:#ffffff;text-decoration:none;letter-spacing:0.02em;">
-              View ${escapeHtml(senderFirstName)}&rsquo;s profile &rarr;
-            </a>
+          <td align="center" style="padding-top:16px;border-top:1px solid #E5E7EB;">
+            <a href="${escapeHtml(actionUrl)}" style="display:inline-block;padding:10px 24px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:14px;font-weight:600;color:#003478;background-color:#E8EEF6;border-radius:6px;text-decoration:none;">View ${escapeHtml(name.split(' ')[0])}&rsquo;s Profile</a>
           </td>
         </tr>
-      </table>`
-    : '';
-
-  // ── Full HTML template ───────────────────────────────────
+      </table>
+    `;
+  };
 
   // ── Full HTML template ───────────────────────────────────
 
@@ -97,6 +115,9 @@ export async function sendCoffeeRequestEmail(params: {
       .header-h1 { font-size: 30px !important; }
       .main-h2 { font-size: 22px !important; }
       .btn-link { padding: 14px 24px !important; width: 100% !important; text-align: center !important; box-sizing: border-box !important; }
+      .profile-cards-table { width: 100% !important; }
+      .profile-card-stack { display: block !important; width: 100% !important; padding-left: 0 !important; padding-right: 0 !important; margin-bottom: 20px !important; }
+      .profile-spacer { display: none !important; }
     }
   </style>
 </head>
@@ -104,73 +125,100 @@ export async function sendCoffeeRequestEmail(params: {
   <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#F9F5EE;padding:40px 16px;">
     <tr>
       <td align="center">
-        <table width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:520px;width:100%;">
-
-          <!-- Header -->
+        <table width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;width:100%;background-color:#ffffff;border:1px solid #E6E0D4;border-radius:16px;box-shadow:0 12px 40px rgba(26,20,16,0.06);overflow:hidden;">
+          
+          <!-- Blue Header (No Logo) -->
           <tr>
-            <td align="center" style="padding-bottom:32px;">
-              <h1 class="header-h1" style="margin:0;font-family:Georgia,'Times New Roman',serif;font-size:36px;font-weight:700;color:#1A1410;line-height:1.1;letter-spacing:-0.02em;">Coffee@CU</h1>
+            <td align="center" style="background-color:#003478;padding:32px 32px;">
+              <h1 class="header-h1" style="margin:0;font-family:Georgia,'Times New Roman',serif;font-size:32px;font-weight:700;color:#ffffff;line-height:1;letter-spacing:-0.02em;">Coffee@CU</h1>
+              <p style="margin:12px 0 0;font-family:Georgia,serif;font-size:16px;color:rgba(255,255,255,0.9);letter-spacing:0.01em;">A new connection is brewing</p>
             </td>
           </tr>
 
-          <!-- Main Card -->
+          <!-- Main Content -->
           <tr>
-            <td>
-              <table width="100%" cellpadding="0" cellspacing="0" border="0"
-                style="background-color:#ffffff;border:1px solid #E6E0D4;border-radius:12px;box-shadow:0 12px 40px rgba(26,20,16,0.06);overflow:hidden;">
+            <td class="card-td" style="padding:40px 48px;">
+
+              <h2 class="main-h2" style="margin:0 0 8px;font-family:Georgia,serif;font-size:28px;font-weight:700;color:#1A1410;line-height:1.2;">
+                ${escapeHtml(receiverFirstName)},
+              </h2>
+              <p style="margin:0 0 32px;font-family:Georgia,serif;font-size:16px;color:#4A4540;line-height:1.5;">
+                <span style="font-weight:700;color:#1A1410;">${escapeHtml(senderFirstName)}</span> sent you a request to start a conversation on Coffee@CU.
+              </p>
+
+              <!-- Chat Bubble -->
+              <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:40px;">
                 <tr>
-                  <td style="padding:48px 40px;">
-
-                    <h2 style="margin:0 0 16px;font-family:Georgia,serif;font-size:24px;font-weight:700;color:#1A1410;line-height:1.3;">
-                      ${escapeHtml(senderFirstName)} wants to grab coffee!
-                    </h2>
-
-                    ${metaHtml}
-
-                    <!-- Message Block -->
-                    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:32px;">
-                      <tr>
-                        <td style="background-color:#FDFBF7;border-left:4px solid #003478;border-radius:0 8px 8px 0;padding:24px 28px;">
-                          <p style="margin:0 0 10px;font-family:'Courier New',monospace;font-size:10px;letter-spacing:0.12em;color:#8a8078;text-transform:uppercase;font-weight:700;">Their message</p>
-                          <p style="margin:0;font-family:Georgia,serif;font-size:17px;color:#1A1410;line-height:1.7;font-style:italic;">&ldquo;${nl2br(safeMessage)}&rdquo;</p>
-                        </td>
-                      </tr>
-                    </table>
-
-                    ${responseHtml}
-
-                    ${profileButtonHtml}
-
-                    <!-- Reply context -->
-                    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:8px;padding-top:24px;border-top:1px solid #F0EBE0;">
-                      <tr>
-                        <td>
-                          <p style="margin:0;font-family:Georgia,serif;font-size:15px;color:#4A4540;line-height:1.6;">
-                            Reply directly to this email to connect with ${escapeHtml(senderFirstName)} at <a href="mailto:${escapeHtml(senderEmail)}" style="color:#003478;text-decoration:none;font-weight:600;">${escapeHtml(senderEmail)}</a>.
-                          </p>
-                        </td>
-                      </tr>
-                    </table>
-
+                  <td width="48" valign="bottom" style="padding-right:12px;text-align:center;">
+                    <img src="${escapeHtml(senderPhotoUrl || `${APP_URL}/img/default-avatar.png`)}" width="48" height="48" style="border-radius:50%;object-fit:cover;display:inline-block;" alt="${escapeHtml(senderFirstName)}" />
+                  </td>
+                  <td valign="top" style="background-color:#F0F7FF;border-radius:16px 16px 16px 4px;padding:24px 28px;">
+                    <p style="margin:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:16px;color:#1A1410;line-height:1.5;">
+                      ${nl2br(safeMessage)}
+                    </p>
                   </td>
                 </tr>
               </table>
+
+              <!-- Dual Profiles Section -->
+              <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:24px;">
+                <tr>
+                  <td width="20%"><div style="height:1px;background-color:#e5e7eb;width:100%;"></div></td>
+                  <td align="center" style="padding:0 16px;">
+                    <p style="margin:0;font-family:Georgia,serif;font-size:15px;color:#6b7280;font-style:italic;">Here's a bit about both of you</p>
+                  </td>
+                  <td width="20%"><div style="height:1px;background-color:#e5e7eb;width:100%;"></div></td>
+                </tr>
+              </table>
+
+              <table width="100%" cellpadding="0" cellspacing="0" border="0" class="profile-cards-table" style="margin-bottom:40px;">
+                <tr>
+                  <!-- Receiver Profile Container -->
+                  <td valign="top" width="48%" class="profile-card-stack">
+                    ${renderProfileCard(receiverName, receiverPhotoUrl, rMetaLine, rClubsLine, receiverProfileUrl)}
+                  </td>
+                  <!-- Spacer -->
+                  <td width="4%" class="profile-spacer"></td>
+                  <!-- Sender Profile Container -->
+                  <td valign="top" width="48%" class="profile-card-stack">
+                    ${renderProfileCard(senderName, senderPhotoUrl, sMetaLine, sClubsLine, senderProfileUrl)}
+                  </td>
+                </tr>
+              </table>
+
+              <!-- Footer Section -->
+              <table width="100%" cellpadding="0" cellspacing="0" border="0" style="padding-top:32px;border-top:1px solid #F0EBE0;">
+                <tr>
+                  <td align="center">
+                    <p style="margin:0 0 24px;font-family:Georgia,serif;font-size:16px;color:#4A4540;line-height:1.6;text-align:center;">
+                      You can reply directly to this email to schedule a time to meet with ${escapeHtml(senderFirstName)}.
+                    </p>
+
+                    <h3 style="margin:0 0 12px;font-family:Georgia,serif;font-size:16px;font-weight:700;color:#1A1410;text-align:center;">
+                      Here's some recommended spots:
+                    </h3>
+                    <p style="margin:0 0 32px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:14px;color:#6b7280;line-height:1.6;text-align:center;max-width:400px;margin-left:auto;margin-right:auto;">
+                       Joe Coffee in Geffen, Peet&rsquo;s in Milstein, Brownie&rsquo;s in Avery, Carleton in Mudd, Caf&eacute; East in Lerner, Liz&rsquo;s Place in Diana, Kuro Kuma, Dear Mama, or the Hungarian Pastry Shop.
+                    </p>
+                    
+                    <p style="margin:0 0 8px;font-family:Georgia,serif;font-size:16px;color:#1A1410;text-align:center;font-style:italic;font-weight:600;">
+                      Wishing you a great coffee (or tea!)
+                    </p>
+                    <p style="margin:0 0 32px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:14px;color:#6b7280;text-align:center;">
+                      &mdash; The Coffee@CU Team
+                    </p>
+
+                    <div style="height:1px;background-color:#E6E0D4;width:60px;margin:0 auto 24px;"></div>
+                    
+                    <p style="margin:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:12px;color:#B0A898;text-align:center;">
+                      <a href="${APP_URL}" style="color:#003478;text-decoration:none;font-weight:600;">What is Coffee@CU?</a> &bull; <a href="${APP_URL}" style="color:#003478;text-decoration:none;font-weight:600;">coffeeatcu.com</a>
+                    </p>
+                  </td>
+                </tr>
+              </table>
+
             </td>
           </tr>
-
-          <!-- Footer Info -->
-          <tr>
-            <td style="padding:32px 24px 0;">
-              <p style="margin:0 0 16px;font-family:Georgia,serif;font-size:13px;color:#8a8078;line-height:1.8;text-align:center;">
-                <em>Coffee spots:</em> Joe Coffee in Geffen, Peet&rsquo;s in Milstein, Brownie&rsquo;s in Avery, Carleton in Mudd, Caf&eacute; East in Lerner, Liz&rsquo;s Place in Diana, Kuro Kuma, Dear Mama, Hungarian Pastry Shop, or a walk through Morningside.
-              </p>
-              <div style="height:1px;background-color:#E6E0D4;width:60px;margin:0 auto 24px;"></div>
-              <p style="margin:0;font-family:Georgia,serif;font-size:12px;color:#B0A898;line-height:1.7;text-align:center;letter-spacing:0.01em;">
-                <a href="${APP_URL}" style="color:#003478;text-decoration:none;font-weight:600;">What is Coffee@CU?</a> &bull; <a href="${APP_URL}" style="color:#003478;text-decoration:none;font-weight:600;">coffeeatcu.com</a>
-              </p>
-            </td>
-          </tr>
-
         </table>
       </td>
     </tr>
@@ -181,36 +229,32 @@ export async function sendCoffeeRequestEmail(params: {
   // ── Plain-text fallback ──────────────────────────────────
 
   const safeAnswer = senderFirstResponse?.answer?.trim().slice(0, 200);
-  let aboutSection = '';
-  if (metaLine || safeAnswer || senderProfileUrl) {
-    aboutSection += `\nAbout ${safeSenderName}:\n`;
-    if (metaLine) aboutSection += `${metaLine}\n`;
-    if (safeAnswer) aboutSection += `"${safeAnswer}"\n`;
-    if (senderProfileUrl) aboutSection += `\nView their profile: ${senderProfileUrl}\n`;
-  }
 
   const text = `Hi ${safeReceiverName},
 
-${safeSenderName} wants to grab coffee with you!
-${aboutSection}
-Their message:
-"${safeMessage}"
+${safeSenderName} sent you a request to start a conversation on Coffee@CU.
 
-Reply directly to this email to reach ${safeSenderName} at ${senderEmail}.
+${safeMessage}
 
-Some ideas for where to meet: Joe Coffee in Geffen Hall, Peet's in Milstein Center, Brownie's Café in Avery, Carleton Lounge in Mudd, Café East in Lerner, Liz's Place in the Diana Center, Kuro Kuma, Dear Mama, the Hungarian Pastry Shop on Amsterdam, or a walk through Morningside Park.
+Here's a bit about both of you:
 
-Have a great conversation!
+${safeReceiverName}
+${rMetaLine ? rMetaLine + '\n' : ''}${rClubsLine ? rClubsLine + '\n' : ''}${receiverProfileUrl ? `View Profile: ${receiverProfileUrl}\n` : ''}
+${safeSenderName}
+${sMetaLine ? sMetaLine + '\n' : ''}${sClubsLine ? sClubsLine + '\n' : ''}${senderProfileUrl ? `View Profile: ${senderProfileUrl}\n` : ''}
 
-— The Coffee@CU Team
-${APP_URL}`;
+You can reply directly to this email to schedule a time to meet with ${safeSenderName}.
+Recommended spots: Joe Coffee in Geffen, Peet's in Milstein, Brownie's in Avery, Carleton in Mudd, Cafe East in Lerner, Liz's Place in Diana, Kuro Kuma, Dear Mama, or the Hungarian Pastry Shop.
+
+Wishing you a great coffee (or tea!)
+— The Coffee@CU Team`;
 
   return getResend().emails.send({
     from: FROM,
     to: receiverEmail,
     replyTo: senderEmail,
     cc: senderEmail,
-    subject: `Coffee@CU: ${safeSenderName} wants to chat`,
+    subject: `Coffee @CU: ${safeSenderName} wants to chat`,
     html,
     text,
   });
@@ -253,8 +297,8 @@ export async function sendWelcomeEmail(params: {
           <!-- Main Card -->
           <tr>
             <td>
-              <table width="100%" cellpadding="0" cellspacing="0" border="0"
-                style="background-color:#ffffff;border:1px solid #E6E0D4;border-radius:12px;box-shadow:0 12px 40px rgba(26,20,16,0.06);overflow:hidden;">
+              <table width="100%" cellpadding="0" cellspacing="0" border="0" 
+                     style="background-color:#ffffff;border:1px solid #E6E0D4;border-radius:12px;box-shadow:0 12px 40px rgba(26,20,16,0.06);overflow:hidden;">
                 <tr>
                   <td class="card-td" style="padding:48px 40px;">
 
@@ -273,8 +317,8 @@ export async function sendWelcomeEmail(params: {
                           <table cellpadding="0" cellspacing="0" border="0" style="background-color:#003478;border-radius:8px;">
                             <tr>
                               <td>
-                                <a href="${APP_URL}" class="btn-link"
-                                  style="display:inline-block;padding:16px 36px;font-family:Georgia,serif;font-size:15px;font-weight:700;color:#ffffff;text-decoration:none;letter-spacing:0.02em;">
+                                <a href="${APP_URL}" class="btn-link" 
+                                   style="display:inline-block;padding:16px 36px;font-family:Georgia,serif;font-size:15px;font-weight:700;color:#ffffff;text-decoration:none;letter-spacing:0.02em;">
                                   Browse the community &rarr;
                                 </a>
                               </td>
