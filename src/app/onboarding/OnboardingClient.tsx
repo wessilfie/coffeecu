@@ -120,6 +120,7 @@ export default function OnboardingClient({ userId: _userId, userEmail: _userEmai
   const [twitterHandle, setTwitterHandle] = useState(extractHandle(draft?.twitter, 'https://twitter.com/'));
   const [tiktokHandle, setTiktokHandle] = useState(extractHandle(draft?.tiktok, 'https://tiktok.com/@'));
   const [websiteUrl, setWebsiteUrl] = useState(draft?.website ?? '');
+  const [isPublic, setIsPublic] = useState(draft?.is_public ?? true);
 
   // Save state
   const [saving, setSaving] = useState(false);
@@ -177,11 +178,11 @@ export default function OnboardingClient({ userId: _userId, userEmail: _userEmai
       school: school,
       year: year,
       degree: degree,
-      major: [],
+      major: isUndergrad ? [] : [], // NOTE: Currently onboard form has no major picker anyway
       pronouns: pronouns.trim(),
       responses,
       image_url: effectivePhotoUrl || null,
-      is_public: true,
+      is_public: isPublic,
       twitter: toUrl('https://twitter.com/', twitterHandle),
       facebook: '',
       linkedin: toUrl('https://linkedin.com/in/', liHandle),
@@ -1338,6 +1339,41 @@ export default function OnboardingClient({ userId: _userId, userEmail: _userEmai
                     placeholder="https://yoursite.com"
                     type="url"
                   />
+                </div>
+              </div>
+
+              {/* ——— Profile Visibility ——— */}
+              <div style={{ marginTop: '2.5rem' }}>
+                <h2
+                  className="heading-display"
+                  style={{
+                    fontSize: 'clamp(1.25rem, 3vw, 1.5rem)',
+                    color: 'var(--color-ink)',
+                    marginBottom: '0.5rem',
+                    lineHeight: 1.05,
+                    letterSpacing: '-0.02em',
+                  }}
+                >
+                  Profile Visibility
+                </h2>
+                <div style={{ display: 'grid', gap: '0.75rem', marginTop: '1.25rem' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                    <input
+                      id="ob-is-public"
+                      type="checkbox"
+                      checked={isPublic}
+                      onChange={e => setIsPublic(e.target.checked)}
+                      style={{ width: '16px', height: '16px', cursor: 'pointer', accentColor: 'var(--color-columbia)' }}
+                    />
+                    <label htmlFor="ob-is-public">
+                      <span style={{ fontFamily: 'var(--font-body), serif', fontSize: '0.9375rem', color: 'var(--color-ink)' }}>
+                        Show my profile on the community board
+                      </span>
+                    </label>
+                  </div>
+                  <p className="label-mono" style={{ color: 'var(--color-text-muted)', paddingLeft: '28px', margin: 0, textTransform: 'none', letterSpacing: 'normal' }}>
+                    Hiding your profile means you can no longer view people in the community.
+                  </p>
                 </div>
               </div>
             </>

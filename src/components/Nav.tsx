@@ -11,8 +11,8 @@ import type { User, AuthChangeEvent, Session } from '@supabase/supabase-js';
 const LION_AVATAR = '/img/LionMascotblack.png';
 
 export default function Nav() {
-  const [user, setUser] = useState<User | null>(DEV_BYPASS ? ({ id: 'dev' } as User) : null);
-  const [loading, setLoading] = useState(!DEV_BYPASS);
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
   const [profileImageUrl, setProfileImageUrl] = useState<string | null>(null);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [userRole, setUserRole] = useState<string | null>(null);
@@ -21,16 +21,29 @@ export default function Nav() {
   const [communitiesOpen, setCommunitiesOpen] = useState(false);
   const supabase = getSupabaseClient();
 
-  // Auth state
+  // Auth state — Prioritize real session, fallback to DEV_BYPASS
   useEffect(() => {
-    if (DEV_BYPASS) return;
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event: AuthChangeEvent, session: Session | null) => {
-      setUser(session?.user ?? null);
+      if (session?.user) {
+        setUser(session.user);
+      } else if (DEV_BYPASS) {
+        setUser({ id: 'dev' } as User);
+        setProfileImageUrl(null);
+      } else {
+        setUser(null);
+        setProfileImageUrl(null);
+      }
       setLoading(false);
-      if (!session?.user) setProfileImageUrl(null);
     });
+
     supabase.auth.getUser().then((res: { data: { user: User | null } }) => {
-      setUser(res.data.user);
+      if (res.data.user) {
+        setUser(res.data.user);
+      } else if (DEV_BYPASS) {
+        setUser({ id: 'dev' } as User);
+      } else {
+        setUser(null);
+      }
       setLoading(false);
     });
     return () => subscription.unsubscribe();
@@ -91,12 +104,15 @@ export default function Nav() {
 
   const handleSignOut = async () => {
     setDropdownOpen(false);
-    if (DEV_BYPASS) {
-      window.location.href = '/?guest=1';
-      return;
-    }
+
+    // Always attempt to sign out of real session just in case it got stuck
     await supabase.auth.signOut();
-    window.location.href = '/';
+
+    if (user?.id === 'dev' && DEV_BYPASS) {
+      window.location.href = '/?guest=1';
+    } else {
+      window.location.href = '/';
+    }
   };
 
   return (

@@ -55,7 +55,7 @@ export default function RootLayout({
       lang="en"
       className={`${newsreader.variable} ${manrope.variable}`}
     >
-      <body className="min-h-screen flex flex-col">
+      <body className="min-h-screen flex flex-col" suppressHydrationWarning>
         {children}
         <Script
           src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`}
