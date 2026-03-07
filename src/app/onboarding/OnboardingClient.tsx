@@ -14,6 +14,7 @@ import {
   MAJORS,
   CBS_CLUBS,
 } from '@/lib/constants';
+import { compressImage } from '@/lib/image-utils';
 import { deriveYearLabel } from '@/lib/year-utils';
 import type { School, DraftProfile } from '@/types';
 import PromptDropdown from '@/components/PromptDropdown';
@@ -145,13 +146,16 @@ export default function OnboardingClient({ userId: _userId, userEmail: _userEmai
     }
     setUploadingPhoto(true);
     try {
+      // Compress image client-side before upload
+      const compressedFile = await compressImage(file);
+
       // 1. Get signed upload URL from our API
       const metaRes = await fetch('/api/profile/upload-photo', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          contentType: file.type,
-          extension: file.name.split('.').pop()
+          contentType: compressedFile.type,
+          extension: compressedFile.name.split('.').pop()
         })
       });
 
@@ -167,8 +171,8 @@ export default function OnboardingClient({ userId: _userId, userEmail: _userEmai
       // This bypasses Vercel's 4.5MB body limit
       const uploadRes = await fetch(signedUrl, {
         method: 'PUT',
-        body: file,
-        headers: { 'Content-Type': file.type }
+        body: compressedFile,
+        headers: { 'Content-Type': compressedFile.type }
       });
 
       if (!uploadRes.ok) {

@@ -26,11 +26,11 @@ const manrope = Manrope({
 
 export const metadata: Metadata = {
   title: "Coffee@CU — Meet the Columbia Community",
-  description: "Meet remarkable people at Columbia University.",
+  description: "Find your people at Columbia. Coffee@CU makes it easy to connect with students, alumni, and faculty.",
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL ?? "https://coffeeatcu.com"),
   openGraph: {
     title: "Coffee@CU — Meet the Columbia Community",
-    description: "Meet remarkable people at Columbia University.",
+    description: "Find your people at Columbia. Coffee@CU makes it easy to connect with students, alumni, and faculty.",
     type: "website",
     siteName: "Coffee@CU",
     images: [
@@ -45,7 +45,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "Coffee@CU — Meet the Columbia Community",
-    description: "Meet remarkable people at Columbia University.",
+    description: "Find your people at Columbia. Coffee@CU makes it easy to connect with students, alumni, and faculty.",
     images: ["/img/lionlogo-branded.png"],
   },
   robots: { index: true, follow: true },
