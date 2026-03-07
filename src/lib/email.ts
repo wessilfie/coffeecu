@@ -376,7 +376,6 @@ One conversation at a time,
 
 export async function sendVerificationEmail(params: {
   email: string;
-  verificationLink: string;
 }) {
   const html = `<!DOCTYPE html>
 <html lang="en">
@@ -425,7 +424,7 @@ export async function sendVerificationEmail(params: {
                     <table cellpadding="0" cellspacing="0" border="0" style="background-color:#003478;border-radius:8px;">
                       <tr>
                         <td>
-                          <a href="${params.verificationLink}" class="btn-link" 
+                          <a href="{{ .ConfirmationURL }}" class="btn-link" 
                              style="display:inline-block;padding:16px 36px;font-family:Georgia,serif;font-size:15px;font-weight:700;color:#ffffff;text-decoration:none;letter-spacing:0.02em;">
                             Confirm email &rarr;
                           </a>
@@ -438,7 +437,7 @@ export async function sendVerificationEmail(params: {
 
               <p style="margin:0 0 40px;font-family:Helvetica,Arial,sans-serif;font-size:13px;color:#8a8078;line-height:1.5;">
                 If that link doesn't work, click this link:<br>
-                <a href="${params.verificationLink}" style="color:#003478;word-break:break-all;">${params.verificationLink}</a>
+                <a href="{{ .ConfirmationURL }}" style="color:#003478;word-break:break-all;">{{ .ConfirmationURL }}</a>
               </p>
 
               <!-- Founder Message Section -->
@@ -492,7 +491,7 @@ export async function sendVerificationEmail(params: {
 
 Get started on Coffee@CU by confirming your email now:
 
-Confirm email: ${params.verificationLink}
+Confirm email: {{ .ConfirmationURL }}
 
 ---
 
