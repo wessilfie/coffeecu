@@ -375,13 +375,9 @@ One conversation at a time,
 }
 
 export async function sendVerificationEmail(params: {
-  name: string;
   email: string;
   verificationLink: string;
 }) {
-  const safeName = escapeHtml(params.name.slice(0, 40));
-  const firstName = safeName.split(' ')[0];
-
   const html = `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -416,7 +412,7 @@ export async function sendVerificationEmail(params: {
             <td class="card-td" style="padding:40px 48px;">
 
               <h2 class="main-h2" style="margin:0 0 8px;font-family:Georgia,serif;font-size:28px;font-weight:700;color:#1A1410;line-height:1.2;">
-                ${escapeHtml(firstName)},
+                Hello!
               </h2>
               <p style="margin:0 0 32px;font-family:Georgia,serif;font-size:16px;color:#4A4540;line-height:1.5;">
                 Get started on Coffee@CU by confirming your email now:
@@ -492,7 +488,7 @@ export async function sendVerificationEmail(params: {
 </body>
 </html>`;
 
-  const text = `Hi ${params.name},
+  const text = `Hello!
 
 Get started on Coffee@CU by confirming your email now:
 
