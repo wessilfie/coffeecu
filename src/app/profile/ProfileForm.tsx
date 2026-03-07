@@ -9,6 +9,7 @@ import Link from 'next/link';
 import { Upload, Plus, Trash2, ChevronDown } from 'lucide-react';
 import { SCHOOL_GROUPS, UNDERGRAD_SCHOOL_CODES, DEGREE_GROUPS, MAJORS, CBS_CLUBS, PROFILE_QUESTIONS_GROUPED, PROFILE_QUESTIONS, COFFEE_QUESTION } from '@/lib/constants';
 import { deriveYearLabel } from '@/lib/year-utils';
+import { compressImage } from '@/lib/image-utils';
 import type { ProfileFormData, FullProfile, DraftProfile, School, ProfileResponse } from '@/types';
 import PromptDropdown from '@/components/PromptDropdown';
 
@@ -259,13 +260,16 @@ export default function ProfileForm({ userId, userEmail, existingProfile, existi
 
     setUploadingPhoto(true);
     try {
+      // Compress image client-side before upload
+      const compressedFile = await compressImage(file);
+
       // 1. Get signed upload URL from our API
       const metaRes = await fetch('/api/profile/upload-photo', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          contentType: file.type,
-          extension: file.name.split('.').pop()
+          contentType: compressedFile.type,
+          extension: compressedFile.name.split('.').pop()
         })
       });
 
@@ -281,8 +285,8 @@ export default function ProfileForm({ userId, userEmail, existingProfile, existi
       // This bypasses Vercel's 4.5MB body limit
       const uploadRes = await fetch(signedUrl, {
         method: 'PUT',
-        body: file,
-        headers: { 'Content-Type': file.type }
+        body: compressedFile,
+        headers: { 'Content-Type': compressedFile.type }
       });
 
       if (!uploadRes.ok) {
