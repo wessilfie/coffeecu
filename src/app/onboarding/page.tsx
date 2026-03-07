@@ -27,7 +27,7 @@ export default async function OnboardingPage() {
     ]);
 
     // Published users don't need onboarding
-    if (profileRes.data) redirect('/profile');
+    if (profileRes.data) redirect('/');
 
     const draft = draftRes.data as DraftProfile | null;
     return <OnboardingClient userId={user.id} userEmail={user.email ?? ''} initialDraft={draft} />;

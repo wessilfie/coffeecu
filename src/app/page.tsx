@@ -29,6 +29,7 @@ export default async function HomePage({
           isLoggedIn={!isDevGuest}
           userId={isDevGuest ? null : DEV_USER.id}
           sentRequests={[]}
+          receivedRequests={[]}
           hasPublishedProfile={!isDevGuest}
         />
         <Footer />
@@ -76,14 +77,22 @@ export default async function HomePage({
   }
 
   // Meetings the current user has already requested (to prevent resends and show dates)
+  // Also fetch meetings RECEIVED by the current user to show a reminder UI
   let sentRequests: { id: string; date: string }[] = [];
+  let receivedRequests: { id: string; date: string }[] = [];
   if (user) {
-    const { data: sentMeetings } = await supabase
-      .from('meetings')
-      .select('receiver_id, created_at')
-      .eq('sender_id', user.id);
-    sentRequests = (sentMeetings ?? []).map((m: { receiver_id: string; created_at: string }) => ({
+    const [sentRes, receivedRes] = await Promise.all([
+      supabase.from('meetings').select('receiver_id, created_at').eq('sender_id', user.id),
+      supabase.from('meetings').select('sender_id, created_at').eq('receiver_id', user.id),
+    ]);
+
+    sentRequests = (sentRes.data ?? []).map((m: { receiver_id: string; created_at: string }) => ({
       id: m.receiver_id,
+      date: m.created_at,
+    }));
+
+    receivedRequests = (receivedRes.data ?? []).map((m: { sender_id: string; created_at: string }) => ({
+      id: m.sender_id,
       date: m.created_at,
     }));
   }
@@ -97,6 +106,7 @@ export default async function HomePage({
         isLoggedIn={!!user}
         userId={user?.id ?? null}
         sentRequests={sentRequests}
+        receivedRequests={receivedRequests}
         hasPublishedProfile={hasPublishedProfile}
       />
       <Footer />
