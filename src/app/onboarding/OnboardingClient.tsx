@@ -96,7 +96,7 @@ export default function OnboardingClient({ userId: _userId, userEmail: _userEmai
   const [roleType, setRoleType] = useState<'student' | 'faculty' | 'staff'>(
     draft?.designation === 'faculty' ? 'faculty'
       : draft?.designation === 'staff' ? 'staff'
-      : 'student'
+        : 'student'
   );
 
   // Handle Referral Pre-fill
@@ -857,29 +857,29 @@ export default function OnboardingClient({ userId: _userId, userEmail: _userEmai
                   </div>
 
                   {roleType === 'student' && (
-                  <div>
-                    <label className="form-label" htmlFor="ob-year">
-                      Graduation Year
-                    </label>
-                    <input
-                      id="ob-year"
-                      type="number"
-                      className="form-input"
-                      placeholder="e.g. 2026"
-                      min={2000}
-                      max={2040}
-                      value={year}
-                      onChange={e => setYear(e.target.value)}
-                    />
-                    {year && school && (() => {
-                      const label = deriveYearLabel(year, school || null);
-                      return label ? (
-                        <p className="label-mono" style={{ color: 'var(--color-text-muted)', marginTop: '0.3rem', fontSize: '0.75rem' }}>
-                          {label}
-                        </p>
-                      ) : null;
-                    })()}
-                  </div>
+                    <div>
+                      <label className="form-label" htmlFor="ob-year">
+                        Graduation Year
+                      </label>
+                      <input
+                        id="ob-year"
+                        type="number"
+                        className="form-input"
+                        placeholder="e.g. 2026"
+                        min={1950}
+                        max={2040}
+                        value={year}
+                        onChange={e => setYear(e.target.value)}
+                      />
+                      {year && school && (() => {
+                        const label = deriveYearLabel(year, school || null);
+                        return label ? (
+                          <p className="label-mono" style={{ color: 'var(--color-text-muted)', marginTop: '0.3rem', fontSize: '0.75rem' }}>
+                            {label}
+                          </p>
+                        ) : null;
+                      })()}
+                    </div>
                   )}
                 </div>
 

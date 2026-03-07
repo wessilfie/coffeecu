@@ -83,7 +83,7 @@ export default function ProfileForm({ userId, userEmail, existingProfile, existi
   const [roleType, setRoleType] = useState<'student' | 'faculty' | 'staff'>(
     source?.designation === 'faculty' ? 'faculty'
       : source?.designation === 'staff' ? 'staff'
-      : 'student'
+        : 'student'
   );
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [photoError, setPhotoError] = useState('');
@@ -498,27 +498,27 @@ export default function ProfileForm({ userId, userEmail, existingProfile, existi
           </div>
 
           {roleType === 'student' && (
-          <div>
-            <label className="form-label" htmlFor="year">Graduation Year</label>
-            <input
-              id="year"
-              type="number"
-              className="form-input"
-              placeholder="e.g. 2026"
-              min={2000}
-              max={2040}
-              {...register('year')}
-            />
-            {(() => {
-              const yr = watch('year');
-              const label = yr && selectedSchool ? deriveYearLabel(yr, selectedSchool || null) : null;
-              return label ? (
-                <p className="label-mono" style={{ color: 'var(--color-text-muted)', marginTop: '0.3rem', fontSize: '0.75rem' }}>
-                  {label}
-                </p>
-              ) : null;
-            })()}
-          </div>
+            <div>
+              <label className="form-label" htmlFor="year">Graduation Year</label>
+              <input
+                id="year"
+                type="number"
+                className="form-input"
+                placeholder="e.g. 2026"
+                min={1950}
+                max={2040}
+                {...register('year')}
+              />
+              {(() => {
+                const yr = watch('year');
+                const label = yr && selectedSchool ? deriveYearLabel(yr, selectedSchool || null) : null;
+                return label ? (
+                  <p className="label-mono" style={{ color: 'var(--color-text-muted)', marginTop: '0.3rem', fontSize: '0.75rem' }}>
+                    {label}
+                  </p>
+                ) : null;
+              })()}
+            </div>
           )}
 
           <div>

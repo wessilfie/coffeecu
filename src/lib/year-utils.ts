@@ -52,6 +52,8 @@ export function deriveYearLabel(
     if (yearsLeft === 1) return 'CBS - Year 1';
   }
 
+  if (yearsLeft < 0) return 'Alum';
+
   // All other grad programs: show [Degree - School - Year] (e.g. JD - LAW - 2026)
   const parts = [];
   if (degree) parts.push(degree);
