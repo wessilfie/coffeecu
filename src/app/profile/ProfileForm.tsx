@@ -881,7 +881,14 @@ export default function ProfileForm({ userId, userEmail, existingProfile, existi
               Never shared publicly. Used only to notify you of coffee requests.
             </p>
           </div>
+        </div>
+      </Section>
 
+      <Divider />
+
+      {/* ——— PROFILE VISIBILITY ——— */}
+      <Section title="Profile Visibility">
+        <div style={{ display: 'grid', gap: '0.75rem' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
             <Controller
               name="is_public"
@@ -902,6 +909,9 @@ export default function ProfileForm({ userId, userEmail, existingProfile, existi
               </span>
             </label>
           </div>
+          <p className="label-mono" style={{ color: 'var(--color-text-muted)', paddingLeft: '28px', margin: 0 }}>
+            Hiding your profile means you can no longer view people in the community.
+          </p>
         </div>
       </Section>
 
