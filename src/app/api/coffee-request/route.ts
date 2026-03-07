@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createSupabaseServerClient, createSupabaseServiceClient } from '@/lib/supabase/server';
 import { sendCoffeeRequestEmail } from '@/lib/email';
 import { sendCoffeeRequestSMS } from '@/lib/sms';
-import { DAILY_REQUEST_LIMIT } from '@/lib/constants';
+import { DAILY_REQUEST_LIMIT, isAllowedDomain } from '@/lib/constants';
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'https://coffeecu.com';
 import { z } from 'zod';
@@ -58,20 +58,28 @@ export async function POST(req: NextRequest) {
     }
 
     // 3. Columbia domain check (secondary enforcement)
-    const email = user.email ?? '';
-    const domain = email.split('@')[1]?.toLowerCase();
-    const allowedDomains = ['columbia.edu', 'barnard.edu'];
-    if (!allowedDomains.includes(domain)) {
-      return NextResponse.json(
-        { error: 'Coffee@CU is for Columbia University community members.' },
-        { status: 403 }
-      );
+    const senderEmail = user.email ?? '';
+    // Fetch receiver's email early to perform domain check for both
+    const serviceClient = createSupabaseServiceClient();
+    const { data: receiverProfile, error: receiverProfileError } = await serviceClient
+      .from('profiles')
+      .select('email')
+      .eq('user_id', receiverId)
+      .single();
+
+    if (receiverProfileError || !receiverProfile) {
+      console.error('[coffee-request] Could not fetch receiver profile for domain check:', receiverProfileError);
+      return NextResponse.json({ error: ERROR_MESSAGES.error }, { status: 500 });
+    }
+    const receiverEmail = receiverProfile.email ?? '';
+    const isAllowed = isAllowedDomain(senderEmail) && isAllowedDomain(receiverEmail);
+    if (!isAllowed) {
+      return NextResponse.json({ error: 'Both users must have a Columbia or Barnard email address.' }, { status: 403 });
     }
 
     // 4. Atomic coffee request via DB function
     // This single function call handles: self-request, blacklist, suspension,
     // daily rate-limit (race-condition-safe), duplicate check — all in one transaction
-    const serviceClient = createSupabaseServiceClient();
     const { data: result, error: fnError } = await serviceClient.rpc('attempt_coffee_request', {
       p_sender_id: user.id,
       p_receiver_id: receiverId,
@@ -119,7 +127,7 @@ export async function POST(req: NextRequest) {
     // 6. Send email via Resend
     await sendCoffeeRequestEmail({
       senderName: senderRes.data.name,
-      senderEmail: senderRes.data.email ?? email,
+      senderEmail: senderRes.data.email ?? senderEmail,
       senderPhotoUrl: senderRes.data.image_url,
       receiverName: receiverRes.data.name,
       receiverEmail: receiverRes.data.email ?? '',

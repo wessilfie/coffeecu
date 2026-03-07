@@ -259,18 +259,38 @@ export default function ProfileForm({ userId, userEmail, existingProfile, existi
 
     setUploadingPhoto(true);
     try {
-      const body = new FormData();
-      body.append('file', file);
+      // 1. Get signed upload URL from our API
+      const metaRes = await fetch('/api/profile/upload-photo', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contentType: file.type,
+          extension: file.name.split('.').pop()
+        })
+      });
 
-      const res = await fetch('/api/profile/upload-photo', { method: 'POST', body });
-      const json = await res.json();
-
-      if (!res.ok) {
-        setPhotoError(json.error ?? 'Photo upload failed. Please try again.');
+      const metaJson = await metaRes.json();
+      if (!metaRes.ok) {
+        setPhotoError(metaJson.error ?? 'Photo upload failed. Please try again.');
         return;
       }
 
-      const urlWithBust = `${json.url}?t=${Date.now()}`;
+      const { signedUrl, publicUrl } = metaJson;
+
+      // 2. Upload directly to Supabase via signed URL
+      // This bypasses Vercel's 4.5MB body limit
+      const uploadRes = await fetch(signedUrl, {
+        method: 'PUT',
+        body: file,
+        headers: { 'Content-Type': file.type }
+      });
+
+      if (!uploadRes.ok) {
+        setPhotoError('Upload to storage failed. Please try again.');
+        return;
+      }
+
+      const urlWithBust = `${publicUrl}?t=${Date.now()}`;
       setImageUrl(urlWithBust);
       window.dispatchEvent(new CustomEvent('profile-photo-updated', { detail: { url: urlWithBust } }));
     } catch (err) {

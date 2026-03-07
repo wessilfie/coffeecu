@@ -18,16 +18,14 @@ export default async function LoginPage({
 }) {
   const params = await searchParams;
 
-  if (!DEV_BYPASS) {
-    // Redirect already-authenticated users
-    const supabase = await createSupabaseServerClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+  // Redirect already-authenticated users
+  const supabase = await createSupabaseServerClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-    if (user) {
-      redirect('/profile');
-    }
+  if (user) {
+    redirect('/profile');
   }
 
   return (
@@ -107,35 +105,6 @@ export default async function LoginPage({
               boxShadow: 'var(--shadow-card)',
             }}
           >
-            {DEV_BYPASS && (
-              <div style={{ textAlign: 'center', padding: '1rem 0' }}>
-                <p
-                  style={{ color: 'var(--color-text-muted)', marginBottom: '1.25rem', fontSize: '0.75rem', fontFamily: 'var(--font-mono)' }}
-                >
-                  Dev mode — no real auth required
-                </p>
-                <a
-                  href="/"
-                  className="btn-primary"
-                  style={{ width: '100%', display: 'block', textAlign: 'center' }}
-                >
-                  Enter as Dev User
-                </a>
-                <a
-                  href="/profile"
-                  className="btn-ghost"
-                  style={{ width: '100%', display: 'block', textAlign: 'center', marginTop: '0.75rem' }}
-                >
-                  Go to Profile
-                </a>
-
-                <div style={{ display: 'flex', alignItems: 'center', margin: '2rem 0', gap: '1rem' }}>
-                  <div style={{ flex: 1, height: '1px', background: 'var(--color-mist)' }} />
-                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.7rem', color: 'var(--color-text-muted)' }}>OR TRY REAL ACCOUNT</span>
-                  <div style={{ flex: 1, height: '1px', background: 'var(--color-mist)' }} />
-                </div>
-              </div>
-            )}
 
             <Suspense fallback={null}>
               <LoginForm
@@ -157,7 +126,7 @@ export default async function LoginPage({
               fontFamily: 'var(--font-body)',
             }}
           >
-            At this time, joining Coffee@CU requires an active Columbia email ending in @barnard.edu or @columbia.edu.
+            At this time, joining Coffee@CU requires an active Columbia or Barnard email address (including @gsb.columbia.edu and other subdomains).
           </p>
         </div>
       </div>

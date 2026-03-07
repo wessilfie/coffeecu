@@ -63,8 +63,9 @@ export async function proxy(request: NextRequest) {
     const email = user.email ?? '';
     const domain = email.split('@')[1]?.toLowerCase();
     const allowedDomains = ['columbia.edu', 'barnard.edu'];
+    const isAllowed = allowedDomains.includes(domain) || (domain && domain.endsWith('.columbia.edu'));
 
-    if (!allowedDomains.includes(domain)) {
+    if (!isAllowed) {
       // Account created with non-Columbia email — sign out and redirect
       await supabase.auth.signOut();
       const loginUrl = new URL('/login', request.url);

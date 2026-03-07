@@ -17,7 +17,6 @@ export default async function ProfilePage() {
   const { data: { user } } = await supabase.auth.getUser();
 
   if (user) {
-    // Real user exists, don't use dev bypass mock
     userId = user.id;
     userEmail = user.email ?? '';
 
@@ -29,12 +28,6 @@ export default async function ProfilePage() {
 
     draft = draftRes.data as DraftProfile | null;
     profile = profileRes.data as FullProfile | null;
-  } else if (DEV_BYPASS) {
-    // Fall back to dev bypass
-    userId = DEV_USER.id;
-    userEmail = DEV_USER.email;
-    profile = DEV_MOCK_FULL_PROFILE;
-    draft = DEV_MOCK_DRAFT;
   } else {
     redirect('/login?redirect=/profile');
   }

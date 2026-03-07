@@ -5,7 +5,7 @@ import Image from 'next/image';
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { ChevronDown } from 'lucide-react';
 import { getSupabaseClient } from '@/lib/supabase/client';
-import { DEV_BYPASS } from '@/lib/dev-bypass';
+import { DEV_BYPASS, DEV_USER } from '@/lib/dev-bypass';
 import type { User, AuthChangeEvent, Session } from '@supabase/supabase-js';
 
 const LION_AVATAR = '/img/LionMascotblack.png';
@@ -26,9 +26,6 @@ export default function Nav() {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event: AuthChangeEvent, session: Session | null) => {
       if (session?.user) {
         setUser(session.user);
-      } else if (DEV_BYPASS) {
-        setUser({ id: 'dev' } as User);
-        setProfileImageUrl(null);
       } else {
         setUser(null);
         setProfileImageUrl(null);
@@ -39,8 +36,6 @@ export default function Nav() {
     supabase.auth.getUser().then((res: { data: { user: User | null } }) => {
       if (res.data.user) {
         setUser(res.data.user);
-      } else if (DEV_BYPASS) {
-        setUser({ id: 'dev' } as User);
       } else {
         setUser(null);
       }
@@ -108,11 +103,7 @@ export default function Nav() {
     // Always attempt to sign out of real session just in case it got stuck
     await supabase.auth.signOut();
 
-    if (user?.id === 'dev' && DEV_BYPASS) {
-      window.location.href = '/?guest=1';
-    } else {
-      window.location.href = '/';
-    }
+    window.location.href = '/';
   };
 
   return (
