@@ -111,7 +111,10 @@ export default function ProfileCard({ profile, onClick, isOwn = false }: Props) 
           (e.currentTarget as HTMLElement).style.borderColor = '#d9e4f0';
         }}
       >
-        <div style={{ position: 'relative', paddingBottom: '122%', overflow: 'hidden' }}>
+        <div
+          style={{ position: 'relative', overflow: 'hidden' }}
+          className="aspect-square sm:aspect-[4/5]"
+        >
           <Image
             src={profile.image_url}
             alt={profile.name}
@@ -160,7 +163,7 @@ export default function ProfileCard({ profile, onClick, isOwn = false }: Props) 
               className="line-clamp-2"
               style={{
                 fontFamily: 'var(--font-display), serif',
-                fontSize: '1.3rem',
+                fontSize: 'clamp(1rem, 4vw, 1.2rem)',
                 fontWeight: 600,
                 color: 'white',
                 letterSpacing: '0.01em',
@@ -175,7 +178,7 @@ export default function ProfileCard({ profile, onClick, isOwn = false }: Props) 
           </div>
         </div>
 
-        <div style={{ padding: '0.85rem 0.85rem 1rem', display: 'flex', flexDirection: 'column', gap: '0.85rem', flex: 1 }}>
+        <div style={{ padding: '0.6rem 0.6rem 0.8rem', display: 'flex', flexDirection: 'column', gap: '0.6rem', flex: 1 }}>
           {/* Badges Row */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', flexWrap: 'wrap' }}>
             {badge && schoolLabel && (
@@ -183,9 +186,9 @@ export default function ProfileCard({ profile, onClick, isOwn = false }: Props) 
                 style={{
                   ...badge,
                   fontFamily: 'var(--font-mono), monospace',
-                  fontSize: '0.6rem',
+                  fontSize: '0.55rem',
                   fontWeight: 700,
-                  padding: '0.15rem 0.45rem',
+                  padding: '0.1rem 0.35rem',
                   borderRadius: '2px',
                 }}
               >
@@ -196,9 +199,9 @@ export default function ProfileCard({ profile, onClick, isOwn = false }: Props) 
               <span
                 style={{
                   fontFamily: 'var(--font-mono), monospace',
-                  fontSize: '0.6rem',
+                  fontSize: '0.55rem',
                   fontWeight: 700,
-                  padding: '0.15rem 0.45rem',
+                  padding: '0.1rem 0.35rem',
                   borderRadius: '2px',
                   background: '#E8EEF6',
                   color: '#2A4A70',
@@ -211,7 +214,7 @@ export default function ProfileCard({ profile, onClick, isOwn = false }: Props) 
               <span
                 style={{
                   fontFamily: 'var(--font-mono), monospace',
-                  fontSize: '0.6rem',
+                  fontSize: '0.55rem',
                   letterSpacing: '0.06em',
                   color: 'var(--color-text-muted)',
                 }}
@@ -229,8 +232,8 @@ export default function ProfileCard({ profile, onClick, isOwn = false }: Props) 
                   key={club}
                   style={{
                     fontFamily: 'var(--font-body), serif',
-                    fontSize: '0.65rem',
-                    padding: '0.2rem 0.5rem',
+                    fontSize: '0.6rem',
+                    padding: '0.15rem 0.4rem',
                     borderRadius: '12px',
                     background: '#f0f4f8',
                     color: '#2f2a24',
@@ -244,7 +247,7 @@ export default function ProfileCard({ profile, onClick, isOwn = false }: Props) 
                 <span
                   style={{
                     fontFamily: 'var(--font-mono), monospace',
-                    fontSize: '0.65rem',
+                    fontSize: '0.6rem',
                     color: 'var(--color-text-muted)',
                     marginLeft: '0.2rem',
                   }}
@@ -257,21 +260,21 @@ export default function ProfileCard({ profile, onClick, isOwn = false }: Props) 
 
           {/* Q&A Responses */}
           {visibleResponses.length > 0 && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem', marginTop: visibleClubs.length > 0 ? 0 : '0.25rem' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem', marginTop: visibleClubs.length > 0 ? 0 : '0.2rem' }}>
               {visibleResponses.map((response, index) => {
                 const category = getCategoryForQuestion(response.question);
                 const displayCategory = toThirdPersonCategory(category);
 
                 return (
-                  <div key={index} style={{ borderTop: index > 0 ? '1px solid #e5ddd0' : 'none', paddingTop: index > 0 ? '0.75rem' : 0 }}>
+                  <div key={index} style={{ borderTop: index > 0 ? '1px solid #e5ddd0' : 'none', paddingTop: index > 0 ? '0.6rem' : 0 }}>
                     {displayCategory && (
                       <p
                         className="label-mono"
                         style={{
-                          fontSize: '0.6rem',
+                          fontSize: '0.55rem',
                           color: 'var(--color-text-muted)',
                           letterSpacing: '0.06em',
-                          marginBottom: '0.25rem',
+                          marginBottom: '0.2rem',
                         }}
                       >
                         {displayCategory}
@@ -281,9 +284,9 @@ export default function ProfileCard({ profile, onClick, isOwn = false }: Props) 
                       className="line-clamp-2"
                       style={{
                         fontFamily: 'var(--font-body), serif',
-                        fontSize: '0.82rem',
+                        fontSize: '0.75rem',
                         color: '#2f2a24',
-                        lineHeight: 1.5,
+                        lineHeight: 1.4,
                         margin: 0,
                       }}
                     >
@@ -299,3 +302,4 @@ export default function ProfileCard({ profile, onClick, isOwn = false }: Props) 
     </button>
   );
 }
+
