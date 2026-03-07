@@ -407,7 +407,7 @@ export async function sendVerificationEmail(params: {
           <tr>
             <td align="center" style="background-color:#003478;padding:32px 32px;">
               <h1 class="header-h1" style="margin:0;font-family:Georgia,'Times New Roman',serif;font-size:32px;font-weight:700;color:#ffffff;line-height:1;letter-spacing:-0.02em;">Coffee@CU</h1>
-              <p style="margin:12px 0 0;font-family:Georgia,serif;font-size:16px;color:rgba(255,255,255,0.9);letter-spacing:0.01em;">A new connection is brewing</p>
+              <p style="margin:12px 0 0;font-family:Georgia,serif;font-size:16px;color:rgba(255,255,255,0.9);letter-spacing:0.01em;">Meet remarkable people at Columbia</p>
             </td>
           </tr>
 
@@ -468,7 +468,7 @@ export async function sendVerificationEmail(params: {
                 <tr>
                   <td align="center">
                     <p style="margin:0 0 8px;font-family:Georgia,serif;font-size:16px;color:#1A1410;text-align:center;font-style:italic;font-weight:600;">
-                      Wishing you a great coffee (or tea!)
+                      Make your profile in minutes and send your first coffee request. Have fun!
                     </p>
                     <p style="margin:0 0 32px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:14px;color:#6b7280;text-align:center;">
                       &mdash; The Coffee@CU Team
@@ -477,7 +477,7 @@ export async function sendVerificationEmail(params: {
                     <div style="height:1px;background-color:#E6E0D4;width:60px;margin:0 auto 24px;"></div>
                     
                     <p style="margin:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:12px;color:#B0A898;text-align:center;">
-                      <a href="${APP_URL}" style="color:#003478;text-decoration:none;font-weight:600;">What is Coffee@CU?</a> &bull; <a href="${APP_URL}" style="color:#003478;text-decoration:none;font-weight:600;">coffeeatcu.com</a>
+                      Meet someone new at <a href="${APP_URL}" style="color:#003478;text-decoration:none;font-weight:600;">coffeeatcu.com</a>
                     </p>
                   </td>
                 </tr>
@@ -503,7 +503,7 @@ Confirm email: ${params.verificationLink}
 "I built Coffee@CU because Columbia is full of incredible people — some you've never met, some you pass every day but have never really talked to. Take a chance, meet someone new, and see what's possible."
 — Will, CBS '26
 
-Wishing you a great coffee (or tea!)
+Make your profile in minutes and send your first coffee request. Have fun!
 — The Coffee@CU Team`;
 
   return getResend().emails.send({
