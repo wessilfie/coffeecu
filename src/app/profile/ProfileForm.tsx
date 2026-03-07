@@ -146,8 +146,15 @@ export default function ProfileForm({ userId, userEmail, existingProfile, existi
       ...optionalResponses.filter(r => r.question && r.answer.trim()),
       ...(coffeeAnswer.trim() ? [{ question: COFFEE_QUESTION, answer: coffeeAnswer.trim() }] : []),
     ];
-    return { ...values, responses, image_url: imageUrl || null, draft_only: true, designation: roleType };
-  }, [getValues, optionalResponses, coffeeAnswer, imageUrl]);
+    return {
+      ...values,
+      major: isUndergrad ? values.major : [],
+      responses,
+      image_url: imageUrl || null,
+      draft_only: true,
+      designation: roleType
+    };
+  }, [getValues, isUndergrad, optionalResponses, coffeeAnswer, imageUrl]);
 
   const runAutoSave = useCallback(async (keepalive = false) => {
     const payload = buildDraftPayload();
@@ -301,6 +308,7 @@ export default function ProfileForm({ userId, userEmail, existingProfile, existi
     try {
       const payload = {
         ...data,
+        major: isUndergrad ? data.major : [],
         responses,
         image_url: imageUrl || null,
         designation: roleType,
