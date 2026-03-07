@@ -171,66 +171,66 @@ function EmailSignupInput({ darkBackground = false }: { darkBackground?: boolean
 // ——— Curated conversation data for hero mockup ———
 const CONVOS = [
   {
-    sender:   { name: 'Edon',   school: 'SEAS', year: '26', color: '#1D4ED8', initials: 'E', interest: 'Music tech & royalty infrastructure',    photo: '/img/sample-profile-images/profile-edon.png' },
-    receiver: { name: 'Taylor', school: 'CC',   year: '28', color: '#0F766E', initials: 'T', interest: 'Data science & interdisciplinary research', photo: '/img/sample-profile-images/profile-taylor.png' },
+    sender: { name: 'Edon', school: 'SEAS', year: '26', color: '#1D4ED8', initials: 'E', interest: 'Music tech & royalty infrastructure', photo: '/img/sample-profile-images/profile-edon.png' },
+    receiver: { name: 'Taylor', school: 'CC', year: '28', color: '#0F766E', initials: 'T', interest: 'Data science & interdisciplinary research', photo: '/img/sample-profile-images/profile-taylor.png' },
     messages: [
-      { from: 'sender',   text: 'Taylor — saw you\'re doing data research. I\'m building a royalty-tracking tool for indie musicians and your background could actually be really useful.' },
+      { from: 'sender', text: 'Taylor — saw you\'re doing data research. I\'m building a royalty-tracking tool for indie musicians and your background could actually be really useful.' },
       { from: 'receiver', text: 'Ha, not the collab I expected but I\'m genuinely curious. What kind of data problems are you running into?' },
-      { from: 'sender',   text: 'Too many to list over text. Coffee?' },
+      { from: 'sender', text: 'Too many to list over text. Coffee?' },
     ],
   },
   {
-    sender:   { name: 'Ilan',   school: 'SEAS', year: '27', color: '#047857', initials: 'I', interest: 'Biotech ventures & early-stage startups', photo: '/img/sample-profile-images/profile-ilan.png' },
-    receiver: { name: 'Daniel', school: 'CC',   year: '27', color: '#B45309', initials: 'D', interest: 'Creative tech & interdisciplinary projects', photo: '/img/sample-profile-images/profile-daniel.png' },
+    sender: { name: 'Ilan', school: 'SEAS', year: '27', color: '#047857', initials: 'I', interest: 'Biotech ventures & early-stage startups', photo: '/img/sample-profile-images/profile-ilan.png' },
+    receiver: { name: 'Daniel', school: 'CC', year: '27', color: '#B45309', initials: 'D', interest: 'Creative tech & interdisciplinary projects', photo: '/img/sample-profile-images/profile-daniel.png' },
     messages: [
-      { from: 'sender',   text: 'Daniel — heard you\'re working on a startup concept. I\'m deep in biotech and feel like we\'re probably solving adjacent problems.' },
+      { from: 'sender', text: 'Daniel — heard you\'re working on a startup concept. I\'m deep in biotech and feel like we\'re probably solving adjacent problems.' },
       { from: 'receiver', text: 'Probably. What\'s your thing?' },
-      { from: 'sender',   text: 'Easier over coffee. You free this week?' },
+      { from: 'sender', text: 'Easier over coffee. You free this week?' },
     ],
   },
   {
-    sender:   { name: 'Will', school: 'EMBA', year: '26', color: '#1E3A8A', initials: 'W', interest: 'Fintech & financial inclusion', photo: '/img/sample-profile-images/profile-will.png' },
-    receiver: { name: 'Tony', school: 'MBA',  year: '26', color: '#6B21A8', initials: 'T', interest: 'Consumer products & brand strategy', photo: '/img/sample-profile-images/profile-tony.png' },
+    sender: { name: 'Will', school: 'EMBA', year: '26', color: '#1E3A8A', initials: 'W', interest: 'Fintech & financial inclusion', photo: '/img/sample-profile-images/profile-will.png' },
+    receiver: { name: 'Tony', school: 'MBA', year: '26', color: '#6B21A8', initials: 'T', interest: 'Consumer products & brand strategy', photo: '/img/sample-profile-images/profile-tony.png' },
     messages: [
-      { from: 'sender',   text: 'Tony — we\'re in the same Friday cohort and I don\'t think we\'ve actually talked yet. That feels wrong.' },
+      { from: 'sender', text: 'Tony — we\'re in the same Friday cohort and I don\'t think we\'ve actually talked yet. That feels wrong.' },
       { from: 'receiver', text: 'Ha, fully agree. What are you working on outside of class?' },
-      { from: 'sender',   text: 'Fintech for underbanked communities. Buy you a coffee and I\'ll pitch you properly.' },
+      { from: 'sender', text: 'Fintech for underbanked communities. Buy you a coffee and I\'ll pitch you properly.' },
     ],
   },
   {
-    sender:   { name: 'Octavia', school: 'Law',  year: '26', color: '#86198F', initials: 'O', interest: 'Public interest law & policy',         photo: '/img/sample-profile-images/profile-octavia.png' },
+    sender: { name: 'Octavia', school: 'Law', year: '26', color: '#86198F', initials: 'O', interest: 'Public interest law & policy', photo: '/img/sample-profile-images/profile-octavia.png' },
     receiver: { name: 'Deborah', school: 'EMBA', year: '26', color: '#9F1239', initials: 'D', interest: 'Cross-sector strategy & community impact', photo: '/img/sample-profile-images/profile-deborah.png' },
     messages: [
-      { from: 'sender',   text: 'Deborah — I keep running into you at every cross-school event. Pretty sure we\'re supposed to meet.' },
+      { from: 'sender', text: 'Deborah — I keep running into you at every cross-school event. Pretty sure we\'re supposed to meet.' },
       { from: 'receiver', text: 'Ha I was thinking the same thing. Law meets business — there\'s definitely something there.' },
-      { from: 'sender',   text: 'Tea Magic on 112th? My treat.' },
+      { from: 'sender', text: 'Tea Magic on 112th? My treat.' },
     ],
   },
   {
-    sender:   { name: 'Elvins', school: 'MBA',  year: '26', color: '#065F46', initials: 'E', interest: 'CPG & West African food culture', photo: '/img/sample-profile-images/profile-elvins.png' },
-    receiver: { name: 'Anshula', school: 'EMBA', year: '26', color: '#7C3AED', initials: 'A', interest: 'Scaling consumer brands & SaaS',   photo: '/img/sample-profile-images/profile-anshula.png' },
+    sender: { name: 'Elvins', school: 'MBA', year: '26', color: '#065F46', initials: 'E', interest: 'CPG & West African food culture', photo: '/img/sample-profile-images/profile-elvins.png' },
+    receiver: { name: 'Anshula', school: 'EMBA', year: '26', color: '#7C3AED', initials: 'A', interest: 'Scaling consumer brands & SaaS', photo: '/img/sample-profile-images/profile-anshula.png' },
     messages: [
-      { from: 'sender',   text: 'Anshula — I\'m launching a West African snack brand and heard you\'ve been through the scaling process. Need your brain.' },
+      { from: 'sender', text: 'Anshula — I\'m launching a West African snack brand and heard you\'ve been through the scaling process. Need your brain.' },
       { from: 'receiver', text: 'CPG is my favorite thing to talk about. What\'s the product?' },
-      { from: 'sender',   text: 'Scotch bonnet meets trail mix. Coffee this week?' },
+      { from: 'sender', text: 'Scotch bonnet meets trail mix. Coffee this week?' },
     ],
   },
   {
-    sender:   { name: 'Elvins', school: 'EMBA', year: '26', color: '#065F46', initials: 'E', interest: 'Real estate investing & multifamily deals', photo: '/img/sample-profile-images/profile-elvins.png' },
-    receiver: { name: 'Will',   school: 'EMBA', year: '26', color: '#1E3A8A', initials: 'W', interest: 'Real estate & alternative investments',     photo: '/img/sample-profile-images/profile-will.png' },
+    sender: { name: 'Elvins', school: 'EMBA', year: '26', color: '#065F46', initials: 'E', interest: 'Real estate investing & multifamily deals', photo: '/img/sample-profile-images/profile-elvins.png' },
+    receiver: { name: 'Will', school: 'EMBA', year: '26', color: '#1E3A8A', initials: 'W', interest: 'Real estate & alternative investments', photo: '/img/sample-profile-images/profile-will.png' },
     messages: [
-      { from: 'sender',   text: 'Hey Will, saw you\'ve been thinking about real estate investing. I\'ve been underwriting deals on the side while in the program and haven\'t found many people here who are actually in the weeds on it.' },
+      { from: 'sender', text: 'Hey Will, saw you\'ve been thinking about real estate investing. I\'ve been underwriting deals on the side while in the program and haven\'t found many people here who are actually in the weeds on it.' },
       { from: 'receiver', text: 'Seriously, feels like everyone talks about it theoretically. What asset class are you looking at?' },
-      { from: 'sender',   text: 'Mostly multifamily in secondary markets. Trying to close my first deal before graduation. Let\'s talk — coffee this week?' },
+      { from: 'sender', text: 'Mostly multifamily in secondary markets. Trying to close my first deal before graduation. Let\'s talk — coffee this week?' },
     ],
   },
   {
-    sender:   { name: 'Tony', school: 'MD/MBA', year: '26', color: '#6B21A8', initials: 'T', interest: 'Clinical trial access & health equity', photo: '/img/sample-profile-images/profile-tony.png' },
-    receiver: { name: 'Will', school: 'MBA',    year: '26', color: '#1E3A8A', initials: 'W', interest: 'Early-stage startups & user growth',    photo: '/img/sample-profile-images/profile-will.png' },
+    sender: { name: 'Tony', school: 'MD/MBA', year: '26', color: '#6B21A8', initials: 'T', interest: 'Clinical trial access & health equity', photo: '/img/sample-profile-images/profile-tony.png' },
+    receiver: { name: 'Will', school: 'MBA', year: '26', color: '#1E3A8A', initials: 'W', interest: 'Early-stage startups & user growth', photo: '/img/sample-profile-images/profile-will.png' },
     messages: [
-      { from: 'sender',   text: 'Hey Will, saw you\'re building Coffee@CU. I\'ve been working on a side project of my own — would love to pick your brain on getting early users.' },
+      { from: 'sender', text: 'Hey Will, saw you\'re building Coffee@CU. I\'ve been working on a side project of my own — would love to pick your brain on getting early users.' },
       { from: 'receiver', text: 'Always down to talk about this. What are you building?' },
-      { from: 'sender',   text: 'A platform to help patients navigate clinical trials. The MD side gives me the problem, the MBA side is helping me figure out the business. Early but gaining traction.' },
+      { from: 'sender', text: 'A platform to help patients navigate clinical trials. The MD side gives me the problem, the MBA side is helping me figure out the business. Early but gaining traction.' },
     ],
   },
 ];
@@ -296,7 +296,7 @@ function LoginGate({ meetingCount, heroImage }: { meetingCount: number; heroImag
           padding: '0 1.5rem',
           width: '100%',
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(min(380px, 100%), 1fr))',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(min(250px, 100%), 1fr))',
           gap: '2rem',
           alignItems: 'center',
         }}>
@@ -1161,9 +1161,10 @@ function AuthenticatedHome({ initialProfiles, meetingCount, userId, sentRequests
             gap: '0.75rem',
             alignItems: 'center',
           }}
+          className="flex-col sm:flex-row"
         >
           {/* Main Unified Search Typeahead */}
-          <div style={{ flex: 1 }}>
+          <div style={{ flex: 1, width: '100%' }}>
             <MainSearchTypeahead
               value={filters.query || filters.major || filters.clubs}
               onSelect={handleTypeaheadSelect}
@@ -1173,7 +1174,7 @@ function AuthenticatedHome({ initialProfiles, meetingCount, userId, sentRequests
           </div>
           <button
             onClick={handleRandomSelect}
-            className="btn-primary hidden sm:flex"
+            className="btn-primary w-full sm:w-auto"
             style={{ whiteSpace: 'nowrap', height: '48px', padding: '0 1.5rem', borderRadius: '12px', flexShrink: 0 }}
           >
             Choose for me ✨
@@ -1216,9 +1217,9 @@ function AuthenticatedHome({ initialProfiles, meetingCount, userId, sentRequests
           <div
             style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))',
               gap: '1.25rem',
             }}
+            className="grid-cols-2 md:grid-cols-3 lg:grid-cols-4"
           >
             {Array.from({ length: 8 }).map((_, i) => (
               <div key={i}>
@@ -1256,9 +1257,9 @@ function AuthenticatedHome({ initialProfiles, meetingCount, userId, sentRequests
             <div
               style={{
                 display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))',
                 gap: '1.25rem',
               }}
+              className="grid-cols-2 md:grid-cols-3 lg:grid-cols-4"
             >
               {profiles.map((profile) => (
                 <ProfileCard
@@ -1299,3 +1300,4 @@ function AuthenticatedHome({ initialProfiles, meetingCount, userId, sentRequests
     </main>
   );
 }
+

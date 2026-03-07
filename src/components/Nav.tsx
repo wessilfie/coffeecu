@@ -170,7 +170,7 @@ export default function Nav() {
         </Link>
 
         {/* Right nav */}
-        <nav style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
+        <nav style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }} className="md:gap-5">
           {!loading && (
             <>
               {user ? (
@@ -188,7 +188,7 @@ export default function Nav() {
                         border: 'none',
                         cursor: 'pointer',
                         fontFamily: 'var(--font-body), serif',
-                        fontSize: '0.875rem',
+                        fontSize: '0.8125rem',
                         fontWeight: 500,
                         color: communitiesOpen ? 'rgba(255,255,255,1)' : 'rgba(255,255,255,0.82)',
                         padding: 0,
@@ -197,7 +197,7 @@ export default function Nav() {
                       onMouseEnter={e => (e.currentTarget.style.color = 'rgba(255,255,255,1)')}
                       onMouseLeave={e => { if (!communitiesOpen) e.currentTarget.style.color = 'rgba(255,255,255,0.82)'; }}
                     >
-                      Your Communities
+                      <span className="hidden xs:inline">Your </span>Communities
                       <ChevronDown size={13} style={{ transition: 'transform 150ms ease', transform: communitiesOpen ? 'rotate(180deg)' : 'rotate(0deg)' }} />
                     </button>
 
