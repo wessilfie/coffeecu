@@ -635,15 +635,15 @@ function LoginGate({ meetingCount, heroImage }: { meetingCount: number; heroImag
                 </div>
 
                 {/* Right: Pills + headline */}
-                <div className="flex-1 p-8 lg:p-10 flex flex-col justify-center">
-                  <h3 className="mb-6 text-[2rem] text-[var(--color-ink)]" style={{ fontFamily: 'var(--font-display)' }}>Connect around careers, interests, and more.</h3>
+                <div className="flex-1 p-5 md:p-8 lg:p-10 flex flex-col justify-center">
+                  <h3 className="mb-4 text-[1.5rem] md:text-[2rem] text-[var(--color-ink)]" style={{ fontFamily: 'var(--font-display)' }}>Connect around careers, interests, and more.</h3>
                   <div className="flex flex-wrap gap-2">
                     {[
                       'MBA Candidates', 'Future Founders', 'PhD Researchers',
                       'Law Students', 'VC-Curious', 'Alumni',
                       'Climate Tech Builders', 'SIPA Fellows', 'First-Gen Professionals',
                     ].map(tag => (
-                      <span key={tag} className="rounded-full border border-mist bg-white px-4 py-2 text-sm font-medium shadow-sm transition hover:bg-slate-50" style={{ fontFamily: 'var(--font-mono)' }}>
+                      <span key={tag} className="rounded-full border border-mist bg-white px-3 py-1.5 text-xs font-medium shadow-sm transition hover:bg-slate-50" style={{ fontFamily: 'var(--font-mono)' }}>
                         {tag}
                       </span>
                     ))}

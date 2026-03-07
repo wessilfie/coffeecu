@@ -246,7 +246,7 @@ export default function ProfileDrawer({ profile, onClose, onCoffeeSuccess, isLog
                         {profile.degree}
                       </span>
                     )}
-                    {deriveYearLabel(profile.year, profile.school, profile.designation) && (
+                    {deriveYearLabel(profile.year, profile.school, profile.designation, profile.degree) && (
                       <span
                         style={{
                           fontFamily: 'var(--font-mono), monospace',
@@ -256,7 +256,7 @@ export default function ProfileDrawer({ profile, onClose, onCoffeeSuccess, isLog
                           alignItems: 'center',
                         }}
                       >
-                        {deriveYearLabel(profile.year, profile.school, profile.designation)}
+                        {deriveYearLabel(profile.year, profile.school, profile.designation, profile.degree)}
                       </span>
                     )}
                   </div>

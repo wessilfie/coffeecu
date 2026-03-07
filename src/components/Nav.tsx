@@ -335,7 +335,7 @@ export default function Nav() {
                             onMouseEnter={e => (e.currentTarget.style.background = '#F0F5FA')}
                             onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
                           >
-                            Admin Board
+                            [Internal] Admin Panel
                           </Link>
                         )}
                         <button

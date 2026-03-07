@@ -8,7 +8,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { Upload, Plus, Trash2, ChevronDown } from 'lucide-react';
 import { SCHOOL_GROUPS, UNDERGRAD_SCHOOL_CODES, DEGREE_GROUPS, MAJORS, CBS_CLUBS, PROFILE_QUESTIONS_GROUPED, PROFILE_QUESTIONS, COFFEE_QUESTION } from '@/lib/constants';
-import { deriveYearLabel, generateGradYears } from '@/lib/year-utils';
+import { deriveYearLabel } from '@/lib/year-utils';
 import type { ProfileFormData, FullProfile, DraftProfile, School, ProfileResponse } from '@/types';
 import PromptDropdown from '@/components/PromptDropdown';
 
@@ -83,7 +83,7 @@ export default function ProfileForm({ userId, userEmail, existingProfile, existi
   const [roleType, setRoleType] = useState<'student' | 'faculty' | 'staff'>(
     source?.designation === 'faculty' ? 'faculty'
       : source?.designation === 'staff' ? 'staff'
-      : 'student'
+        : 'student'
   );
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [photoError, setPhotoError] = useState('');
@@ -137,8 +137,6 @@ export default function ProfileForm({ userId, userEmail, existingProfile, existi
   const watchedValues = watch(['name', 'pronouns']);
   const selectedSchool = watch('school');
   const isUndergrad = UNDERGRAD_SCHOOL_CODES.has(selectedSchool);
-  const gradYears = generateGradYears();
-
   // ——— Auto-save (debounced, draft only) ———
   const allFormValues = watch();
 
@@ -500,20 +498,27 @@ export default function ProfileForm({ userId, userEmail, existingProfile, existi
           </div>
 
           {roleType === 'student' && (
-          <div>
-            <label className="form-label" htmlFor="year">Graduation Year</label>
-            <select id="year" className="form-input" {...register('year')} style={{ cursor: 'pointer' }}>
-              <option value="">Select year</option>
-              {gradYears.map(y => {
-                const label = deriveYearLabel(String(y), selectedSchool || null);
-                return (
-                  <option key={y} value={String(y)}>
-                    {y}{label ? ` — ${label}` : ''}
-                  </option>
-                );
-              })}
-            </select>
-          </div>
+            <div>
+              <label className="form-label" htmlFor="year">Graduation Year</label>
+              <input
+                id="year"
+                type="number"
+                className="form-input"
+                placeholder="e.g. 2026"
+                min={1950}
+                max={2040}
+                {...register('year')}
+              />
+              {(() => {
+                const yr = watch('year');
+                const label = yr && selectedSchool ? deriveYearLabel(yr, selectedSchool || null) : null;
+                return label ? (
+                  <p className="label-mono" style={{ color: 'var(--color-text-muted)', marginTop: '0.3rem', fontSize: '0.75rem' }}>
+                    {label}
+                  </p>
+                ) : null;
+              })()}
+            </div>
           )}
 
           <div>

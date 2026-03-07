@@ -36,11 +36,11 @@ export async function getUserRole(userId: string): Promise<UserRole | null> {
 }
 
 export async function hasRole(userId: string, requiredRole: UserRole): Promise<boolean> {
-  if (DEV_BYPASS) return true;
-
   const role = await getUserRole(userId);
-  if (!role) return false;
-  return ROLE_HIERARCHY[role] >= ROLE_HIERARCHY[requiredRole];
+  if (role) return ROLE_HIERARCHY[role] >= ROLE_HIERARCHY[requiredRole];
+
+  if (DEV_BYPASS) return true;
+  return false;
 }
 
 // Require authentication — throws if not authenticated
