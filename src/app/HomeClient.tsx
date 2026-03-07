@@ -569,7 +569,7 @@ function LoginGate({ meetingCount, heroImage }: { meetingCount: number; heroImag
                   }}
                 />
                 <h3 className="mb-3 text-[1.75rem]" style={{ fontFamily: 'var(--font-display)' }}>Just for Columbia.</h3>
-                <p className="text-[0.9375rem] leading-relaxed opacity-90" style={{ fontFamily: 'var(--font-body)' }}>Coffee@CU is currently available exclusively to members of the Columbia community and requires a @columbia.edu or @barnard.edu email.</p>
+                <p className="text-[0.9375rem] leading-relaxed opacity-90" style={{ fontFamily: 'var(--font-body)' }}>Coffee@CU is currently available exclusively to members of the Columbia community and requires a Columbia or Barnard email.</p>
               </div>
             </div>
 

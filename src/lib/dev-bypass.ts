@@ -13,8 +13,8 @@ const legacyClientBypass = process.env.NEXT_PUBLIC_DEV_BYPASS === 'true';
 export const DEV_BYPASS = nodeEnv !== 'production' && (serverBypass || legacyClientBypass);
 
 export const DEV_USER = {
-  id: 'dev-user-000',
-  email: 'dev@columbia.edu',
+  id: '73d6dba3-2976-4af9-9720-47f3ce03298f',
+  email: 'wke2102+1@columbia.edu',
 };
 
 const now = new Date().toISOString();

@@ -9,7 +9,7 @@ import { isAllowedDomain } from '@/lib/constants';
 type AuthMode = 'sign_in' | 'sign_up';
 
 const DOMAIN_ERRORS: Record<string, string> = {
-  domain: 'Coffee@CU is for Columbia University community members only. Please sign in with your @columbia.edu or @barnard.edu address.',
+  domain: 'Coffee@CU is for Columbia University community members only. Please use your Columbia or Barnard email address.',
   auth_failed: 'Authentication failed. Please try again.',
   missing_code: 'This sign-in link is invalid. Please request a new one.',
   link_expired: 'This sign-in link has expired or already been used. If you already confirmed your email, sign in with your password below. Otherwise, enter your email to get a new link.',
@@ -64,7 +64,7 @@ export default function LoginForm({
     // Client-side domain check (UX feedback only — server enforces too)
     if (!isAllowedDomain(email)) {
       setStatus('error');
-      setMessage('Coffee@CU is for Columbia University community members. Please use your @columbia.edu or @barnard.edu address.');
+      setMessage('Coffee@CU is for Columbia University community members. Please use your Columbia email (e.g. @columbia.edu, @gsb.columbia.edu, @barnard.edu).');
       return;
     }
 

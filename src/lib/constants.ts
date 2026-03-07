@@ -103,7 +103,14 @@ export const UNIVERSITY_DOMAINS: Record<string, string[]> = {
 export function isAllowedDomain(email: string): boolean {
   const domain = email.split('@')[1]?.toLowerCase();
   if (!domain) return false;
-  return Object.values(UNIVERSITY_DOMAINS).flat().includes(domain);
+
+  // Allow exact matches for configured domains
+  if (Object.values(UNIVERSITY_DOMAINS).flat().includes(domain)) return true;
+
+  // Allow all Columbia subdomains (e.g., gsb.columbia.edu, law.columbia.edu)
+  if (domain.endsWith('.columbia.edu')) return true;
+
+  return false;
 }
 
 export function getUniversityFromEmail(email: string): string {

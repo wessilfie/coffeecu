@@ -139,28 +139,52 @@ export default function OnboardingClient({ userId: _userId, userEmail: _userEmai
       setPhotoError('Please upload an image file (JPEG, PNG, WebP).');
       return;
     }
-    if (file.size > 5 * 1024 * 1024) {
-      setPhotoError('Photo must be under 5 MB.');
+    if (file.size > 10 * 1024 * 1024) {
+      setPhotoError('Photo must be under 10MB.');
       return;
     }
     setUploadingPhoto(true);
     try {
-      const formData = new FormData();
-      formData.append('file', file);
-      const res = await fetch('/api/profile/upload-photo', { method: 'POST', body: formData });
-      const json = await res.json();
-      if (!res.ok) {
-        setPhotoError(json.error ?? 'Upload failed. Please try again.');
+      // 1. Get signed upload URL from our API
+      const metaRes = await fetch('/api/profile/upload-photo', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contentType: file.type,
+          extension: file.name.split('.').pop()
+        })
+      });
+
+      const metaJson = await metaRes.json();
+      if (!metaRes.ok) {
+        setPhotoError(metaJson.error ?? 'Upload failed. Please try again.');
         return;
       }
-      const newUrl = `${json.url}?t=${Date.now()}`;
+
+      const { signedUrl, publicUrl } = metaJson;
+
+      // 2. Upload directly to Supabase via signed URL
+      // This bypasses Vercel's 4.5MB body limit
+      const uploadRes = await fetch(signedUrl, {
+        method: 'PUT',
+        body: file,
+        headers: { 'Content-Type': file.type }
+      });
+
+      if (!uploadRes.ok) {
+        setPhotoError('Upload to storage failed. Please try again.');
+        return;
+      }
+
+      const newUrl = `${publicUrl}?t=${Date.now()}`;
       setPhotoUrl(newUrl);
       // Persist immediately so a refresh doesn't lose the uploaded photo
       saveProgress(true, newUrl).catch(() => { });
-      return;
-    } catch {
+    } catch (err) {
+      console.error('Photo upload error:', err);
       setPhotoError('Upload failed. Please try again.');
-    } finally {
+    }
+    finally {
       setUploadingPhoto(false);
     }
   };
@@ -723,7 +747,7 @@ export default function OnboardingClient({ userId: _userId, userEmail: _userEmai
                       className="label-mono"
                       style={{ color: 'var(--color-text-muted)', marginTop: '0.5rem' }}
                     >
-                      JPEG, PNG, WebP — max 5 MB
+                      JPEG, PNG, WebP — max 10MB
                     </p>
                   </div>
                 )}

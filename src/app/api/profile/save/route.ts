@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createSupabaseServerClient, createSupabaseServiceClient } from '@/lib/supabase/server';
 import { sendWelcomeEmail } from '@/lib/email';
-import { getUniFromEmail } from '@/lib/constants';
+import { getUniFromEmail, isAllowedDomain } from '@/lib/constants';
 import { z } from 'zod';
 
 // ============================================================
@@ -64,10 +64,9 @@ export async function POST(req: NextRequest) {
     if (!user) return NextResponse.json({ error: 'You need to be signed in to save your profile. Please sign in and try again.' }, { status: 401 });
 
     // 2. Columbia domain
-    const email = user.email ?? '';
-    const domain = email.split('@')[1]?.toLowerCase();
-    if (user.id !== DEV_USER.id && !['columbia.edu', 'barnard.edu'].includes(domain)) {
-      return NextResponse.json({ error: 'Coffee@CU is only open to @columbia.edu and @barnard.edu addresses.' }, { status: 403 });
+    const email = user.email || '';
+    if (user.id !== DEV_USER.id && !isAllowedDomain(email)) {
+      return NextResponse.json({ error: 'Coffee@CU is only open to Columbia and Barnard university email addresses.' }, { status: 403 });
     }
 
     // 3. Parse + validate
@@ -86,6 +85,7 @@ export async function POST(req: NextRequest) {
 
     // 4. Derive server-controlled fields (never from client)
     const uni = getUniFromEmail(email);
+    const domain = email.split('@')[1]?.toLowerCase();
     const university = domain === 'barnard.edu' ? 'columbia' : 'columbia'; // both Columbia
 
     const serviceClient = createSupabaseServiceClient();
