@@ -207,7 +207,7 @@ export default function ProfileCard({ profile, onClick, isOwn = false }: Props) 
                 {profile.degree}
               </span>
             )}
-            {deriveYearLabel(profile.year, profile.school, profile.designation) && (
+            {deriveYearLabel(profile.year, profile.school, profile.designation, profile.degree) && (
               <span
                 style={{
                   fontFamily: 'var(--font-mono), monospace',
@@ -216,7 +216,7 @@ export default function ProfileCard({ profile, onClick, isOwn = false }: Props) 
                   color: 'var(--color-text-muted)',
                 }}
               >
-                {deriveYearLabel(profile.year, profile.school, profile.designation)}
+                {deriveYearLabel(profile.year, profile.school, profile.designation, profile.degree)}
               </span>
             )}
           </div>

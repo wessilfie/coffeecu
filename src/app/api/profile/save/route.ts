@@ -95,14 +95,19 @@ export async function POST(req: NextRequest) {
     if (canPublish) {
       const publishName = data.name as string;
 
-      // Check if this is a first-time publish (for welcome email)
+      // Check if this is a first-time publish (for welcome email) and fetch existing designation
       const { data: existing } = await serviceClient
         .from('profiles')
-        .select('id')
+        .select('id, designation')
         .eq('user_id', user.id)
         .single();
 
       const isFirstPublish = !existing;
+
+      // Preserve admin-assigned faculty/staff designations — never let a user save overwrite them
+      const designationToSave = (existing?.designation === 'faculty' || existing?.designation === 'staff')
+        ? existing.designation
+        : (data.designation ?? 'student');
 
       // Upsert into profiles (publishes immediately)
       const { error: profileError } = await serviceClient.from('profiles').upsert({
@@ -113,7 +118,7 @@ export async function POST(req: NextRequest) {
         name: publishName,
         school: data.school,
         year: data.year,
-        designation: data.designation,
+        designation: designationToSave,
         degree: data.degree,
         major: data.major,
         clubs: data.clubs,

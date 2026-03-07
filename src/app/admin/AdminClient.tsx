@@ -20,6 +20,7 @@ interface Props {
   suspendedUserIds: string[];
   bannedUserIds: string[];
   flaggedProfiles: FlaggedProfileData[];
+  userRoles: Record<string, string>;
 }
 
 type Tab = 'profiles' | 'flagged' | 'lookup' | 'roles' | 'audit';
@@ -51,6 +52,7 @@ export default function AdminClient({
   suspendedUserIds: initialSuspendedUserIds,
   bannedUserIds,
   flaggedProfiles: initialFlagged,
+  userRoles,
 }: Props) {
   const [activeTab, setActiveTab] = useState<Tab>('profiles');
   const [profiles, setProfiles] = useState(initialProfiles);
@@ -367,6 +369,15 @@ export default function AdminClient({
                     <div style={{ minWidth: 0 }}>
                       <p style={{ fontFamily: 'var(--font-display), serif', fontSize: '1.125rem', fontWeight: 500, color: 'var(--color-ink)', margin: 0, display: 'flex', alignItems: 'center', gap: '0.4rem', flexWrap: 'wrap' }}>
                         {profile.name}
+                        {userRoles[profile.user_id] === 'super_admin' && (
+                          <span className="label-mono" style={{ background: '#3b82f6', color: '#fff', padding: '0.1rem 0.4rem', borderRadius: '2px', fontSize: '0.65rem' }}>SUPER ADMIN</span>
+                        )}
+                        {userRoles[profile.user_id] === 'admin' && (
+                          <span className="label-mono" style={{ background: '#6366f1', color: '#fff', padding: '0.1rem 0.4rem', borderRadius: '2px', fontSize: '0.65rem' }}>ADMIN</span>
+                        )}
+                        {userRoles[profile.user_id] === 'moderator' && (
+                          <span className="label-mono" style={{ background: '#8b5cf6', color: '#fff', padding: '0.1rem 0.4rem', borderRadius: '2px', fontSize: '0.65rem' }}>MOD</span>
+                        )}
                         {!profile.is_visible && (
                           <span className="label-mono" style={{ color: 'var(--color-text-muted)' }}>HIDDEN</span>
                         )}
@@ -378,7 +389,7 @@ export default function AdminClient({
                         )}
                       </p>
                       <p className="label-mono" style={{ color: 'var(--color-text-muted)', margin: '0.125rem 0 0' }}>
-                        {profile.email} · {profile.school} · {deriveYearLabel(profile.year, profile.school, profile.designation)}
+                        {profile.email} · {profile.school} · {deriveYearLabel(profile.year, profile.school, profile.designation, profile.degree)}
                       </p>
                     </div>
                   </div>
@@ -597,14 +608,23 @@ export default function AdminClient({
                       <Image src={lookupResult.profile.image_url} alt={lookupResult.profile.name} fill style={{ objectFit: 'cover' }} />
                     </div>
                     <div>
-                      <h3 style={{ fontFamily: 'var(--font-display), serif', fontSize: '1.375rem', margin: '0 0 0.25rem' }}>
+                      <h3 style={{ fontFamily: 'var(--font-display), serif', fontSize: '1.375rem', margin: '0 0 0.25rem', display: 'flex', alignItems: 'center', gap: '0.4rem', flexWrap: 'wrap' }}>
                         {lookupResult.profile.name}
+                        {userRoles[lookupResult.profile.user_id] === 'super_admin' && (
+                          <span className="label-mono" style={{ background: '#3b82f6', color: '#fff', padding: '0.1rem 0.4rem', borderRadius: '2px', fontSize: '0.65rem' }}>SUPER ADMIN</span>
+                        )}
+                        {userRoles[lookupResult.profile.user_id] === 'admin' && (
+                          <span className="label-mono" style={{ background: '#6366f1', color: '#fff', padding: '0.1rem 0.4rem', borderRadius: '2px', fontSize: '0.65rem' }}>ADMIN</span>
+                        )}
+                        {userRoles[lookupResult.profile.user_id] === 'moderator' && (
+                          <span className="label-mono" style={{ background: '#8b5cf6', color: '#fff', padding: '0.1rem 0.4rem', borderRadius: '2px', fontSize: '0.65rem' }}>MOD</span>
+                        )}
                       </h3>
                       <p className="label-mono" style={{ color: 'var(--color-text-muted)', margin: 0 }}>
                         {lookupResult.profile.email} · {lookupResult.profile.uni}
                       </p>
                       <p className="label-mono" style={{ color: 'var(--color-text-muted)', margin: '0.25rem 0 0' }}>
-                        {lookupResult.profile.school} · {lookupResult.profile.year}
+                        {lookupResult.profile.school} · {deriveYearLabel(lookupResult.profile.year, lookupResult.profile.school, lookupResult.profile.designation, lookupResult.profile.degree)}
                       </p>
                     </div>
                   </div>
@@ -685,6 +705,8 @@ export default function AdminClient({
         <ProfileDetailModal
           profile={selectedProfile}
           isAdmin={isAdmin}
+          isSuperAdmin={isSuperAdmin}
+          currentUserRole={userRoles[selectedProfile.user_id] ?? null}
           actionLoading={actionLoading}
           isOwnProfile={selectedProfile.user_id === currentUserId}
           isSuspended={suspendedUserIds.includes(selectedProfile.user_id)}
@@ -734,12 +756,14 @@ function ActionBtn({
 
 // ——— Profile detail modal ———
 function ProfileDetailModal({
-  profile, isAdmin, actionLoading, isOwnProfile, isSuspended, onClose,
+  profile, isAdmin, isSuperAdmin, currentUserRole, actionLoading, isOwnProfile, isSuspended, onClose,
   onToggleVisible, onSuspend, onLiftSuspension, onRemove, onBan, onDeleteAccount,
   onDesignationChange,
 }: {
   profile: FullProfile;
   isAdmin: boolean;
+  isSuperAdmin: boolean;
+  currentUserRole: string | null;
   actionLoading: string | null;
   isOwnProfile: boolean;
   isSuspended: boolean;
@@ -753,13 +777,16 @@ function ProfileDetailModal({
   onDesignationChange: (p: FullProfile, designation: 'student' | 'faculty' | 'staff') => void;
 }) {
   const [suspensionStatus, setSuspensionStatus] = useState<SuspensionStatus | null>(null);
+  const [roleStatus, setRoleStatus] = useState<string | null>(null);
+  const [roleLoading, setRoleLoading] = useState(false);
+  const [liveRole, setLiveRole] = useState<string | null>(currentUserRole);
 
   useEffect(() => {
     if (isOwnProfile) return;
     fetch(`/api/admin/suspensions/status?userId=${profile.user_id}`)
       .then(r => r.ok ? r.json() : null)
       .then(data => { if (data) setSuspensionStatus(data); })
-      .catch(() => {});
+      .catch(() => { });
   }, [profile.user_id, isOwnProfile]);
 
   // Keep suspension status in sync with parent's isSuspended
@@ -930,6 +957,75 @@ function ProfileDetailModal({
               <span className="label-mono" style={{ color: 'var(--color-text-muted)', fontSize: '0.7rem' }}>
                 Overrides graduation year display
               </span>
+            )}
+          </div>
+        )}
+
+        {/* Role management — super admin only */}
+        {isSuperAdmin && !isOwnProfile && (
+          <div style={{ borderTop: '1px solid var(--color-mist)', paddingTop: '1rem', marginBottom: '0.75rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
+              <p className="label-mono" style={{ color: 'var(--color-text-muted)', margin: 0 }}>ROLE</p>
+              {liveRole ? (
+                <span className="label-mono" style={{ background: '#e3f2fd', color: '#1565c0', padding: '0.2rem 0.5rem', borderRadius: '2px', textTransform: 'capitalize' }}>
+                  {liveRole}
+                </span>
+              ) : (
+                <span className="label-mono" style={{ color: 'var(--color-text-muted)' }}>No system role</span>
+              )}
+              {liveRole ? (
+                <button
+                  className="btn-ghost"
+                  disabled={roleLoading}
+                  onClick={async () => {
+                    setRoleLoading(true);
+                    setRoleStatus(null);
+                    const res = await fetch('/api/admin/roles/revoke', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ email: profile.email }),
+                    });
+                    const d = await res.json();
+                    setRoleStatus(res.ok ? 'Role revoked' : (d.error ?? 'Failed'));
+                    if (res.ok) setLiveRole(null);
+                    setRoleLoading(false);
+                  }}
+                  style={{ fontSize: '0.7rem', padding: '0.25rem 0.5rem' }}
+                >
+                  Revoke
+                </button>
+              ) : (
+                <>
+                  {(['moderator', 'admin'] as const).map(r => (
+                    <button
+                      key={r}
+                      className="btn-ghost"
+                      disabled={roleLoading}
+                      onClick={async () => {
+                        setRoleLoading(true);
+                        setRoleStatus(null);
+                        const res = await fetch('/api/admin/roles/grant', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({ email: profile.email, role: r }),
+                        });
+                        const d = await res.json();
+                        setRoleStatus(res.ok ? `Granted ${r}` : (d.error ?? 'Failed'));
+                        if (res.ok) setLiveRole(r);
+                        setRoleLoading(false);
+                      }}
+                      style={{ fontSize: '0.7rem', padding: '0.25rem 0.5rem', textTransform: 'capitalize' }}
+                    >
+                      Grant {r}
+                    </button>
+                  ))}
+                </>
+              )}
+            </div>
+            {roleStatus && (
+              <p className="label-mono" style={{ color: 'var(--color-text-muted)', marginTop: '0.4rem', fontSize: '0.7rem' }}>
+                {roleStatus}
+              </p>
             )}
           </div>
         )}

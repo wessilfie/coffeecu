@@ -47,6 +47,16 @@ export default async function AdminPage() {
 
   const bannedUserIds = (blacklistRows ?? []).map(r => r.user_id);
 
+  // Fetch user roles (for role management in profile detail modal)
+  const { data: userRoleRows } = await serviceClient
+    .from('user_roles')
+    .select('user_id, role');
+
+  const userRoles: Record<string, string> = {};
+  for (const row of userRoleRows ?? []) {
+    userRoles[row.user_id] = row.role;
+  }
+
   // Fetch already-reviewed profile user IDs (dismissed or actioned — don't re-surface)
   const { data: reviewedRows } = await serviceClient
     .from('moderation_reviews')
@@ -81,6 +91,7 @@ export default async function AdminPage() {
           suspendedUserIds={suspendedUserIds}
           bannedUserIds={bannedUserIds}
           flaggedProfiles={flaggedProfiles}
+          userRoles={userRoles}
         />
       </main>
       <Footer />

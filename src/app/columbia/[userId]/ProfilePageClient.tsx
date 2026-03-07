@@ -20,7 +20,7 @@ export default function ProfilePageClient({ profile, currentUserId }: Props) {
   const [successMessage, setSuccessMessage] = useState('');
 
   const schoolLabel = (SCHOOLS as Array<{ value: string; label: string }>).find(s => s.value === profile.school)?.label ?? profile.school;
-  const metaParts = [schoolLabel, deriveYearLabel(profile.year, profile.school, profile.designation), profile.degree].filter(Boolean);
+  const metaParts = [schoolLabel, deriveYearLabel(profile.year, profile.school, profile.designation, profile.degree), profile.degree].filter(Boolean);
   const isOwn = currentUserId === profile.user_id;
 
   return (

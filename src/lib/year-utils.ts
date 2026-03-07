@@ -15,7 +15,8 @@ import { UNDERGRAD_SCHOOL_CODES } from './constants';
 export function deriveYearLabel(
   year: string | null,
   school: string | null,
-  designation?: string,
+  designation?: string | null,
+  degree?: string | null,
 ): string | null {
   if (designation === 'faculty') return 'Faculty';
   if (designation === 'staff') return 'Staff';
@@ -30,30 +31,34 @@ export function deriveYearLabel(
   const currentMonth = now.getMonth() + 1; // 1-indexed
 
   const academicEndYear = currentMonth >= 6 ? currentYear + 1 : currentYear;
-
-  if (gradYear < academicEndYear) return 'Alum';
-
   const yearsLeft = gradYear - academicEndYear;
+
   const isUndergrad = !!school && UNDERGRAD_SCHOOL_CODES.has(school);
 
   if (isUndergrad) {
+    if (yearsLeft < 0) return 'Alum';
     switch (yearsLeft) {
       case 0: return 'Senior';
       case 1: return 'Junior';
       case 2: return 'Sophomore';
       case 3: return 'First Year';
-      default: return `Class of ${gradYear}`;
     }
   }
 
   // CBS MBA is a 2-year program — derive Year 1 / Year 2
   if (school === 'BUS') {
-    if (yearsLeft === 0) return 'Year 2';
-    return 'Year 1';
+    if (yearsLeft < 0) return 'CBS Alum';
+    if (yearsLeft === 0) return 'CBS - Year 2';
+    if (yearsLeft === 1) return 'CBS - Year 1';
   }
 
-  // All other grad programs: show class year
-  return `Class of ${gradYear}`;
+  // All other grad programs: show [Degree - School - Year] (e.g. JD - LAW - 2026)
+  const parts = [];
+  if (degree) parts.push(degree);
+  if (school) parts.push(school);
+  parts.push(gradYear.toString());
+
+  return parts.join(' - ');
 }
 
 /**
