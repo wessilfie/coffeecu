@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import { SCHOOLS, PROFILE_QUESTIONS_GROUPED } from '@/lib/constants';
+import { SCHOOLS } from '@/lib/constants';
 import { deriveYearLabel } from '@/lib/year-utils';
 import type { Profile, School } from '@/types';
 
@@ -41,32 +41,6 @@ export default function ProfileCard({ profile, onClick, isOwn = false }: Props) 
   const badge = profile.school ? (BADGE_STYLES[profile.school as School] ?? DEFAULT_BADGE) : null;
   const schoolEntry = profile.school ? (SCHOOLS as { value: string; label: string }[]).find(s => s.value === profile.school) : null;
   const schoolLabel = schoolEntry?.label ?? null;
-
-  // Find the category for a specific question
-  const getCategoryForQuestion = (question: string) => {
-    for (const group of PROFILE_QUESTIONS_GROUPED) {
-      if ((group.questions as unknown as string[]).includes(question)) {
-        return group.group;
-      }
-    }
-    return '';
-  };
-
-  // Convert categories from second-person to third-person
-  const toThirdPersonCategory = (category: string) => {
-    switch (category) {
-      case "What makes you, you?":
-        return "WHAT MAKES THEM, THEM";
-      case "What lights you up?":
-        return "WHAT LIGHTS THEM UP";
-      case "How do you think about the world?":
-        return "HOW THEY THINK ABOUT THE WORLD";
-      case "What you bring to the table?":
-        return "WHAT THEY BRING TO THE TABLE";
-      default:
-        return category.toUpperCase();
-    }
-  };
 
   const visibleClubs = profile.clubs?.slice(0, 2) || [];
   const extraClubsCount = Math.max(0, (profile.clubs?.length || 0) - 2);
@@ -262,22 +236,20 @@ export default function ProfileCard({ profile, onClick, isOwn = false }: Props) 
           {visibleResponses.length > 0 && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem', marginTop: visibleClubs.length > 0 ? 0 : '0.2rem' }}>
               {visibleResponses.map((response, index) => {
-                const category = getCategoryForQuestion(response.question);
-                const displayCategory = toThirdPersonCategory(category);
-
                 return (
                   <div key={index} style={{ borderTop: index > 0 ? '1px solid #e5ddd0' : 'none', paddingTop: index > 0 ? '0.6rem' : 0 }}>
-                    {displayCategory && (
+                    {response.question && (
                       <p
-                        className="label-mono"
+                        className="line-clamp-1"
                         style={{
+                          fontFamily: 'var(--font-mono), monospace',
                           fontSize: '0.55rem',
                           color: 'var(--color-text-muted)',
-                          letterSpacing: '0.06em',
+                          letterSpacing: '0.03em',
                           marginBottom: '0.2rem',
                         }}
                       >
-                        {displayCategory}
+                        {response.question}
                       </p>
                     )}
                     <p

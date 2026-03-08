@@ -10,7 +10,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { getSupabaseClient } from '@/lib/supabase/client';
 import { DEV_BYPASS, DEV_MOCK_PROFILES } from '@/lib/dev-bypass';
-import { PARALLAX_IMAGES, CBS_CLUBS, MAJORS, SCHOOLS } from '@/lib/constants';
+import { PARALLAX_IMAGES, CBS_CLUBS, MAJORS, SCHOOLS, matchesClubQuery } from '@/lib/constants';
 import type { Profile, ProfileFilters } from '@/types';
 
 const PAGE_SIZE = 12;
@@ -763,7 +763,7 @@ function MainSearchTypeahead({
     });
 
     // 2. Clubs
-    const matchedClubs = CBS_CLUBS.filter(c => c.toLowerCase().includes(term)).slice(0, 4);
+    const matchedClubs = CBS_CLUBS.filter(c => matchesClubQuery(c, term)).slice(0, 4);
     matchedClubs.forEach(c => suggestions.push({ type: 'club', label: c }));
 
     // 3. Majors
