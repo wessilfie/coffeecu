@@ -13,6 +13,7 @@ import {
   COFFEE_QUESTION,
   MAJORS,
   CBS_CLUBS,
+  matchesClubQuery,
 } from '@/lib/constants';
 import { compressImage } from '@/lib/image-utils';
 import { deriveYearLabel } from '@/lib/year-utils';
@@ -1532,7 +1533,7 @@ function ClubPicker({ value, onChange, max }: { value: string[]; onChange: (v: s
 
   const suggestions = query.trim()
     ? (CBS_CLUBS as readonly string[])
-      .filter(c => !value.includes(c) && c.toLowerCase().includes(query.toLowerCase()))
+      .filter(c => !value.includes(c) && matchesClubQuery(c, query))
       .slice(0, 8)
     : [];
 

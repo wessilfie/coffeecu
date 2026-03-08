@@ -189,6 +189,23 @@ export const PROFILE_QUESTIONS_GROUPED = [
 
 export const PROFILE_QUESTIONS = PROFILE_QUESTIONS_GROUPED.flatMap(g => g.questions);
 
+// Matches a club name against a search query, supporting both substring and acronym search.
+// e.g. "AI" matches "Artificial Intelligence Club" (acronym AIC starts with AI)
+//      "BBSA" matches "Black Business Student Association" (acronym BBSA)
+const ACRONYM_SKIP_WORDS = new Set(['and', 'of', 'the', 'in', 'at', 'a', 'an', 'for', 'to']);
+export function matchesClubQuery(club: string, query: string): boolean {
+  const q = query.toLowerCase().trim();
+  if (!q) return false;
+  if (club.toLowerCase().includes(q)) return true;
+  // Acronym match: first letter of each significant word
+  const acronym = club
+    .split(/[\s&]+/)
+    .filter(w => w.length > 0 && !ACRONYM_SKIP_WORDS.has(w.toLowerCase()))
+    .map(w => w[0].toUpperCase())
+    .join('');
+  return acronym.toLowerCase().startsWith(q) || acronym.toLowerCase() === q;
+}
+
 export const CBS_CLUBS = [
   "Adam Smith Society",
   "Aerospace & Defense Technology Club",

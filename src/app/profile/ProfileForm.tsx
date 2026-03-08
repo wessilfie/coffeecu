@@ -7,7 +7,7 @@ import { z } from 'zod';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Upload, Plus, Trash2, ChevronDown } from 'lucide-react';
-import { SCHOOL_GROUPS, UNDERGRAD_SCHOOL_CODES, DEGREE_GROUPS, MAJORS, CBS_CLUBS, PROFILE_QUESTIONS_GROUPED, PROFILE_QUESTIONS, COFFEE_QUESTION } from '@/lib/constants';
+import { SCHOOL_GROUPS, UNDERGRAD_SCHOOL_CODES, DEGREE_GROUPS, MAJORS, CBS_CLUBS, matchesClubQuery, PROFILE_QUESTIONS_GROUPED, PROFILE_QUESTIONS, COFFEE_QUESTION } from '@/lib/constants';
 import { deriveYearLabel } from '@/lib/year-utils';
 import { compressImage } from '@/lib/image-utils';
 import type { ProfileFormData, FullProfile, DraftProfile, School, ProfileResponse } from '@/types';
@@ -1055,7 +1055,7 @@ function ClubPicker({ value, onChange, max }: { value: string[]; onChange: (v: s
 
   const suggestions = query.trim()
     ? (CBS_CLUBS as readonly string[])
-      .filter(c => !value.includes(c) && c.toLowerCase().includes(query.toLowerCase()))
+      .filter(c => !value.includes(c) && matchesClubQuery(c, query))
       .slice(0, 8)
     : [];
 
